@@ -6,7 +6,7 @@ from typing import List, Dict, Optional
 
 from .simulator_product_data import generate_product_data
 from .simulator_product_sales import generate_sales_data
-from .simulator_enrichment import assign_enrichment, load_effect_function, apply_enrichment_to_sales
+from .enrichment_application import assign_enrichment, load_effect_function, apply_enrichment_to_sales
 
 
 def generate_products(n_products: int = 100, seed: Optional[int] = None) -> List[Dict]:
