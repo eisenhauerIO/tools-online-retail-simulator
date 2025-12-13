@@ -2,6 +2,7 @@
 
 import json
 import pytest
+from .import_helpers import has_synthesizer
 from pathlib import Path
 import tempfile
 import shutil
@@ -87,7 +88,7 @@ class TestConfigValidation:
             _validate_sdv_config(config)
 
 
-@pytest.mark.skipif(not _SDV_AVAILABLE, reason="SDV dependencies not installed")
+@pytest.mark.skipif(not has_synthesizer(), reason="SDV dependencies not installed")
 class TestMonteCarloWorkflow:
     """Test full Monte Carlo sampling workflow."""
     
@@ -129,7 +130,7 @@ class TestMonteCarloWorkflow:
             samples.append(synthetic_df)
 
 
-@pytest.mark.skipif(not _SDV_AVAILABLE, reason="SDV dependencies not installed")
+@pytest.mark.skipif(not has_synthesizer(), reason="SDV dependencies not installed")
 class TestSynthesizerTypes:
     """Test different synthesizer types."""
     

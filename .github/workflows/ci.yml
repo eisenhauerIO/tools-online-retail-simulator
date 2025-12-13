@@ -19,10 +19,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install dependencies (light)
         run: |
           python -m pip install --upgrade pip
-          pip install .[dev] || pip install pytest
+          pip install .[light] || pip install pytest
 
       - name: Run tests with pytest
         run: pytest online_retail_simulator/tests

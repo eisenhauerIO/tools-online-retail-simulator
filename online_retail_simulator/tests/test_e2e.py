@@ -1,9 +1,11 @@
 
 import pytest
+from .import_helpers import has_synthesizer
 from pathlib import Path
 from online_retail_simulator.simulator import simulate
 from online_retail_simulator.enrichment_application import enrich
 
+@pytest.mark.skipif(not has_synthesizer(), reason="SDV dependencies not installed")
 def test_e2e_workflow():
     rule_config = str(Path(__file__).parent / "config_rule.json")
     synth_config = str(Path(__file__).parent / "config_synthesizer.json")
