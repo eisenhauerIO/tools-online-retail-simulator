@@ -172,3 +172,4 @@ class TestSynthesizerTypes:
         from online_retail_simulator.simulator_synthesizer_based import simulate_synthesizer_based
         with pytest.raises(ValueError, match="Unknown synthesizer type"):
             simulate_synthesizer_based(merged_df, num_rows=len(merged_df), synthesizer_type="invalid_type")
+
