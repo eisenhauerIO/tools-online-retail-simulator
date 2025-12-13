@@ -46,11 +46,12 @@ def _require(config: Dict[str, Any], path: str, message: str) -> None:
 
 def validate_config(config: Dict[str, Any]) -> None:
     """Validate configuration has required fields for the selected simulator."""
-    _require(config, "BASELINE", "Configuration must include BASELINE section")
 
-    baseline = config["BASELINE"]
-    _require({"BASELINE": baseline}, "BASELINE.DATE_START", "BASELINE.DATE_START is required")
-    _require({"BASELINE": baseline}, "BASELINE.DATE_END", "BASELINE.DATE_END is required")
+    _require(config, "RULE", "Configuration must include RULE section")
+    rule = config["RULE"]
+    # If you want to require DATE_START/DATE_END, add them to RULE
+    # _require({"RULE": rule}, "RULE.DATE_START", "RULE.DATE_START is required")
+    # _require({"RULE": rule}, "RULE.DATE_END", "RULE.DATE_END is required")
 
     _require(config, "OUTPUT.dir", "Configuration must include OUTPUT.dir")
     _require(config, "OUTPUT.file_prefix", "Configuration must include OUTPUT.file_prefix")

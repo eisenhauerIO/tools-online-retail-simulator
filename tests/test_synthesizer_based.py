@@ -28,7 +28,7 @@ def monte_carlo_config(temp_output_dir, mode="synthesizer"):
         "SIMULATOR": {"mode": mode},
         "SEED": 42,
         "OUTPUT": {"dir": temp_output_dir, "file_prefix": "mc"},
-        "BASELINE": {
+        "RULE": {
             "NUM_PRODUCTS": 10,
             "DATE_START": "2024-01-01",
             "DATE_END": "2024-01-05",

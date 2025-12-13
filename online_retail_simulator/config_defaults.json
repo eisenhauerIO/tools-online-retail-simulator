@@ -7,11 +7,10 @@
     "dir": "output",
     "file_prefix": "run"
   },
-  "BASELINE": {
+  "RULE": {
     "NUM_PRODUCTS": 100,
     "SALE_PROB": 0.7
   },
-  "RULE": {},
   "SYNTHESIZER": {
     "SYNTHESIZER_TYPE": "gaussian_copula",
     "DEFAULT_PRODUCTS_ROWS": 100,

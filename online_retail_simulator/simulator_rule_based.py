@@ -29,15 +29,15 @@ def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> pd.D
     if config is None:
         config = process_config(config_path)
 
-    baseline_config = config["BASELINE"]
+    rule_config = config["RULE"]
     seed = config.get("SEED", 42)
     output_dir = config.get("OUTPUT", {}).get("dir", "output")
     file_prefix = config.get("OUTPUT", {}).get("file_prefix", "run")
 
-    num_products = baseline_config.get("NUM_PRODUCTS", 100)
-    date_start = baseline_config.get("DATE_START")
-    date_end = baseline_config.get("DATE_END")
-    sale_prob = baseline_config.get("SALE_PROB", 0.7)
+    num_products = rule_config.get("NUM_PRODUCTS", 100)
+    date_start = rule_config.get("DATE_START")
+    date_end = rule_config.get("DATE_END")
+    sale_prob = rule_config.get("SALE_PROB", 0.7)
 
     # Only enable enrichment if configured under RULE
     rule_section = config.get("RULE", {})
@@ -70,8 +70,8 @@ def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> pd.D
         sale_probability=sale_prob
     )
     print(f"\u2713 Generated {len(sales)} baseline records (product-date pairs)")
-    products_file = baseline_config.get("PRODUCTS_FILE", f"{file_prefix}_products.json")
-    sales_file = baseline_config.get("SALES_FILE", f"{file_prefix}_sales.json")
+    products_file = rule_config.get("PRODUCTS_FILE", f"{file_prefix}_products.json")
+    sales_file = rule_config.get("SALES_FILE", f"{file_prefix}_sales.json")
     products_path = f"{output_dir}/{products_file}"
     sales_path = f"{output_dir}/{sales_file}"
     _save_to_json(products, products_path)
