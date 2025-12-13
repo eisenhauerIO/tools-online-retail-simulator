@@ -36,6 +36,13 @@ All steps must be run inside a freshly pruned [hatch](https://hatch.pypa.io/) en
      ```
    - If the script fails (non-zero exit code), STOP. Ask the user for input before continuing.
 
+5. **Clean Untracked Files and Directories**
+   - Run:
+     ```bash
+     git clean -xdf
+     ```
+   - This removes all untracked files and directories, ensuring a pristine working directory.
+
 ---
 
 - Optionally, validate demo output or add more steps as needed.
