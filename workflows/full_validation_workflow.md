@@ -2,26 +2,35 @@
 
 This workflow ensures the overall integrity of the repository. **If any step fails, stop immediately and ask for user input before proceeding.**
 
+All steps must be run inside a freshly pruned [hatch](https://hatch.pypa.io/) environment to ensure a clean and reproducible state.
+
 ## Steps
 
-1. **Check for Uncommitted Changes**
+1. **Prune the Hatch Environment**
+   - Run:
+     ```bash
+     hatch env prune
+     ```
+   - This removes all existing environments and ensures a clean start.
+
+2. **Check for Uncommitted Changes**
    - Run:
      ```bash
      git status --porcelain
      ```
    - If any files are listed (output is not empty), STOP. Ask the user how to proceed (commit, stash, or discard changes).
 
-2. **Run the Full Test Suite**
+3. **Run the Full Test Suite in Hatch**
    - Run:
      ```bash
-     pytest
+     hatch run pytest
      ```
    - If any test fails (non-zero exit code), STOP. Ask the user for input before continuing.
 
-3. **Run the Demo Script**
+4. **Run the Demo Script in Hatch**
    - Run:
      ```bash
-     python demo/example.py
+     hatch run python demo/example.py
      ```
    - If the script fails (non-zero exit code), STOP. Ask the user for input before continuing.
 
