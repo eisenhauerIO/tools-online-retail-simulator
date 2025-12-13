@@ -212,39 +212,47 @@ class TestEffectFunctions:
         """Test apply_enrichment_to_sales passes kwargs correctly."""
         products = generate_product_data(n_products=5, seed=42)
         enriched_products = assign_enrichment(products, fraction=0.5, seed=42)
-        
+
         sales = generate_sales_data(
             products=products,
             date_start="2024-01-01",
             date_end="2024-01-20",
             seed=42
         )
-        
+
+        # Merge unit_price into sales
+        product_price_map = {p['product_id']: p['price'] for p in products}
+        sales_with_price = []
+        for sale in sales:
+            sale_copy = sale.copy()
+            sale_copy['unit_price'] = product_price_map[sale['product_id']]
+            sales_with_price.append(sale_copy)
+
         effect_function = load_effect_function("enrichment_impact_library", "quantity_boost")
-        
+
         # Apply enrichment with 30% boost
         treated_sales = apply_enrichment_to_sales(
-            sales,
+            sales_with_price,
             enriched_products,
             "2024-01-05",
             effect_function,
             effect_size=0.3
         )
-        
-        assert len(treated_sales) == len(sales)
-        
+
+        assert len(treated_sales) == len(sales_with_price)
+
         # Compare quantities between original and treated for enriched products after start date
         enriched_ids = {p['product_id'] for p in enriched_products if p.get('enriched', False)}
-        
+
         quantity_increased = False
-        for orig_sale, treated_sale in zip(sales, treated_sales):
+        for orig_sale, treated_sale in zip(sales_with_price, treated_sales):
             if (treated_sale['product_id'] in enriched_ids and 
                 treated_sale['date'] >= "2024-01-05"):
                 # These sales should have increased quantity
                 if treated_sale['quantity'] > orig_sale['quantity']:
                     quantity_increased = True
                     break
-        
+
         # At least one sale should have increased quantity due to treatment
         assert quantity_increased
 

@@ -60,9 +60,9 @@ def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> Tupl
     print(f"\nGenerating {num_products} products...")
     products = generate_product_data(n_products=num_products, seed=seed)
     print(f"✓ Generated {len(products)} products")
-    
+
     # Generate baseline sales
-    print(f"\nGenerating baseline sales transactions...")
+    print(f"\nGenerating baseline sales records (all product-date combinations)...")
     sales = generate_sales_data(
         products=products,
         date_start=date_start,
@@ -70,15 +70,11 @@ def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> Tupl
         seed=seed,
         sale_probability=sale_prob
     )
-    print(f"✓ Generated {len(sales)} baseline transactions")
-    
-    # Save baseline outputs
-    print(f"\nSaving baseline data to {output_dir}/...")
+    print(f"\u2713 Generated {len(sales)} baseline records (product-date pairs)")
     products_file = baseline_config.get("PRODUCTS_FILE", f"{file_prefix}_products.json")
     sales_file = baseline_config.get("SALES_FILE", f"{file_prefix}_sales.json")
     products_path = f"{output_dir}/{products_file}"
     sales_path = f"{output_dir}/{sales_file}"
-    
     _save_to_json(products, products_path)
     _save_to_json(sales, sales_path)
     
@@ -116,16 +112,28 @@ def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> Tupl
         print(f"\nLoading treatment effect function...")
         effect_function = load_effect_function(effect_module, effect_function_name)
         print(f"✓ Loaded {effect_function_name} from {effect_module}")
-        
+
+        # Merge sales with product info for enrichment
+        sales_df = pd.DataFrame(sales)
+        products_df = pd.DataFrame(products)[['product_id', 'price']]
+        merged_sales = sales_df.merge(products_df, on='product_id', how='left')
+        merged_sales = merged_sales.rename(columns={'price': 'unit_price'})
+        sales_for_enrichment = merged_sales.to_dict(orient='records')
+
         # Apply enrichment to create factual sales
         print(f"\nApplying treatment effect to create factual sales...")
         factual_sales = apply_enrichment_to_sales(
-            sales,
+            sales_for_enrichment,
             enriched_products,
             enrichment_start,
             effect_function,
             **effect_params
         )
+        # Extract only minimal fields for output
+        factual_sales = [
+            {k: sale[k] for k in ('product_id', 'date', 'quantity', 'revenue')}
+            for sale in factual_sales
+        ]
         print(f"✓ Created factual sales with {len(factual_sales)} transactions")
         
         # Counterfactual = baseline (no treatment)
@@ -167,14 +175,13 @@ def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> Tupl
     
     print(f"Total Products:     {len(products)}")
     print(f"Product Categories: {len(categories)}")
-    print(f"Total Transactions: {len(sales)}")
-    print(f"Days with Sales:    {unique_dates}")
+    print(f"Total Products:     {len(products)}")
+    print(f"Total Records:      {len(sales)} (product-date pairs)")
+    print(f"Days Simulated:     {unique_dates}")
     print(f"Total Units Sold:   {total_quantity}")
     print(f"Total Revenue:      ${total_revenue:,.2f}")
-    if len(sales) > 0:
-        print(f"Average Order:      ${total_revenue/len(sales):.2f}")
     
-    print(f"\n✓ Simulation complete!")
+    print(f"\n\u2713 Simulation complete!")
     
     # Convert to DataFrames and return
     products_df = pd.DataFrame(products)
@@ -221,46 +228,45 @@ def generate_sales_data(
     """
     Generate synthetic daily sales transactions from product data.
     
-    Generates one potential transaction per product per day. Each product-day
-    combination has a probability of generating a sale (default 70%).
-    
+    Generates a row for every product-date combination. Each product-day
+    has a probability of generating a sale (default 70%). If no sale occurs,
+    a row is still present with quantity and revenue set to 0.
+
     Args:
         products: List of product dictionaries
         date_start: Start date in "YYYY-MM-DD" format
         date_end: End date in "YYYY-MM-DD" format
         seed: Random seed for reproducibility (default: None)
         sale_probability: Probability of a sale for each product-day (default: 0.7)
-    
+
     Returns:
-        List of sales transaction dictionaries
+        List of sales transaction dictionaries with fields: product_id, date, quantity, revenue
     """
     if seed is not None:
         random.seed(seed)
-    
+
     start_date = datetime.strptime(date_start, "%Y-%m-%d")
     end_date = datetime.strptime(date_end, "%Y-%m-%d")
-    
+
     sales: List[Dict] = []
-    transaction_counter = 0
     current_date = start_date
     while current_date <= end_date:
         for product in products:
-            if random.random() < sale_probability:
-                transaction_counter += 1
+            sale_occurred = random.random() < sale_probability
+            if sale_occurred:
                 quantity = random.choices([1, 2, 3, 4, 5], weights=[50, 25, 15, 7, 3])[0]
                 revenue = round(product["price"] * quantity, 2)
-                sales.append({
-                    "transaction_id": f"TXN{transaction_counter:06d}",
-                    "product_id": product["product_id"],
-                    "product_name": product["name"],
-                    "category": product["category"],
-                    "quantity": quantity,
-                    "unit_price": product["price"],
-                    "revenue": revenue,
-                    "date": current_date.strftime("%Y-%m-%d")
-                })
+            else:
+                quantity = 0
+                revenue = 0.0
+            sales.append({
+                "product_id": product["product_id"],
+                "date": current_date.strftime("%Y-%m-%d"),
+                "quantity": quantity,
+                "revenue": revenue
+            })
         current_date += timedelta(days=1)
-    
+
     return sales
 
 
