@@ -22,11 +22,10 @@ def temp_output_dir():
     shutil.rmtree(temp_dir)
 
 
-@pytest.fixture
-def monte_carlo_config(temp_output_dir):
-    """Create test configuration for Monte Carlo sampling."""
+def monte_carlo_config(temp_output_dir, mode="synthesizer"):
+    """Create test configuration for Monte Carlo sampling. Mode can be 'rule' or 'synthesizer'."""
     config = {
-        "SIMULATOR": {"mode": "synthesizer"},
+        "SIMULATOR": {"mode": mode},
         "SEED": 42,
         "OUTPUT": {"dir": temp_output_dir, "file_prefix": "mc"},
         "BASELINE": {
@@ -41,12 +40,10 @@ def monte_carlo_config(temp_output_dir):
             "DEFAULT_SALES_ROWS": 100
         }
     }
-    
     # Write config to temporary file
-    config_path = Path(temp_output_dir) / "config_mc_test.json"
+    config_path = Path(temp_output_dir) / f"config_mc_test_{mode}.json"
     with open(config_path, 'w') as f:
         json.dump(config, f, indent=2)
-    
     return str(config_path)
 
 
@@ -67,11 +64,11 @@ class TestSDVAvailability:
 class TestConfigValidation:
     """Test configuration validation for SDV."""
     
-    def test_validate_sdv_config_valid(self, monte_carlo_config, temp_output_dir):
+    def test_validate_sdv_config_valid(self, temp_output_dir):
         """Test validation passes for valid SDV config."""
-        with open(monte_carlo_config, 'r') as f:
+        config_path = monte_carlo_config(temp_output_dir)
+        with open(config_path, 'r') as f:
             config = json.load(f)
-        
         # Should not raise
         _validate_sdv_config(config)
     
@@ -94,16 +91,16 @@ class TestConfigValidation:
 class TestMonteCarloWorkflow:
     """Test full Monte Carlo sampling workflow."""
     
-    def test_full_workflow(self, monte_carlo_config, temp_output_dir):
+    def test_full_workflow(self, temp_output_dir):
         """Test complete workflow: simulate -> synthesize."""
         # Step 1: Generate baseline data and merge
-        products_df, sales_df = simulate(monte_carlo_config, mode="rule")
-        merged_df = sales_df.merge(products_df, on="product_id", how="left")
-        assert len(merged_df) == len(sales_df)
+        rule_config = monte_carlo_config(temp_output_dir, mode="rule")
+        merged_df = simulate(rule_config)
+        assert not merged_df.empty
 
         # Step 2: Generate synthetic sample from merged data
-        from online_retail_simulator.simulator_synthesizer_based import simulate_synthesizer_based
-        synthetic_df = simulate_synthesizer_based(merged_df, num_rows=len(merged_df))
+        synth_config = monte_carlo_config(temp_output_dir, mode="synthesizer")
+        synthetic_df = simulate(synth_config, df=merged_df)
         assert isinstance(synthetic_df, type(merged_df))
         assert len(synthetic_df) == len(merged_df)
         # Check some expected columns
@@ -111,21 +108,22 @@ class TestMonteCarloWorkflow:
         for col in expected_cols:
             assert col in synthetic_df.columns
     
-    def test_train_without_data(self, monte_carlo_config, temp_output_dir):
+    def test_train_without_data(self, temp_output_dir):
         """Test that training fails if DataFrames are not provided."""
+        config_path = monte_carlo_config(temp_output_dir)
         with pytest.raises(TypeError):
             # Missing required positional DataFrame args
-            train_synthesizer(monte_carlo_config)  # type: ignore
+            train_synthesizer(config_path)  # type: ignore
     
     
-    def test_multiple_samples(self, monte_carlo_config, temp_output_dir):
+    def test_multiple_samples(self, temp_output_dir):
         """Test generating multiple Monte Carlo samples with new interface."""
-        products_df, sales_df = simulate(monte_carlo_config, mode="rule")
-        merged_df = sales_df.merge(products_df, on="product_id", how="left")
-        from online_retail_simulator.simulator_synthesizer_based import simulate_synthesizer_based
+        rule_config = monte_carlo_config(temp_output_dir, mode="rule")
+        merged_df = simulate(rule_config)
+        synth_config = monte_carlo_config(temp_output_dir, mode="synthesizer")
         samples = []
         for i in range(3):
-            synthetic_df = simulate_synthesizer_based(merged_df, num_rows=len(merged_df))
+            synthetic_df = simulate(synth_config, df=merged_df)
             assert isinstance(synthetic_df, type(merged_df))
             assert len(synthetic_df) == len(merged_df)
             samples.append(synthetic_df)
@@ -135,35 +133,42 @@ class TestMonteCarloWorkflow:
 class TestSynthesizerTypes:
     """Test different synthesizer types."""
     
-    def test_gaussian_copula(self, monte_carlo_config, temp_output_dir):
+    def test_gaussian_copula(self, temp_output_dir):
         """Test Gaussian Copula synthesizer (new interface)."""
-        products_df, sales_df = simulate(monte_carlo_config, mode="rule")
-        merged_df = sales_df.merge(products_df, on="product_id", how="left")
-        from online_retail_simulator.simulator_synthesizer_based import simulate_synthesizer_based
-        synthetic_df = simulate_synthesizer_based(merged_df, num_rows=len(merged_df), synthesizer_type="gaussian_copula")
+        rule_config = monte_carlo_config(temp_output_dir, mode="rule")
+        merged_df = simulate(rule_config)
+        synth_config = monte_carlo_config(temp_output_dir, mode="synthesizer")
+        synthetic_df = simulate(synth_config, df=merged_df, synthesizer_type="gaussian_copula")
         assert isinstance(synthetic_df, type(merged_df))
         assert len(synthetic_df) == len(merged_df)
     
     @pytest.mark.slow
-    def test_ctgan(self, monte_carlo_config, temp_output_dir):
+    def test_ctgan(self, temp_output_dir):
         """Test CTGAN synthesizer (new interface, slower, neural network)."""
-        products_df, sales_df = simulate(monte_carlo_config, mode="rule")
-        merged_df = sales_df.merge(products_df, on="product_id", how="left")
-        from online_retail_simulator.simulator_synthesizer_based import simulate_synthesizer_based
-        synthetic_df = simulate_synthesizer_based(merged_df, num_rows=len(merged_df), synthesizer_type="ctgan")
+        rule_config = monte_carlo_config(temp_output_dir, mode="rule")
+        merged_df = simulate(rule_config)
+        synth_config = monte_carlo_config(temp_output_dir, mode="synthesizer")
+        synthetic_df = simulate(synth_config, df=merged_df, synthesizer_type="ctgan")
         assert isinstance(synthetic_df, type(merged_df))
         assert len(synthetic_df) == len(merged_df)
     
-    def test_invalid_synthesizer(self, monte_carlo_config, temp_output_dir):
+    def test_invalid_synthesizer(self, temp_output_dir):
         """Test that invalid synthesizer type raises error."""
+        synth_config = monte_carlo_config(temp_output_dir, mode="synthesizer")
         # Update config with invalid synthesizer
-        with open(monte_carlo_config, 'r') as f:
+        with open(synth_config, 'r') as f:
             config = json.load(f)
         config["SYNTHESIZER"]["SYNTHESIZER_TYPE"] = "invalid_type"
-        with open(monte_carlo_config, 'w') as f:
+        with open(synth_config, 'w') as f:
             json.dump(config, f, indent=2)
-        
-        products_df, sales_df = simulate(monte_carlo_config, mode="rule")
-        
+
+        # Ensure file is closed before reading
+        import time
+        time.sleep(0.01)
+
+        rule_config = monte_carlo_config(temp_output_dir, mode="rule")
+        merged_df = simulate(rule_config)
+
+        from online_retail_simulator.simulator_synthesizer_based import simulate_synthesizer_based
         with pytest.raises(ValueError, match="Unknown synthesizer type"):
-            train_synthesizer(monte_carlo_config, products_df=products_df, sales_df=sales_df)
+            simulate_synthesizer_based(merged_df, num_rows=len(merged_df), synthesizer_type="invalid_type")

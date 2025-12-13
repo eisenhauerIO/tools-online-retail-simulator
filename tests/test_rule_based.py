@@ -332,21 +332,15 @@ class TestEndToEnd:
             with open(config_path, 'w') as f:
                 json.dump(config, f)
             
-            products_df, sales_df = simulate(str(config_path))
-            
+            merged_df = simulate(str(config_path))
+            assert not merged_df.empty
             # Check output files exist
             assert (Path(tmpdir) / "sim_products.json").exists()
             assert (Path(tmpdir) / "sim_sales.json").exists()
-            
-            # Verify DataFrames returned
-            assert len(products_df) == 10
-            assert len(sales_df) > 0
-            
             # Verify JSON is valid
             with open(Path(tmpdir) / "sim_products.json") as f:
                 products = json.load(f)
                 assert len(products) == 10
-            
             with open(Path(tmpdir) / "sim_sales.json") as f:
                 sales = json.load(f)
                 assert len(sales) > 0
@@ -376,28 +370,21 @@ class TestEndToEnd:
             with open(config_path, 'w') as f:
                 json.dump(config, f)
             
-            products_df, sales_df = simulate(str(config_path))
-            
+            merged_df = simulate(str(config_path))
+            assert not merged_df.empty
             # Check all output files exist
             assert (Path(tmpdir) / "sim_products.json").exists()
             assert (Path(tmpdir) / "sim_sales.json").exists()
             assert (Path(tmpdir) / "sim_enriched.json").exists()
             assert (Path(tmpdir) / "sim_factual.json").exists()
             assert (Path(tmpdir) / "sim_counterfactual.json").exists()
-            
-            # Verify DataFrames returned
-            assert len(products_df) == 10
-            assert len(sales_df) > 0
-            
             # Verify factual revenue is higher than counterfactual
             with open(Path(tmpdir) / "sim_factual.json") as f:
                 factual = json.load(f)
                 factual_revenue = sum(s["revenue"] for s in factual)
-            
             with open(Path(tmpdir) / "sim_counterfactual.json") as f:
                 counterfactual = json.load(f)
                 counterfactual_revenue = sum(s["revenue"] for s in counterfactual)
-            
             assert factual_revenue > counterfactual_revenue
     
     def test_simulate_with_enrichment_dict(self):
@@ -428,8 +415,8 @@ class TestEndToEnd:
             with open(config_path, 'w') as f:
                 json.dump(config, f)
             
-            products_df, sales_df = simulate(str(config_path))
-            
+            merged_df = simulate(str(config_path))
+            assert not merged_df.empty
             # Check all output files exist
             assert (Path(tmpdir) / "sim_enriched.json").exists()
             assert (Path(tmpdir) / "sim_factual.json").exists()

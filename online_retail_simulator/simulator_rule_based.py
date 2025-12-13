@@ -9,19 +9,18 @@ from typing import List, Dict, Optional, Tuple
 import pandas as pd
 
 
-def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> pd.DataFrame:
     """
     Main entry point: run rule-based simulation from JSON configuration file.
-    
-    Supports baseline-only generation, with optional enrichment when provided
-    under the RULE section.
-    
+
+    Returns a single merged DataFrame (sales joined with products on 'product_id').
+
     Args:
         config_path: Path to JSON configuration file
         config: Optional pre-loaded config (avoids re-reading)
-    
+
     Returns:
-        Tuple of (products_df, sales_df) as pandas DataFrames
+        Merged DataFrame (sales joined with products)
     """
     # Lazy import to avoid circular dependencies
     from .enrichment_application import assign_enrichment, load_effect_function, apply_enrichment_to_sales, parse_effect_spec
@@ -186,7 +185,8 @@ def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> Tupl
     # Convert to DataFrames and return
     products_df = pd.DataFrame(products)
     sales_df = pd.DataFrame(sales)
-    return products_df, sales_df
+    merged_df = sales_df.merge(products_df, on="product_id", how="left")
+    return merged_df
 
 
 def generate_product_data(n_products: int = 100, seed: int = None) -> List[Dict]:
