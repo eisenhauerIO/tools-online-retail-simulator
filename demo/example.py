@@ -2,8 +2,8 @@
 Example script demonstrating the online-retail-simulator package.
 
 This script shows two use cases:
-1. Basic retail data generation
-2. Catalog enrichment for causal inference
+1. Basic retail data generation (rule-based)
+2. Synthesizer-based generation (SDV)
 """
 
 from online_retail_simulator import simulate
@@ -11,58 +11,21 @@ from online_retail_simulator import simulate
 
 def main():
     print("\n" + "=" * 70)
-    print("EXAMPLE 1: Basic Retail Data Generation")
+    print("EXAMPLE 1: Rule-Based Generation")
     print("=" * 70)
-    print("Generating synthetic product catalog and sales transactions")
-    print("without enrichment treatment.\n")
-    
-    simulate("demo/config_basic.json")
-    
+    print("Generating synthetic product catalog and sales transactions (baseline only).\n")
+    simulate("demo/config_rule.json")
+
     print("\n\n" + "=" * 70)
-    print("EXAMPLE 2: Catalog Enrichment for Causal Inference")
+    print("EXAMPLE 2: Synthesizer-Based Generation")
     print("=" * 70)
-    print("This example demonstrates causal inference teaching scenario.")
-    print("- Enrichment: 50% quantity boost applied to 50% of products")
-    print("- Start date: 2024-11-15 (midpoint of simulation)")
-    print("- Outputs: Baseline, Factual, and Counterfactual sales data\n")
-    
-    simulate("demo/config_enrichment.json")
-    
+    print("Sampling synthetic products and sales from SDV-trained models.\n")
+    simulate("demo/config_synthesizer.json")
+
     print("\n" + "=" * 70)
-    print("Analysis Guide: Measuring Causal Impact")
+    print("Examples complete")
     print("=" * 70)
-    print("""
-The enrichment simulation generates three key datasets:
-
-1. products_enriched.json
-   - Contains treatment assignment (enriched: true/false)
-   - Use to identify treated vs. control products
-
-2. sales_counterfactual.json
-   - Baseline sales without any treatment effect
-   - Represents "what would have happened" without enrichment
-
-3. sales_factual.json
-   - Sales with treatment effect applied to enriched products
-   - Represents observed reality with enrichment
-
-Causal Inference Approaches:
-
-A. Simple Difference
-   Compare total revenue: factual - counterfactual = treatment effect
-
-B. Difference-in-Differences (DiD)
-   Compare enriched vs. non-enriched products before vs. after 2024-11-15
-   Accounts for time trends and product-specific patterns
-
-C. Synthetic Control
-   Use non-enriched products to create counterfactual for enriched products
-   More robust to heterogeneous treatment effects
-
-Key Files Location: demo/output/
-    """)
-    
-    print("✓ Examples complete! Check demo/output/ for all generated files.\n")
+    print("Check demo/output and demo/output_mc for generated files.\n")
 
 
 if __name__ == "__main__":

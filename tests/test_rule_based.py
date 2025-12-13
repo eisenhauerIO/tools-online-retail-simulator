@@ -255,16 +255,9 @@ class TestConfigProcessor:
     def test_load_defaults(self):
         """Test loading default configuration."""
         defaults = load_defaults()
-        assert "SEED" in defaults
-        assert "OUTPUT_DIR" in defaults
+        assert defaults["SIMULATOR"]["mode"] == "rule"
+        assert defaults["OUTPUT"]["dir"] == "output"
         assert "BASELINE" in defaults
-        assert "ENRICHMENT" in defaults
-        # Check new EFFECT field exists
-        assert "EFFECT" in defaults["ENRICHMENT"]
-        # Check old fields are removed
-        assert "EFFECT_MODULE" not in defaults["ENRICHMENT"]
-        assert "EFFECT_FUNCTION" not in defaults["ENRICHMENT"]
-        assert "EFFECT_SIZE" not in defaults["ENRICHMENT"]
     
     def test_deep_merge(self):
         """Test deep merge of configurations."""
@@ -305,7 +298,7 @@ class TestConfigProcessor:
             assert config["SEED"] == 42  # From defaults
             assert config["BASELINE"]["NUM_PRODUCTS"] == 100  # From defaults
             assert config["BASELINE"]["DATE_START"] == "2024-01-01"  # From user
-            assert config["ENRICHMENT"]["EFFECT"] == "quantity_boost:0.5"  # From defaults
+            assert config["OUTPUT"]["file_prefix"] == "run"
         finally:
             Path(config_path).unlink()
 
@@ -317,14 +310,13 @@ class TestEndToEnd:
         """Test basic simulation runs without error."""
         with tempfile.TemporaryDirectory() as tmpdir:
             config = {
+                "SIMULATOR": {"mode": "rule"},
                 "SEED": 42,
-                "OUTPUT_DIR": tmpdir,
+                "OUTPUT": {"dir": tmpdir, "file_prefix": "sim"},
                 "BASELINE": {
                     "NUM_PRODUCTS": 10,
                     "DATE_START": "2024-01-01",
-                    "DATE_END": "2024-01-07",
-                    "PRODUCTS_FILE": "products.json",
-                    "SALES_FILE": "sales.json"
+                    "DATE_END": "2024-01-07"
                 }
             }
             
@@ -335,19 +327,19 @@ class TestEndToEnd:
             products_df, sales_df = simulate(str(config_path))
             
             # Check output files exist
-            assert (Path(tmpdir) / "products.json").exists()
-            assert (Path(tmpdir) / "sales.json").exists()
+            assert (Path(tmpdir) / "sim_products.json").exists()
+            assert (Path(tmpdir) / "sim_sales.json").exists()
             
             # Verify DataFrames returned
             assert len(products_df) == 10
             assert len(sales_df) > 0
             
             # Verify JSON is valid
-            with open(Path(tmpdir) / "products.json") as f:
+            with open(Path(tmpdir) / "sim_products.json") as f:
                 products = json.load(f)
                 assert len(products) == 10
             
-            with open(Path(tmpdir) / "sales.json") as f:
+            with open(Path(tmpdir) / "sim_sales.json") as f:
                 sales = json.load(f)
                 assert len(sales) > 0
     
@@ -355,22 +347,20 @@ class TestEndToEnd:
         """Test simulation with enrichment using shorthand EFFECT."""
         with tempfile.TemporaryDirectory() as tmpdir:
             config = {
+                "SIMULATOR": {"mode": "rule"},
                 "SEED": 42,
-                "OUTPUT_DIR": tmpdir,
+                "OUTPUT": {"dir": tmpdir, "file_prefix": "sim"},
                 "BASELINE": {
                     "NUM_PRODUCTS": 10,
                     "DATE_START": "2024-01-01",
-                    "DATE_END": "2024-01-31",
-                    "PRODUCTS_FILE": "products.json",
-                    "SALES_FILE": "sales.json"
+                    "DATE_END": "2024-01-31"
                 },
-                "ENRICHMENT": {
-                    "START_DATE": "2024-01-15",
-                    "FRACTION": 0.5,
-                    "EFFECT": "quantity_boost:0.5",
-                    "PRODUCTS_FILE": "products_enriched.json",
-                    "SALES_FACTUAL_FILE": "sales_factual.json",
-                    "SALES_COUNTERFACTUAL_FILE": "sales_counterfactual.json"
+                "RULE": {
+                    "ENRICHMENT": {
+                        "START_DATE": "2024-01-15",
+                        "FRACTION": 0.5,
+                        "EFFECT": "quantity_boost:0.5"
+                    }
                 }
             }
             
@@ -381,22 +371,22 @@ class TestEndToEnd:
             products_df, sales_df = simulate(str(config_path))
             
             # Check all output files exist
-            assert (Path(tmpdir) / "products.json").exists()
-            assert (Path(tmpdir) / "sales.json").exists()
-            assert (Path(tmpdir) / "products_enriched.json").exists()
-            assert (Path(tmpdir) / "sales_factual.json").exists()
-            assert (Path(tmpdir) / "sales_counterfactual.json").exists()
+            assert (Path(tmpdir) / "sim_products.json").exists()
+            assert (Path(tmpdir) / "sim_sales.json").exists()
+            assert (Path(tmpdir) / "sim_enriched.json").exists()
+            assert (Path(tmpdir) / "sim_factual.json").exists()
+            assert (Path(tmpdir) / "sim_counterfactual.json").exists()
             
             # Verify DataFrames returned
             assert len(products_df) == 10
             assert len(sales_df) > 0
             
             # Verify factual revenue is higher than counterfactual
-            with open(Path(tmpdir) / "sales_factual.json") as f:
+            with open(Path(tmpdir) / "sim_factual.json") as f:
                 factual = json.load(f)
                 factual_revenue = sum(s["revenue"] for s in factual)
             
-            with open(Path(tmpdir) / "sales_counterfactual.json") as f:
+            with open(Path(tmpdir) / "sim_counterfactual.json") as f:
                 counterfactual = json.load(f)
                 counterfactual_revenue = sum(s["revenue"] for s in counterfactual)
             
@@ -406,25 +396,23 @@ class TestEndToEnd:
         """Test simulation with enrichment using dict EFFECT."""
         with tempfile.TemporaryDirectory() as tmpdir:
             config = {
+                "SIMULATOR": {"mode": "rule"},
                 "SEED": 42,
-                "OUTPUT_DIR": tmpdir,
+                "OUTPUT": {"dir": tmpdir, "file_prefix": "sim"},
                 "BASELINE": {
                     "NUM_PRODUCTS": 10,
                     "DATE_START": "2024-01-01",
-                    "DATE_END": "2024-01-31",
-                    "PRODUCTS_FILE": "products.json",
-                    "SALES_FILE": "sales.json"
+                    "DATE_END": "2024-01-31"
                 },
-                "ENRICHMENT": {
-                    "START_DATE": "2024-01-15",
-                    "FRACTION": 0.5,
-                    "EFFECT": {
-                        "function": "combined_boost",
-                        "params": {"effect_size": 0.5, "ramp_days": 7}
-                    },
-                    "PRODUCTS_FILE": "products_enriched.json",
-                    "SALES_FACTUAL_FILE": "sales_factual.json",
-                    "SALES_COUNTERFACTUAL_FILE": "sales_counterfactual.json"
+                "RULE": {
+                    "ENRICHMENT": {
+                        "START_DATE": "2024-01-15",
+                        "FRACTION": 0.5,
+                        "EFFECT": {
+                            "function": "combined_boost",
+                            "params": {"effect_size": 0.5, "ramp_days": 7}
+                        }
+                    }
                 }
             }
             
@@ -435,6 +423,6 @@ class TestEndToEnd:
             products_df, sales_df = simulate(str(config_path))
             
             # Check all output files exist
-            assert (Path(tmpdir) / "products_enriched.json").exists()
-            assert (Path(tmpdir) / "sales_factual.json").exists()
-            assert (Path(tmpdir) / "sales_counterfactual.json").exists()
+            assert (Path(tmpdir) / "sim_enriched.json").exists()
+            assert (Path(tmpdir) / "sim_factual.json").exists()
+            assert (Path(tmpdir) / "sim_counterfactual.json").exists()

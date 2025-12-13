@@ -35,41 +35,39 @@ def deep_merge(base: Dict, override: Dict) -> Dict:
     return result
 
 
+def _require(config: Dict[str, Any], path: str, message: str) -> None:
+    parts = path.split('.')
+    cur: Any = config
+    for part in parts:
+        if not isinstance(cur, dict) or part not in cur or cur[part] in (None, ""):
+            raise ValueError(message)
+        cur = cur[part]
+
+
 def validate_config(config: Dict[str, Any]) -> None:
-    """
-    Validate configuration has required fields.
-    
-    Args:
-        config: Configuration dictionary
-    
-    Raises:
-        ValueError: If required fields are missing
-    """
-    # Check for BASELINE section
-    if "BASELINE" not in config:
-        raise ValueError("Configuration must include BASELINE section")
-    
+    """Validate configuration has required fields for the selected simulator."""
+    _require(config, "BASELINE", "Configuration must include BASELINE section")
+
     baseline = config["BASELINE"]
-    
-    # Required fields in BASELINE
-    if "DATE_START" not in baseline or not baseline["DATE_START"]:
-        raise ValueError("BASELINE.DATE_START is required")
-    
-    if "DATE_END" not in baseline or not baseline["DATE_END"]:
-        raise ValueError("BASELINE.DATE_END is required")
-    
-    # If ENRICHMENT section exists and has START_DATE, validate it
-    if "ENRICHMENT" in config:
-        enrichment = config["ENRICHMENT"]
-        
-        # Only validate if START_DATE is provided (not empty string)
-        if "START_DATE" in enrichment and enrichment["START_DATE"]:
-            # Validate enrichment start is within baseline date range
-            if enrichment["START_DATE"] < baseline["DATE_START"]:
-                raise ValueError("ENRICHMENT.START_DATE must be >= BASELINE.DATE_START")
-            
-            if enrichment["START_DATE"] > baseline["DATE_END"]:
-                raise ValueError("ENRICHMENT.START_DATE must be <= BASELINE.DATE_END")
+    _require({"BASELINE": baseline}, "BASELINE.DATE_START", "BASELINE.DATE_START is required")
+    _require({"BASELINE": baseline}, "BASELINE.DATE_END", "BASELINE.DATE_END is required")
+
+    _require(config, "OUTPUT.dir", "Configuration must include OUTPUT.dir")
+    _require(config, "OUTPUT.file_prefix", "Configuration must include OUTPUT.file_prefix")
+
+    simulator = config.get("SIMULATOR", {})
+    mode = simulator.get("mode")
+    if mode not in {"rule", "synthesizer"}:
+        raise ValueError("SIMULATOR.mode must be 'rule' or 'synthesizer'")
+
+    if mode == "rule":
+        if "RULE" not in config:
+            raise ValueError("RULE section is required when SIMULATOR.mode='rule'")
+    if mode == "synthesizer":
+        if "SYNTHESIZER" not in config:
+            raise ValueError("SYNTHESIZER section is required when SIMULATOR.mode='synthesizer'")
+        syn = config["SYNTHESIZER"]
+        _require({"SYNTHESIZER": syn}, "SYNTHESIZER.SYNTHESIZER_TYPE", "SYNTHESIZER.SYNTHESIZER_TYPE is required")
 
 
 def process_config(config_path: str) -> Dict[str, Any]:
@@ -101,7 +99,5 @@ def process_config(config_path: str) -> Dict[str, Any]:
     # Merge user config over defaults
     config = deep_merge(defaults, user_config)
     
-    # Validate
     validate_config(config)
-    
     return config

@@ -3,7 +3,7 @@
 import json
 import pickle
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 
 import pandas as pd
 
@@ -18,7 +18,8 @@ except ImportError:
 def train_synthesizer(
     config_path: str,
     products_df: Optional[pd.DataFrame] = None,
-    sales_df: Optional[pd.DataFrame] = None
+    sales_df: Optional[pd.DataFrame] = None,
+    config: Optional[Dict] = None
 ) -> None:
     """
     Train SDV synthesizers on provided product and sales data.
@@ -40,16 +41,17 @@ def train_synthesizer(
     _check_sdv_available()
     
     # Load and validate config
-    with open(config_path, 'r') as f:
-        config = json.load(f)
-    
+    if config is None:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
     _validate_sdv_config(config)
     
-    sdv_config = config["SDV"]
-    synthesizer_type = sdv_config.get("SYNTHESIZER_TYPE", "gaussian_copula")
-    output_dir = config.get("OUTPUT_DIR", "output")
-    products_model_file = sdv_config.get("MODEL_PRODUCTS_FILE", "synthesizer_products.pkl")
-    sales_model_file = sdv_config.get("MODEL_SALES_FILE", "synthesizer_sales.pkl")
+    syn_config = config["SYNTHESIZER"]
+    synthesizer_type = syn_config.get("SYNTHESIZER_TYPE", "gaussian_copula")
+    output_dir = config.get("OUTPUT", {}).get("dir", config.get("OUTPUT_DIR", "output"))
+    prefix = config.get("OUTPUT", {}).get("file_prefix", "run")
+    products_model_file = f"{prefix}_model_products.pkl"
+    sales_model_file = f"{prefix}_model_sales.pkl"
     
     # Ensure output directory exists
     Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -92,7 +94,8 @@ def train_synthesizer(
 def simulate_synthesizer_based(
     config_path: str,
     num_rows_products: Optional[int] = None,
-    num_rows_sales: Optional[int] = None
+    num_rows_sales: Optional[int] = None,
+    config: Optional[Dict] = None
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Generate synthetic data using trained SDV synthesizers.
@@ -114,23 +117,25 @@ def simulate_synthesizer_based(
     _check_sdv_available()
     
     # Load config
-    with open(config_path, 'r') as f:
-        config = json.load(f)
+    if config is None:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
     
     _validate_sdv_config(config)
     
-    sdv_config = config["SDV"]
-    output_dir = config.get("OUTPUT_DIR", "output")
-    products_model_file = sdv_config.get("MODEL_PRODUCTS_FILE", "synthesizer_products.pkl")
-    sales_model_file = sdv_config.get("MODEL_SALES_FILE", "synthesizer_sales.pkl")
-    products_output_file = sdv_config.get("OUTPUT_PRODUCTS_FILE", "mc_products.json")
-    sales_output_file = sdv_config.get("OUTPUT_SALES_FILE", "mc_sales.json")
+    syn_config = config["SYNTHESIZER"]
+    output_dir = Path(config.get("OUTPUT", {}).get("dir", config.get("OUTPUT_DIR", "output")))
+    prefix = config.get("OUTPUT", {}).get("file_prefix", "run")
+    products_model_file = f"{prefix}_model_products.pkl"
+    sales_model_file = f"{prefix}_model_sales.pkl"
+    products_output_file = f"{prefix}_mc_products.json"
+    sales_output_file = f"{prefix}_mc_sales.json"
     
     # Determine row counts
     if num_rows_products is None:
-        num_rows_products = sdv_config.get("DEFAULT_PRODUCTS_ROWS")
+        num_rows_products = syn_config.get("DEFAULT_PRODUCTS_ROWS")
     if num_rows_sales is None:
-        num_rows_sales = sdv_config.get("DEFAULT_SALES_ROWS")
+        num_rows_sales = syn_config.get("DEFAULT_SALES_ROWS")
     
     if num_rows_products is None or num_rows_sales is None:
         raise ValueError(
@@ -139,13 +144,9 @@ def simulate_synthesizer_based(
         )
     
     # Check model files exist
-    products_model_path = f"{output_dir}/{products_model_file}"
-    sales_model_path = f"{output_dir}/{sales_model_file}"
-    
-    if not Path(products_model_path).exists():
-        raise FileNotFoundError(f"Products model not found: {products_model_path}")
-    if not Path(sales_model_path).exists():
-        raise FileNotFoundError(f"Sales model not found: {sales_model_path}")
+    products_model_path, sales_model_path, _model_prefix = _resolve_model_paths(
+        output_dir, prefix, products_model_file, sales_model_file
+    )
     
     # Load models
     with open(products_model_path, 'rb') as f:
@@ -218,15 +219,53 @@ def _get_synthesizer_class(synthesizer_type: str):
     return synthesizer_map[synthesizer_type]
 
 
+
+def _resolve_model_paths(
+    output_dir: Path,
+    preferred_prefix: str,
+    preferred_products_name: str,
+    preferred_sales_name: str
+) -> Tuple[Path, Path, str]:
+    """Resolve trained model file paths, with a fallback to existing pairs.
+
+    If models for the preferred prefix are missing, search the output directory for
+    any matching products/sales model pair. This supports workflows where the
+    output prefix is changed between training and sampling.
+    """
+    preferred_products = output_dir / preferred_products_name
+    preferred_sales = output_dir / preferred_sales_name
+
+    if preferred_products.exists() and preferred_sales.exists():
+        return preferred_products, preferred_sales, preferred_prefix
+
+    # Attempt to find a single existing model pair as a fallback
+    product_models = list(output_dir.glob("*_model_products.pkl"))
+    sales_models = {
+        p.stem.replace("_model_sales", ""): p
+        for p in output_dir.glob("*_model_sales.pkl")
+    }
+
+    matches = []
+    for product_file in product_models:
+        prefix = product_file.stem.replace("_model_products", "")
+        sales_file = sales_models.get(prefix)
+        if sales_file:
+            matches.append((prefix, product_file, sales_file))
+
+    if len(matches) == 1:
+        prefix, product_file, sales_file = matches[0]
+        return product_file, sales_file, prefix
+
+    if not preferred_products.exists():
+        raise FileNotFoundError(f"Products model not found: {preferred_products}")
+    raise FileNotFoundError(f"Sales model not found: {preferred_sales}")
+
+
 def _validate_sdv_config(config: dict) -> None:
-    """Validate SDV configuration section."""
+    """Validate synthesizer configuration section."""
     _check_sdv_available()
-    
-    if "SDV" not in config:
-        raise ValueError("Configuration must include 'SDV' section")
-    
-    sdv_config = config["SDV"]
-    required_fields = ["SYNTHESIZER_TYPE", "MODEL_PRODUCTS_FILE", "MODEL_SALES_FILE"]
-    for field in required_fields:
-        if field not in sdv_config:
-            raise ValueError(f"SDV config must include '{field}'")
+    if "SYNTHESIZER" not in config:
+        raise ValueError("Configuration must include 'SYNTHESIZER' section")
+    syn_config = config["SYNTHESIZER"]
+    if "SYNTHESIZER_TYPE" not in syn_config:
+        raise ValueError("SYNTHESIZER config must include 'SYNTHESIZER_TYPE'")

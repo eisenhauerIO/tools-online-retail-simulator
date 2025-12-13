@@ -24,30 +24,57 @@ from online_retail_simulator import simulate
 simulate("config.json")
 ```
 
-### Configuration File
+### Configuration (prefix-based)
 
-Create a `config.json` file with the following structure:
+Each config chooses a simulator mode and shares common baseline settings and an output prefix.
+
+Required keys:
+- `SIMULATOR.mode`: `"rule"` or `"synthesizer"`
+- `OUTPUT.dir`: where files are written
+- `OUTPUT.file_prefix`: base name for generated files
+- `BASELINE`: `DATE_START`, `DATE_END`, `NUM_PRODUCTS`, `SALE_PROB`
+
+Rule-based example (baseline only):
 
 ```json
 {
+  "SIMULATOR": { "mode": "rule" },
   "SEED": 42,
-  "NUM_PRODUCTS": 50,
-  "DATE_START": "2024-11-01",
-  "DATE_END": "2024-11-30",
-  "OUTPUT_DIR": "output",
-  "PRODUCTS_FILE": "products.json",
-  "SALES_FILE": "sales.json"
+  "OUTPUT": { "dir": "demo/output", "file_prefix": "rb_demo" },
+  "BASELINE": {
+    "NUM_PRODUCTS": 50,
+    "DATE_START": "2024-11-01",
+    "DATE_END": "2024-11-30",
+    "SALE_PROB": 0.7
+  },
+  "RULE": {}
 }
 ```
 
-**Configuration Parameters:**
-- `SEED`: Random seed for reproducibility
-- `NUM_PRODUCTS`: Number of products to generate
-- `DATE_START`: Start date in "YYYY-MM-DD" format
-- `DATE_END`: End date in "YYYY-MM-DD" format
-- `OUTPUT_DIR`: Directory for output files
-- `PRODUCTS_FILE`: Filename for products JSON
-- `SALES_FILE`: Filename for sales JSON
+Synthesizer example:
+
+```json
+{
+  "SIMULATOR": { "mode": "synthesizer" },
+  "SEED": 42,
+  "OUTPUT": { "dir": "demo/output_mc", "file_prefix": "sdv_demo" },
+  "BASELINE": {
+    "NUM_PRODUCTS": 30,
+    "DATE_START": "2024-11-01",
+    "DATE_END": "2024-11-15",
+    "SALE_PROB": 0.7
+  },
+  "SYNTHESIZER": {
+    "SYNTHESIZER_TYPE": "gaussian_copula",
+    "DEFAULT_PRODUCTS_ROWS": 30,
+    "DEFAULT_SALES_ROWS": 5000
+  }
+}
+```
+
+Derived filenames (under `OUTPUT.dir`):
+- Rule: `<prefix>_products.json`, `<prefix>_sales.json` (enrichment, if configured under `RULE.ENRICHMENT`: `<prefix>_enriched.json`, `<prefix>_factual.json`, `<prefix>_counterfactual.json`).
+- Synthesizer: `<prefix>_model_products.pkl`, `<prefix>_model_sales.pkl`, `<prefix>_mc_products.json`, `<prefix>_mc_sales.json`.
 
 ### Programmatic Usage
 

@@ -9,69 +9,41 @@ from typing import List, Dict, Optional, Tuple
 import pandas as pd
 
 
-def simulate_rule_based(config_path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def simulate_rule_based(config_path: str, config: Optional[Dict] = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Main entry point: run rule-based simulation from JSON configuration file.
     
-    Supports two modes:
-    1. Baseline only: Generates products and sales
-    2. With enrichment: Generates baseline + applies treatment effect
+    Supports baseline-only generation, with optional enrichment when provided
+    under the RULE section.
     
     Args:
         config_path: Path to JSON configuration file
+        config: Optional pre-loaded config (avoids re-reading)
     
     Returns:
         Tuple of (products_df, sales_df) as pandas DataFrames
-        
-    Configuration structure:
-        Flat config (baseline only):
-            - SEED, NUM_PRODUCTS, DATE_START, DATE_END, OUTPUT_DIR,
-              PRODUCTS_FILE, SALES_FILE
-        
-        Hierarchical config (with enrichment):
-            - SEED, OUTPUT_DIR (shared)
-            - BASELINE: {NUM_PRODUCTS, DATE_START, DATE_END, PRODUCTS_FILE, SALES_FILE}
-            - ENRICHMENT: {START_DATE, FRACTION, EFFECT_MODULE, EFFECT_FUNCTION,
-                          EFFECT_SIZE, PRODUCTS_FILE, SALES_FACTUAL_FILE,
-                          SALES_COUNTERFACTUAL_FILE}
     """
     # Lazy import to avoid circular dependencies
     from .enrichment_application import assign_enrichment, load_effect_function, apply_enrichment_to_sales, parse_effect_spec
     from .config_processor import process_config
     
-    # Load and process configuration with defaults
-    config = process_config(config_path)
-    
-    # Check if hierarchical config (with BASELINE section)
-    # Only enable enrichment if START_DATE is provided
-    has_enrichment = (
-        "ENRICHMENT" in config and 
-        config["ENRICHMENT"].get("START_DATE")
-    )
-    
-    if "BASELINE" in config:
-        # Hierarchical config
-        seed = config.get("SEED", 42)
-        output_dir = config.get("OUTPUT_DIR", "output")
-        baseline_config = config["BASELINE"]
-        
-        num_products = baseline_config.get("NUM_PRODUCTS", 100)
-        date_start = baseline_config.get("DATE_START")
-        date_end = baseline_config.get("DATE_END")
-        products_file = baseline_config.get("PRODUCTS_FILE", "products.json")
-        sales_file = baseline_config.get("SALES_FILE", "sales.json")
-    else:
-        # Flat config (legacy support)
-        seed = config.get("SEED", 42)
-        num_products = config.get("NUM_PRODUCTS", 100)
-        date_start = config.get("DATE_START")
-        date_end = config.get("DATE_END")
-        output_dir = config.get("OUTPUT_DIR", "output")
-        products_file = config.get("PRODUCTS_FILE", "products.json")
-        sales_file = config.get("SALES_FILE", "sales.json")
-    
-    if not date_start or not date_end:
-        raise ValueError("Configuration must include DATE_START and DATE_END")
+    if config is None:
+        config = process_config(config_path)
+
+    baseline_config = config["BASELINE"]
+    seed = config.get("SEED", 42)
+    output_dir = config.get("OUTPUT", {}).get("dir", "output")
+    file_prefix = config.get("OUTPUT", {}).get("file_prefix", "run")
+
+    num_products = baseline_config.get("NUM_PRODUCTS", 100)
+    date_start = baseline_config.get("DATE_START")
+    date_end = baseline_config.get("DATE_END")
+    sale_prob = baseline_config.get("SALE_PROB", 0.7)
+
+    # Only enable enrichment if configured under RULE
+    rule_section = config.get("RULE", {})
+    enrichment_config = rule_section.get("ENRICHMENT")
+    has_enrichment = enrichment_config is not None and enrichment_config.get("START_DATE")
     
     print("=" * 60)
     print("Online Retail Simulator")
@@ -95,12 +67,15 @@ def simulate_rule_based(config_path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
         products=products,
         date_start=date_start,
         date_end=date_end,
-        seed=seed
+        seed=seed,
+        sale_probability=sale_prob
     )
     print(f"✓ Generated {len(sales)} baseline transactions")
     
     # Save baseline outputs
     print(f"\nSaving baseline data to {output_dir}/...")
+    products_file = baseline_config.get("PRODUCTS_FILE", f"{file_prefix}_products.json")
+    sales_file = baseline_config.get("SALES_FILE", f"{file_prefix}_sales.json")
     products_path = f"{output_dir}/{products_file}"
     sales_path = f"{output_dir}/{sales_file}"
     
@@ -109,15 +84,13 @@ def simulate_rule_based(config_path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
     
     # Apply enrichment if configured
     if has_enrichment:
-        enrichment_config = config["ENRICHMENT"]
-        
         enrichment_start = enrichment_config.get("START_DATE")
         enrichment_fraction = enrichment_config.get("FRACTION", 0.5)
         effect_spec = enrichment_config.get("EFFECT", "quantity_boost:0.5")
         
-        enriched_products_file = enrichment_config.get("PRODUCTS_FILE", "products_enriched.json")
-        factual_sales_file = enrichment_config.get("SALES_FACTUAL_FILE", "sales_factual.json")
-        counterfactual_sales_file = enrichment_config.get("SALES_COUNTERFACTUAL_FILE", "sales_counterfactual.json")
+        enriched_products_file = enrichment_config.get("PRODUCTS_FILE", f"{file_prefix}_enriched.json")
+        factual_sales_file = enrichment_config.get("SALES_FACTUAL_FILE", f"{file_prefix}_factual.json")
+        counterfactual_sales_file = enrichment_config.get("SALES_COUNTERFACTUAL_FILE", f"{file_prefix}_counterfactual.json")
         
         if not enrichment_start:
             raise ValueError("ENRICHMENT configuration must include START_DATE")
