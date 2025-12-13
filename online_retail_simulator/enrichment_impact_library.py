@@ -29,7 +29,8 @@ def quantity_boost(sale: Dict, enrichment_start: str, **kwargs) -> Dict:
     if sale_date >= start_date:
         original_quantity = sale['quantity']
         sale['quantity'] = int(original_quantity * (1 + effect_size))
-        sale['revenue'] = round(sale['quantity'] * sale['unit_price'], 2)
+        unit_price = sale.get('unit_price', sale.get('price'))
+        sale['revenue'] = round(sale['quantity'] * unit_price, 2)
     
     return sale
 

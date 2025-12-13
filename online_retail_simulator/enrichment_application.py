@@ -7,6 +7,8 @@ import copy
 from pathlib import Path
 from typing import List, Dict, Callable, Union, Tuple, Any
 
+import pandas as pd
+
 
 def parse_effect_spec(effect_spec: Union[str, Dict]) -> Tuple[str, str, Dict[str, Any]]:
     """
@@ -140,3 +142,62 @@ def apply_enrichment_to_sales(
         treated_sales.append(sale_copy)
     
     return treated_sales
+
+
+# High-level enrichment interface similar to 'simulate'
+def enrich(config_path: str, df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Apply enrichment to a DataFrame using a config file.
+    Args:
+        config_path: Path to enrichment config (JSON)
+        df: DataFrame with sales data (must include product_id)
+    Returns:
+        DataFrame with enrichment applied (factual version)
+    """
+    # Load config
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+
+    # Get enrichment parameters from config
+    effect_spec = config.get('EFFECT')
+    enrichment_fraction = config.get('ENRICHMENT_FRACTION', 0.5)
+    enrichment_start = config.get('ENRICHMENT_START', '2020-01-01')
+    seed = config.get('SEED', None)
+
+    # Get product list from df
+    if 'product_id' not in df.columns:
+        raise ValueError("Input DataFrame must contain 'product_id' column")
+    products = (
+        df[['product_id']]
+        .drop_duplicates()
+        .to_dict(orient='records')
+    )
+
+    # Assign enrichment
+    enriched_products = assign_enrichment(products, enrichment_fraction, seed=seed)
+
+    # Parse effect function
+    module_name, function_name, params = parse_effect_spec(effect_spec)
+    effect_function = load_effect_function(module_name, function_name)
+
+    # Convert DataFrame to list of dicts for sales
+    sales = df.to_dict(orient='records')
+
+    # Apply enrichment
+    treated_sales = apply_enrichment_to_sales(
+        sales,
+        enriched_products,
+        enrichment_start,
+        effect_function,
+        **params
+    )
+
+    # Convert back to DataFrame
+    enriched_df = pd.DataFrame(treated_sales)
+    # Preserve original column order if possible
+    enriched_df = enriched_df[df.columns.intersection(enriched_df.columns)]
+    # Add any new columns at the end
+    for col in enriched_df.columns:
+        if col not in df.columns:
+            enriched_df[col] = enriched_df[col]
+    return enriched_df

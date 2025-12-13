@@ -12,5 +12,6 @@
     "SYNTHESIZER_TYPE": "gaussian_copula",
     "DEFAULT_PRODUCTS_ROWS": 10,
     "DEFAULT_SALES_ROWS": 100
-  }
+  },
+  "EFFECT": "quantity_boost:0.5"
 }
