@@ -4,17 +4,21 @@ Takes product_characteristics DataFrame and config path.
 No error handling, hard failures only.
 """
 import pandas as pd
+import numpy as np
+import json
 
+
+def simulate_metrics_synthesizer_based(product_characteristics, config_path):
     try:
         from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer, TVAESynthesizer
         from sdv.metadata import SingleTableMetadata
     except ImportError:
-        raise ImportError("SDV is required for synthesizer-based simulation. Please install SDV to use this feature.")
+        raise ImportError(
+            "SDV is required for synthesizer-based simulation. "
+            "Install with: pip install online-retail-simulator[synthesizer]"
+        )
 
     # For demonstration, just generate random sales metrics for each product and date
-    import numpy as np
-    import json
-    import os
     with open(config_path, 'r') as f:
         config = json.load(f)
     num_days = 5
