@@ -5,6 +5,7 @@ from .simulator_rule_based import simulate_rule_based, generate_product_data, ge
 
 from .simulator_synthesizer_based import train_synthesizer, simulate_synthesizer_based
 from .simulate_characteristics import simulate_characteristics
+from .simulate_metrics import simulate_metrics
 
 __version__ = "0.1.0"
 __all__ = [
