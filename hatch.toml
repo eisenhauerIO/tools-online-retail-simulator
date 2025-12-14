@@ -1,5 +1,0 @@
-[envs.light]
-dependencies = [
-  "online-retail-simulator[light]",
-  "pytest"
-]
