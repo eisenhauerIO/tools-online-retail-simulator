@@ -25,5 +25,8 @@ def simulate_metrics(product_characteristics: pd.DataFrame, config_path: str, co
     if simulator_mode == "rule":
         from .simulate_metrics_rule_based import simulate_metrics_rule_based
         return simulate_metrics_rule_based(product_characteristics, config_path)
+    elif simulator_mode == "synthesizer":
+        from .simulate_metrics_synthesizer_based import simulate_metrics_synthesizer_based
+        return simulate_metrics_synthesizer_based(product_characteristics, config_path)
     else:
         raise ValueError(f"Unknown metrics simulator mode: {simulator_mode}")

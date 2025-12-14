@@ -5,7 +5,7 @@ import random
 import pandas as pd
 from typing import List, Dict, Optional
 
-# Constants copied from simulator_rule_based.py
+# ...existing code...
 _CATEGORIES = [
     "Electronics",
     "Clothing",

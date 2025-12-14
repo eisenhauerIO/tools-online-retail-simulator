@@ -1,6 +1,6 @@
 def has_synthesizer():
     try:
-        import online_retail_simulator.simulator_synthesizer_based
+        from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer, TVAESynthesizer
         return True
     except ImportError:
         return False
