@@ -4,7 +4,7 @@ from .simulator import simulate
 from .simulator_rule_based import simulate_rule_based, generate_product_data, generate_sales_data
 
 from .simulator_synthesizer_based import train_synthesizer, simulate_synthesizer_based
-from .simulator_characteristics_performance import simulate_product_characteristics, simulate_product_performance
+from .simulate_characteristics import simulate_characteristics
 
 __version__ = "0.1.0"
 __all__ = [
@@ -15,5 +15,4 @@ __all__ = [
     "generate_sales_data",
     "train_synthesizer",
     "simulate_product_characteristics",
-    "simulate_product_performance",
 ]
