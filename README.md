@@ -80,53 +80,46 @@ sales_df = simulate_metrics(products_df, "config.yaml")
 ## Enrichment (Treatment Effects)
 
 Apply treatment effects to simulate catalog enrichment experiments. Effects are applied to:
-- **Selected products only**: A fraction of products receive enrichment (default 50%)
+- **Selected products only**: A fraction of products receive enrichment
 - **Date-based**: Effects only apply to sales on/after the enrichment start date
 - **Targeted impact**: Only sales of enriched products are modified
 
-```yaml
-SEED: 42
-
-OUTPUT:
-  DIR: output
-  FILE_PREFIX: enriched_data
-
-SYNTHESIZER:
-  SYNTHESIZER_TYPE: gaussian_copula
-  DEFAULT_PRODUCTS_ROWS: 30
-  DEFAULT_SALES_ROWS: 5000
-
-# Apply quantity boost effect
-EFFECT: "quantity_boost:0.5"
-
-# Optional: Control enrichment parameters
-ENRICHMENT_FRACTION: 0.3  # 30% of products get enriched
-ENRICHMENT_START: "2024-11-15"  # Effects start from this date
-```
-
-### Available Effects
-
-- `quantity_boost:0.5` - Increase quantity sold by 50%
-- `probability_boost:0.3` - Increase sale probability by 30%
-- `combined_boost` - Gradual ramp-up effect with custom parameters
-
-### Custom Effect Parameters
-
-```yaml
-EFFECT:
-  function: "combined_boost"
-  params:
-    effect_size: 0.5
-    ramp_days: 7
-```
-
-### Programmatic Enrichment
+### Separated Workflow
 
 ```python
-from online_retail_simulator.enrichment_application import enrich
+from online_retail_simulator import simulate, enrich
 
-# Apply enrichment to existing sales data
-enriched_df = enrich("enrichment_config.yaml", sales_df)
+# Step 1: Generate base simulation data
+sales_df = simulate("config_simulation.yaml")
+
+# Step 2: Apply enrichment with treatment effects
+enriched_df = enrich("config_enrichment.yaml", sales_df)
+```
+
+### Enrichment Config (config_enrichment.yaml)
+
+```yaml
+# Treatment impact specification
+IMPACT:
+  FUNCTION: "combined_boost"
+  PARAMS:
+    effect_size: 0.5
+    ramp_days: 7
+    enrichment_fraction: 0.3
+    enrichment_start: "2024-11-15"
+    seed: 42
+```
+
+### Available Impact Functions
+
+- `quantity_boost` - Increase quantity sold by percentage
+- `probability_boost` - Increase sale probability
+- `combined_boost` - Gradual ramp-up effect with custom parameters
+
+### Run Enrichment Demo
+
+```bash
+python demo/example_enrichment.py
 ```
 
 ## Features

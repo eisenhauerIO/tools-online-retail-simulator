@@ -9,47 +9,32 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 import pandas as pd
 
 
-def parse_effect_spec(effect_spec: Union[str, Dict]) -> Tuple[str, str, Dict[str, Any]]:
+def parse_impact_spec(impact_spec: Dict) -> Tuple[str, str, Dict[str, Any]]:
     """
-    Parse EFFECT specification into module, function, and params.
+    Parse IMPACT specification into module, function, and params.
 
-    Supports three formats:
-    1. Shorthand string: "quantity_boost:0.5" -> function_name:effect_size
-    2. Dict format: {"function": "combined_boost", "params": {"effect_size": 0.5, "ramp_days": 7}}
-    3. Dict with module: {"module": "my_module", "function": "my_func", "params": {...}}
+    Supports dict format with capitalized keys:
+    {"FUNCTION": "combined_boost", "PARAMS": {"effect_size": 0.5, "ramp_days": 7}}
+    {"MODULE": "my_module", "FUNCTION": "my_func", "PARAMS": {...}}
 
     Args:
-        effect_spec: EFFECT specification from config
+        impact_spec: IMPACT specification from config (must be dict)
 
     Returns:
         Tuple of (module_name, function_name, params_dict)
     """
-    if isinstance(effect_spec, str):
-        # Shorthand format: "function_name:effect_size"
-        if ":" in effect_spec:
-            function_name, effect_size_str = effect_spec.split(":", 1)
-            return (
-                "enrichment_impact_library",
-                function_name.strip(),
-                {"effect_size": float(effect_size_str)},
-            )
-        else:
-            # Just function name, no params
-            return "enrichment_impact_library", effect_spec.strip(), {}
+    if not isinstance(impact_spec, dict):
+        raise ValueError(f"IMPACT must be a dict with FUNCTION and PARAMS keys, got {type(impact_spec)}")
 
-    elif isinstance(effect_spec, dict):
-        # Dict format
-        module_name = effect_spec.get("module", "enrichment_impact_library")
-        function_name = effect_spec.get("function")
-        params = effect_spec.get("params", {})
+    # Dict format with capitalized keys
+    module_name = impact_spec.get("MODULE", "enrichment_impact_library")
+    function_name = impact_spec.get("FUNCTION")
+    params = impact_spec.get("PARAMS", {})
 
-        if not function_name:
-            raise ValueError("EFFECT dict must include 'function' field")
+    if not function_name:
+        raise ValueError("IMPACT dict must include 'FUNCTION' field")
 
-        return module_name, function_name, params
-
-    else:
-        raise ValueError(f"EFFECT must be string or dict, got {type(effect_spec)}")
+    return module_name, function_name, params
 
 
 def assign_enrichment(products: List[Dict], fraction: float, seed: int = None) -> List[Dict]:
@@ -144,45 +129,56 @@ def enrich(config_path: str, df: pd.DataFrame) -> pd.DataFrame:
     """
     Apply enrichment to a DataFrame using a config file.
     Args:
-        config_path: Path to enrichment config (JSON)
-        df: DataFrame with sales data (must include product_id)
+        config_path: Path to enrichment config (YAML or JSON)
+        df: DataFrame with sales data (must include asin)
     Returns:
         DataFrame with enrichment applied (factual version)
     """
-    # Load config
-    with open(config_path, "r") as f:
-        config = json.load(f)
+    from pathlib import Path
 
-    # Get enrichment parameters from config
-    effect_spec = config.get("EFFECT")
-    enrichment_fraction = config.get("ENRICHMENT_FRACTION", 0.5)
-    enrichment_start = config.get("ENRICHMENT_START", "2020-01-01")
-    seed = config.get("SEED", None)
+    import yaml
 
-    # Get product list from df
-    if "product_id" not in df.columns:
-        raise ValueError("Input DataFrame must contain 'product_id' column")
-    products = df[["product_id"]].drop_duplicates().to_dict(orient="records")
+    # Load config - support both YAML and JSON
+    config_file = Path(config_path)
+    with open(config_file, "r") as f:
+        if config_file.suffix.lower() in [".yaml", ".yml"]:
+            config = yaml.safe_load(f)
+        else:
+            config = json.load(f)
 
-    # Assign enrichment
-    enriched_products = assign_enrichment(products, enrichment_fraction, seed=seed)
+    # Get impact specification from config
+    impact_spec = config.get("IMPACT")
+    if not impact_spec:
+        raise ValueError("Config must include 'IMPACT' specification")
 
-    # Parse effect function
-    module_name, function_name, params = parse_effect_spec(effect_spec)
-    effect_function = load_effect_function(module_name, function_name)
+    # Parse impact function
+    module_name, function_name, all_params = parse_impact_spec(impact_spec)
+    impact_function = load_effect_function(module_name, function_name)
 
-    # Convert DataFrame to list of dicts for sales
+    # Get product list from df - use asin as product identifier
+    if "asin" not in df.columns:
+        raise ValueError("Input DataFrame must contain 'asin' column")
+
+    # Convert DataFrame to list of dicts for sales, mapping asin to product_id
     sales = df.to_dict(orient="records")
+    for sale in sales:
+        sale["product_id"] = sale["asin"]  # Map asin to product_id for enrichment
+        if "price" in sale and "unit_price" not in sale:
+            sale["unit_price"] = sale["price"]  # Ensure unit_price exists
 
-    # Apply enrichment
-    treated_sales = apply_enrichment_to_sales(sales, enriched_products, enrichment_start, effect_function, **params)
+    # Apply impact function with all parameters - let the function handle everything
+    treated_sales = impact_function(sales, **all_params)
 
-    # Convert back to DataFrame
+    # Convert back to DataFrame and clean up
+    for sale in treated_sales:
+        sale.pop("product_id", None)  # Remove temporary product_id mapping
+        sale.pop("unit_price", None) if "price" in sale else None  # Remove duplicate price field
+
     enriched_df = pd.DataFrame(treated_sales)
-    # Preserve original column order if possible
-    enriched_df = enriched_df[df.columns.intersection(enriched_df.columns)]
-    # Add any new columns at the end
-    for col in enriched_df.columns:
-        if col not in df.columns:
-            enriched_df[col] = enriched_df[col]
+
+    # Preserve original column order
+    original_cols = [col for col in df.columns if col in enriched_df.columns]
+    new_cols = [col for col in enriched_df.columns if col not in df.columns]
+    enriched_df = enriched_df[original_cols + new_cols]
+
     return enriched_df
