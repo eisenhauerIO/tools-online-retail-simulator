@@ -49,8 +49,8 @@ def _require(config: Dict[str, Any], path: str, message: str) -> None:
 def validate_config(config: Dict[str, Any]) -> None:
     """Validate configuration has required fields for the selected simulator."""
 
-    _require(config, "OUTPUT.dir", "Configuration must include OUTPUT.dir")
-    _require(config, "OUTPUT.file_prefix", "Configuration must include OUTPUT.file_prefix")
+    _require(config, "OUTPUT.DIR", "Configuration must include OUTPUT.DIR")
+    _require(config, "OUTPUT.FILE_PREFIX", "Configuration must include OUTPUT.FILE_PREFIX")
 
     # Validate that exactly one of RULE or SYNTHESIZER is present
     has_rule = "RULE" in config

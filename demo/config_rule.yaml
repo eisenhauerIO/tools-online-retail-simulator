@@ -1,8 +1,8 @@
 SEED: 42
 
 OUTPUT:
-  dir: demo/output
-  file_prefix: rb_demo
+  DIR: demo/output
+  FILE_PREFIX: rb_demo
 
 RULE:
   NUM_PRODUCTS: 50

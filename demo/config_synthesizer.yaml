@@ -1,8 +1,8 @@
 SEED: 42
 
 OUTPUT:
-  dir: demo/output_mc
-  file_prefix: sdv_demo
+  DIR: demo/output_mc
+  FILE_PREFIX: sdv_demo
 
 SYNTHESIZER:
   SYNTHESIZER_TYPE: gaussian_copula
