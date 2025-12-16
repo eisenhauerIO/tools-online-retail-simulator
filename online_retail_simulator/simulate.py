@@ -1,8 +1,10 @@
 """
 Simulate workflow: combines characteristics and metrics simulation.
 """
+
 from .simulate_characteristics import simulate_characteristics
 from .simulate_metrics import simulate_metrics
+
 
 def simulate(config_path):
     """

@@ -1,8 +1,9 @@
 """
 Rule-based product metrics simulation (minimal skeleton).
 """
+
 import pandas as pd
-from typing import Any
+
 
 def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config_path: str, **kwargs) -> pd.DataFrame:
     """
@@ -13,9 +14,10 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config_pa
     Returns:
         DataFrame of product metrics (one row per product per date, with all characteristics)
     """
-    from .config_processor import process_config
     import random
     from datetime import datetime, timedelta
+
+    from .config_processor import process_config
 
     config = process_config(config_path)
     rule_config = config["RULE"]

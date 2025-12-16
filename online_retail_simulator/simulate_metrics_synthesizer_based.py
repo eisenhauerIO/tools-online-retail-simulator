@@ -3,15 +3,17 @@ Synthesizer-based simulation backend for metrics.
 Takes product_characteristics DataFrame and config path.
 No error handling, hard failures only.
 """
-import pandas as pd
-import numpy as np
+
 import json
+
+import numpy as np
+import pandas as pd
 
 
 def simulate_metrics_synthesizer_based(product_characteristics, config_path):
     try:
-        from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer, TVAESynthesizer
         from sdv.metadata import SingleTableMetadata
+        from sdv.single_table import CTGANSynthesizer, GaussianCopulaSynthesizer, TVAESynthesizer
     except ImportError:
         raise ImportError(
             "SDV is required for synthesizer-based simulation. "
@@ -19,8 +21,6 @@ def simulate_metrics_synthesizer_based(product_characteristics, config_path):
         )
 
     # For demonstration, just generate random sales metrics for each product and date
-    with open(config_path, 'r') as f:
-        config = json.load(f)
     num_days = 5
     date_range = pd.date_range(start="2024-01-01", periods=num_days)
     rows = []
@@ -29,11 +29,13 @@ def simulate_metrics_synthesizer_based(product_characteristics, config_path):
             quantity = np.random.poisson(5)
             price = row["price"]
             revenue = price * quantity
-            rows.append({
-                "product_id": row["product_id"],
-                "date": date,
-                "quantity": quantity,
-                "revenue": revenue
-            })
+            rows.append(
+                {
+                    "product_id": row["product_id"],
+                    "date": date,
+                    "quantity": quantity,
+                    "revenue": revenue,
+                }
+            )
     df = pd.DataFrame(rows)
     return df

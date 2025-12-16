@@ -1,10 +1,12 @@
-import pytest
+import pandas as pd
+
 from online_retail_simulator.simulate_characteristics import simulate_characteristics
 from online_retail_simulator.simulate_metrics import simulate_metrics
-import pandas as pd
+
 
 def test_metrics_rule():
     import os
+
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.json")
     products = simulate_characteristics(config_path)
     df = simulate_metrics(products, config_path)

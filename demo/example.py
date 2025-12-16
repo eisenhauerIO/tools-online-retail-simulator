@@ -24,7 +24,7 @@ def main():
     print("EXAMPLE 2: Synthesizer-Based Generation")
     print("=" * 70)
     print("Attempting synthesizer-based generation (requires SDV)...\n")
-    
+
     try:
         # Try synthesizer-based simulation
         synth_df = simulate("demo/config_synthesizer.json")

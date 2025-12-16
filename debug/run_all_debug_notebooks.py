@@ -18,12 +18,21 @@ for nb in notebooks:
     output_name = f"executed_{nb.name}"
     print(f"Running {nb.name} ...")
     try:
-        subprocess.run([
-            sys.executable, "-m", "jupyter", "nbconvert",
-            "--to", "notebook",
-            "--execute", str(nb),
-            "--output", output_name
-        ], check=True)
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "jupyter",
+                "nbconvert",
+                "--to",
+                "notebook",
+                "--execute",
+                str(nb),
+                "--output",
+                output_name,
+            ],
+            check=True,
+        )
     except subprocess.CalledProcessError as e:
         print(f"Execution failed for {nb.name}.")
         sys.exit(1)

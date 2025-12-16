@@ -1,6 +1,6 @@
 # Product Overview
 
-The Online Retail Simulator is a lightweight Python package for generating synthetic retail data for experimentation and causal inference in e-commerce contexts. 
+The Online Retail Simulator is a lightweight Python package for generating synthetic retail data for experimentation and causal inference in e-commerce contexts.
 
 ## Core Purpose
 - Generate realistic product catalogs and daily sales transactions

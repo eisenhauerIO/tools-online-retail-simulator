@@ -151,4 +151,3 @@ This generates sample product and sales data based on `demo/config.json`, saving
 ## License
 
 MIT
-
