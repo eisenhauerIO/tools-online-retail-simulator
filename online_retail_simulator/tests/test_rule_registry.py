@@ -3,14 +3,14 @@
 import pandas as pd
 import pytest
 
-from online_retail_simulator.rule_registry import (
-    SimulationRegistry,
+from online_retail_simulator.simulate import (
     get_simulation_function,
     list_simulation_functions,
     register_characteristics_function,
     register_metrics_function,
     register_simulation_module,
 )
+from online_retail_simulator.simulate.rule_registry import SimulationRegistry
 
 
 def test_characteristics_function_registration():

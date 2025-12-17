@@ -1,7 +1,6 @@
 import pandas as pd
 
-from online_retail_simulator.simulate_characteristics import simulate_characteristics
-from online_retail_simulator.simulate_metrics import simulate_metrics
+from online_retail_simulator.simulate import simulate_characteristics, simulate_metrics
 
 
 def test_metrics_rule():

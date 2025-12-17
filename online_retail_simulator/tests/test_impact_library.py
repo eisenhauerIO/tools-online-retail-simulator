@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from online_retail_simulator.enrichment_impact_library import combined_boost, probability_boost, quantity_boost
+from online_retail_simulator.enrich.impact_library import combined_boost, probability_boost, quantity_boost
 
 
 def create_test_sales():

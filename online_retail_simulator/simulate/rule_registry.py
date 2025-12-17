@@ -26,8 +26,8 @@ def _register_default_functions():
     if _DEFAULTS_REGISTERED:
         return
 
-    from .simulate_characteristics_rule_based import simulate_characteristics_rule_based
-    from .simulate_metrics_rule_based import simulate_metrics_rule_based
+    from .characteristics_rule_based import simulate_characteristics_rule_based
+    from .metrics_rule_based import simulate_metrics_rule_based
 
     _CHARACTERISTICS_REGISTRY["default"] = simulate_characteristics_rule_based
     _METRICS_REGISTRY["default"] = simulate_metrics_rule_based

@@ -1,8 +1,5 @@
-SEED: 42
-
 OUTPUT:
-  DIR: output
-  FILE_PREFIX: run
+  PATH: output/run
 
 RULE:
   NUM_PRODUCTS: 100

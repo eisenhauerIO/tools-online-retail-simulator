@@ -34,7 +34,9 @@ def simulate_characteristics_synthesizer_based(config):
     # This is a placeholder implementation
     import numpy as np
 
-    np.random.seed(config.get("SEED", 42))
+    seed = config.get("SEED", None)
+    if seed is not None:
+        np.random.seed(seed)
     num_rows = config["SYNTHESIZER"].get("DEFAULT_PRODUCTS_ROWS", 10)
 
     # Create dummy product data for demonstration

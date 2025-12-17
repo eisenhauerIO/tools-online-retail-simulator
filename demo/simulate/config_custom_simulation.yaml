@@ -1,0 +1,14 @@
+OUTPUT:
+  PATH: demo/simulate/output/custom_demo
+
+RULE:
+  CHARACTERISTICS:
+    FUNCTION: electronics_only
+    PARAMS:
+      num_products: 30
+  METRICS:
+    FUNCTION: default
+    PARAMS:
+      date_start: "2024-11-01"
+      date_end: "2024-11-30"
+      sale_prob: 0.6

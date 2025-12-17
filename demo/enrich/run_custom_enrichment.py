@@ -84,14 +84,14 @@ def main():
 
     # Step 2: Generate base simulation data
     print("\nStep 2: Generating base simulation data...")
-    sales_df = simulate("simulation/config_default_simulation.yaml")
+    sales_df = simulate("simulate/config_default_simulation.yaml")
     print(f"✓ Generated {len(sales_df)} sales records")
     print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
     print(f"✓ Products: {sales_df['asin'].nunique()} unique ASINs")
 
     # Step 3: Apply custom enrichment
     print("\nStep 3: Applying custom enrichment (price_discount)...")
-    enriched_df = enrich("enrichment/config_custom_enrichment.yaml", sales_df)
+    enriched_df = enrich("enrich/config_custom_enrichment.yaml", sales_df)
     print(f"✓ Applied enrichment to {len(enriched_df)} sales records")
     print("✓ Uses 25% price discount on 40% of products")
 

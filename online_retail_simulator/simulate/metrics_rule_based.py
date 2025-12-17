@@ -17,14 +17,16 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config_pa
     import random
     from datetime import datetime, timedelta
 
-    from .config_processor import process_config
+    from ..config_processor import process_config
 
-    config = process_config(config_path)
+    config = kwargs.get("config")
+    if config is None:
+        config = process_config(config_path)
     rule_config = config["RULE"]
     date_start = rule_config.get("DATE_START")
     date_end = rule_config.get("DATE_END")
     sale_probability = rule_config.get("SALE_PROB", 0.7)
-    seed = config.get("SEED", 42)
+    seed = config.get("SEED", None)
     if seed is not None:
         random.seed(seed)
 

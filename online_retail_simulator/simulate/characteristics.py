@@ -17,7 +17,7 @@ def simulate_characteristics(config_path: str, config: Optional[Dict] = None) ->
     Returns:
         List of product dictionaries
     """
-    from .config_processor import process_config
+    from ..config_processor import process_config
 
     config_loaded = process_config(config_path)
 
@@ -28,9 +28,14 @@ def simulate_characteristics(config_path: str, config: Optional[Dict] = None) ->
     if has_rule and not has_synthesizer:
         # Check if a custom rule function is specified
         rule_config = config_loaded["RULE"]
-        custom_function = rule_config.get("CUSTOM_CHARACTERISTICS_FUNCTION") or rule_config.get(
-            "CUSTOM_FUNCTION", "default"
-        )
+        characteristics_config = rule_config.get("CHARACTERISTICS", {})
+        custom_function = characteristics_config.get("FUNCTION", "default")
+
+        # Merge PARAMS into rule_config for backward compatibility
+        if "PARAMS" in characteristics_config:
+            # Convert lowercase params to uppercase for backward compatibility
+            params = {k.upper(): v for k, v in characteristics_config["PARAMS"].items()}
+            rule_config.update(params)
 
         from .rule_registry import SimulationRegistry
 
@@ -38,7 +43,7 @@ def simulate_characteristics(config_path: str, config: Optional[Dict] = None) ->
         return func(config_path, config_loaded)
 
     elif has_synthesizer and not has_rule:
-        from .simulate_characteristics_synthesizer_based import simulate_characteristics_synthesizer_based
+        from .characteristics_synthesizer_based import simulate_characteristics_synthesizer_based
 
         return simulate_characteristics_synthesizer_based(config_loaded)
     elif has_rule and has_synthesizer:

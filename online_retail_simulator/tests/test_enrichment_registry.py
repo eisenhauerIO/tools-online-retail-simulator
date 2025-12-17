@@ -2,12 +2,12 @@
 
 import pytest
 
-from online_retail_simulator.enrichment_application import (
+from online_retail_simulator.enrich import (
     clear_enrichment_registry,
     list_enrichment_functions,
-    load_effect_function,
     register_enrichment_function,
 )
+from online_retail_simulator.enrich.application import load_effect_function
 
 
 def test_default_enrichment_functions_registered():

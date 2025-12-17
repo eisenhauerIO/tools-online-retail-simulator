@@ -86,7 +86,7 @@ def _register_default_enrichment_functions():
     if _ENRICHMENT_DEFAULTS_REGISTERED:
         return
 
-    from .enrichment_impact_library import combined_boost, probability_boost, quantity_boost
+    from .impact_library import combined_boost, probability_boost, quantity_boost
 
     _ENRICHMENT_REGISTRY["quantity_boost"] = quantity_boost
     _ENRICHMENT_REGISTRY["probability_boost"] = probability_boost

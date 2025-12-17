@@ -18,7 +18,7 @@ def main():
 
     # Generate simulation data using default rules
     print("Generating synthetic retail data...")
-    sales_df = simulate("simulation/config_default_simulation.yaml")
+    sales_df = simulate("simulate/config_default_simulation.yaml")
 
     print(f"✓ Generated {len(sales_df)} sales records")
     print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")

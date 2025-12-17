@@ -18,14 +18,14 @@ def main():
 
     # Step 1: Generate base simulation data
     print("Step 1: Generating base simulation data...")
-    sales_df = simulate("simulation/config_default_simulation.yaml")
+    sales_df = simulate("simulate/config_default_simulation.yaml")
     print(f"✓ Generated {len(sales_df)} sales records")
     print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
     print(f"✓ Products: {sales_df['asin'].nunique()} unique ASINs")
 
     # Step 2: Apply default enrichment
     print("\nStep 2: Applying default enrichment (combined_boost)...")
-    enriched_df = enrich("enrichment/config_default_enrichment.yaml", sales_df)
+    enriched_df = enrich("enrich/config_default_enrichment.yaml", sales_df)
     print(f"✓ Applied enrichment to {len(enriched_df)} sales records")
     print("✓ Uses gradual 7-day ramp-up with 50% max effect")
 

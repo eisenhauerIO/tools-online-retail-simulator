@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from online_retail_simulator.simulate_characteristics import simulate_characteristics
+from online_retail_simulator.simulate import simulate_characteristics
 
 from .import_helpers import has_synthesizer
 
