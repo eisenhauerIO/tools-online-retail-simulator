@@ -46,12 +46,12 @@ def test_register_function_invalid_signature():
 def test_register_module():
     """Test module registration."""
     # Clear registry first
-    from online_retail_simulator.enrich.application import _ENRICHMENT_REGISTRY
+    from online_retail_simulator.enrich.enrichment_registry import _ENRICHMENT_REGISTRY
 
     _ENRICHMENT_REGISTRY.clear()
 
-    # Register the impact library module
-    register_enrichment_module("enrich.impact_library")
+    # Register the enrichment library module
+    register_enrichment_module("enrich.enrichment_library")
 
     # Should have registered the built-in functions
     registered = list_enrichment_functions()
@@ -149,7 +149,7 @@ IMPACT:
 def test_list_functions():
     """Test listing registered functions."""
     # Clear registry
-    from online_retail_simulator.enrich.application import _ENRICHMENT_REGISTRY
+    from online_retail_simulator.enrich.enrichment_registry import _ENRICHMENT_REGISTRY
 
     _ENRICHMENT_REGISTRY.clear()
 
@@ -194,7 +194,7 @@ def test_register_function_overwrites():
     assert count == 1
 
     # Should use the second function
-    from online_retail_simulator.enrich.application import _ENRICHMENT_REGISTRY
+    from online_retail_simulator.enrich.enrichment_registry import _ENRICHMENT_REGISTRY
 
     result = _ENRICHMENT_REGISTRY["test_func"]([], test="value")
     assert result == [{"test": "second"}]

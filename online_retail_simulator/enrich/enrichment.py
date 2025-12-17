@@ -1,19 +1,16 @@
-"""Enrichment module for applying catalog enrichment treatments to sales data."""
+"""
+Interface for applying enrichment treatments to sales data.
+Dispatches to impact-based implementation based on config.
+"""
 
 import copy
-import importlib
-import inspect
 import json
 import random
-from typing import Any, Callable, Dict, List, Tuple, Union
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Tuple
 
 import pandas as pd
-
-# Global registry for enrichment functions
-_ENRICHMENT_REGISTRY = {}
-
-# Flag to track if defaults have been registered
-_ENRICHMENT_DEFAULTS_REGISTERED = False
+import yaml
 
 
 def parse_impact_spec(impact_spec: Dict) -> Tuple[str, str, Dict[str, Any]]:
@@ -44,13 +41,6 @@ def parse_impact_spec(impact_spec: Dict) -> Tuple[str, str, Dict[str, Any]]:
     return module_name, function_name, params
 
 
-def clear_enrichment_registry() -> None:
-    """Clear all registered enrichment functions (useful for testing)."""
-    global _ENRICHMENT_DEFAULTS_REGISTERED
-    _ENRICHMENT_REGISTRY.clear()
-    _ENRICHMENT_DEFAULTS_REGISTERED = False
-
-
 def assign_enrichment(products: List[Dict], fraction: float, seed: int = None) -> List[Dict]:
     """
     Assign enrichment treatment to a fraction of products.
@@ -78,103 +68,6 @@ def assign_enrichment(products: List[Dict], fraction: float, seed: int = None) -
         product["enriched"] = i in enriched_indices
 
     return enriched_products
-
-
-def _register_default_enrichment_functions():
-    """Register the default enrichment functions from enrichment_impact_library."""
-    global _ENRICHMENT_DEFAULTS_REGISTERED
-    if _ENRICHMENT_DEFAULTS_REGISTERED:
-        return
-
-    from .impact_library import combined_boost, probability_boost, quantity_boost
-
-    _ENRICHMENT_REGISTRY["quantity_boost"] = quantity_boost
-    _ENRICHMENT_REGISTRY["probability_boost"] = probability_boost
-    _ENRICHMENT_REGISTRY["combined_boost"] = combined_boost
-    _ENRICHMENT_DEFAULTS_REGISTERED = True
-
-
-def register_enrichment_function(name: str, func: Callable) -> None:
-    """
-    Register an enrichment function by name.
-
-    Args:
-        name: Name to register the function under
-        func: Function that takes (sales: list, **kwargs) -> list
-
-    Raises:
-        ValueError: If function signature is invalid
-    """
-    # Validate function signature
-    sig = inspect.signature(func)
-    if "sales" not in sig.parameters:
-        raise ValueError(f"Function {func.__name__} must have 'sales' parameter")
-
-    # Store in registry
-    _ENRICHMENT_REGISTRY[name] = func
-
-
-def register_enrichment_module(module_name: str) -> None:
-    """
-    Register all functions from a module that match enrichment signature.
-
-    Args:
-        module_name: Name of module to import and register functions from
-
-    Raises:
-        ImportError: If module cannot be imported
-    """
-    # Try to import from online_retail_simulator package first
-    try:
-        module = importlib.import_module(f"online_retail_simulator.{module_name}")
-    except (ImportError, ModuleNotFoundError):
-        # Fall back to importing as standalone module
-        module = importlib.import_module(module_name)
-
-    # Register all functions that have the right signature
-    for name in dir(module):
-        obj = getattr(module, name)
-        if callable(obj) and not name.startswith("_"):
-            try:
-                sig = inspect.signature(obj)
-                if "sales" in sig.parameters:
-                    _ENRICHMENT_REGISTRY[name] = obj
-            except (ValueError, TypeError):
-                # Skip objects that don't have valid signatures
-                continue
-
-
-def list_enrichment_functions() -> List[str]:
-    """
-    List all registered enrichment function names.
-
-    Returns:
-        List of registered function names
-    """
-    _register_default_enrichment_functions()
-    return list(_ENRICHMENT_REGISTRY.keys())
-
-
-def load_effect_function(module_name: str, function_name: str) -> Callable:
-    """
-    Load treatment effect function from registry.
-
-    Args:
-        module_name: Name of module (ignored, kept for backward compatibility)
-        function_name: Name of function in registry
-
-    Returns:
-        Treatment effect function
-    """
-    _register_default_enrichment_functions()
-
-    # Check registry first
-    if function_name in _ENRICHMENT_REGISTRY:
-        return _ENRICHMENT_REGISTRY[function_name]
-
-    # If not found, raise clear error
-    available = list(_ENRICHMENT_REGISTRY.keys())
-    raise KeyError(f"Enrichment function '{function_name}' not registered. " f"Available: {available}")
 
 
 def apply_enrichment_to_sales(
@@ -214,20 +107,17 @@ def apply_enrichment_to_sales(
     return treated_sales
 
 
-# High-level enrichment interface similar to 'simulate'
 def enrich(config_path: str, df: pd.DataFrame) -> pd.DataFrame:
     """
     Apply enrichment to a DataFrame using a config file.
+
     Args:
         config_path: Path to enrichment config (YAML or JSON)
         df: DataFrame with sales data (must include asin)
+
     Returns:
         DataFrame with enrichment applied (factual version)
     """
-    from pathlib import Path
-
-    import yaml
-
     # Load config - support both YAML and JSON
     config_file = Path(config_path)
     with open(config_file, "r") as f:
@@ -243,6 +133,9 @@ def enrich(config_path: str, df: pd.DataFrame) -> pd.DataFrame:
 
     # Parse impact function
     module_name, function_name, all_params = parse_impact_spec(impact_spec)
+
+    from .enrichment_registry import load_effect_function
+
     impact_function = load_effect_function(module_name, function_name)  # module_name ignored
 
     # Get product list from df - use asin as product identifier

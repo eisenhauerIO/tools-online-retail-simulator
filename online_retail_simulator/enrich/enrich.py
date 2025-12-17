@@ -4,7 +4,7 @@ Enrich workflow: applies enrichment treatments to sales data.
 
 import pandas as pd
 
-from .application import enrich as apply_enrichment
+from .enrichment import enrich as apply_enrichment
 
 
 def enrich(config_path: str, df: pd.DataFrame) -> pd.DataFrame:

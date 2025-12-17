@@ -7,7 +7,7 @@ from online_retail_simulator.enrich import (
     list_enrichment_functions,
     register_enrichment_function,
 )
-from online_retail_simulator.enrich.application import load_effect_function
+from online_retail_simulator.enrich.enrichment_registry import load_effect_function
 
 
 def test_default_enrichment_functions_registered():
