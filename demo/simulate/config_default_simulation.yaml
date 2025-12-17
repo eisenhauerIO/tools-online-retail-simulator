@@ -1,4 +1,4 @@
-OUTPUT:
+STORAGE:
   PATH: demo/simulate/output/sim_demo
 
 RULE:

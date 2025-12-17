@@ -1,5 +1,5 @@
-OUTPUT:
-  PATH: demo/output/sim_demo
+STORAGE:
+  PATH: debug/output/sim_demo
 
 RULE:
   NUM_PRODUCTS: 50

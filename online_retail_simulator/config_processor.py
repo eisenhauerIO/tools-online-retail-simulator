@@ -49,7 +49,9 @@ def _require(config: Dict[str, Any], path: str, message: str) -> None:
 def validate_config(config: Dict[str, Any]) -> None:
     """Validate configuration has required fields for the selected simulator."""
 
-    _require(config, "OUTPUT.PATH", "Configuration must include OUTPUT.PATH")
+    # STORAGE is optional - if present, PATH is required
+    if "STORAGE" in config:
+        _require(config, "STORAGE.PATH", "Configuration with STORAGE must include STORAGE.PATH")
 
     # Validate that exactly one of RULE or SYNTHESIZER is present
     has_rule = "RULE" in config

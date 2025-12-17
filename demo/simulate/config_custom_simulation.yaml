@@ -1,4 +1,4 @@
-OUTPUT:
+STORAGE:
   PATH: demo/simulate/output/custom_demo
 
 RULE:
