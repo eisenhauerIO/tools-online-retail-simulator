@@ -13,7 +13,7 @@ def create_test_sales():
         {
             "product_id": "PROD001",
             "date": "2024-11-10",
-            "quantity": 2,
+            "ordered_units": 2,
             "price": 100.0,
             "unit_price": 100.0,
             "revenue": 200.0,
@@ -21,7 +21,7 @@ def create_test_sales():
         {
             "product_id": "PROD001",
             "date": "2024-11-20",
-            "quantity": 1,
+            "ordered_units": 1,
             "price": 100.0,
             "unit_price": 100.0,
             "revenue": 100.0,
@@ -29,7 +29,7 @@ def create_test_sales():
         {
             "product_id": "PROD002",
             "date": "2024-11-15",
-            "quantity": 3,
+            "ordered_units": 3,
             "price": 50.0,
             "unit_price": 50.0,
             "revenue": 150.0,
@@ -37,7 +37,7 @@ def create_test_sales():
         {
             "product_id": "PROD002",
             "date": "2024-11-25",
-            "quantity": 2,
+            "ordered_units": 2,
             "price": 50.0,
             "unit_price": 50.0,
             "revenue": 100.0,
@@ -45,7 +45,7 @@ def create_test_sales():
         {
             "product_id": "PROD003",
             "date": "2024-11-12",
-            "quantity": 1,
+            "ordered_units": 1,
             "price": 200.0,
             "unit_price": 200.0,
             "revenue": 200.0,
@@ -57,7 +57,7 @@ class TestQuantityBoost:
     """Test quantity_boost function."""
 
     def test_quantity_boost_basic(self):
-        """Test basic quantity boost functionality."""
+        """Test basic ordered_units boost functionality."""
         sales = create_test_sales()
 
         result = quantity_boost(
@@ -75,11 +75,11 @@ class TestQuantityBoost:
         post_enrichment = [s for s in result if s["date"] >= "2024-11-15"]
         original_post = [s for s in sales if s["date"] >= "2024-11-15"]
 
-        total_quantity_original = sum(s["quantity"] for s in original_post)
-        total_quantity_result = sum(s["quantity"] for s in post_enrichment)
+        total_ordered_units_original = sum(s["ordered_units"] for s in original_post)
+        total_ordered_units_result = sum(s["ordered_units"] for s in post_enrichment)
 
         # Should have some increase due to enrichment
-        assert total_quantity_result >= total_quantity_original
+        assert total_ordered_units_result >= total_ordered_units_original
 
     def test_quantity_boost_no_enrichment_before_start(self):
         """Test that no enrichment is applied before start date."""
@@ -95,7 +95,7 @@ class TestQuantityBoost:
 
         # All sales should be unchanged since they're before start date
         for original, treated in zip(sales, result):
-            assert treated["quantity"] == original["quantity"]
+            assert treated["ordered_units"] == original["ordered_units"]
             assert treated["revenue"] == original["revenue"]
 
     def test_quantity_boost_zero_fraction(self):
@@ -112,7 +112,7 @@ class TestQuantityBoost:
 
         # All sales should be unchanged
         for original, treated in zip(sales, result):
-            assert treated["quantity"] == original["quantity"]
+            assert treated["ordered_units"] == original["ordered_units"]
             assert treated["revenue"] == original["revenue"]
 
     def test_quantity_boost_reproducibility(self):
@@ -147,7 +147,7 @@ class TestQuantityBoost:
                 {
                     "product_id": f"PROD{i:03d}",
                     "date": "2024-11-20",
-                    "quantity": 1,
+                    "ordered_units": 1,
                     "price": 100.0,
                     "unit_price": 100.0,
                     "revenue": 100.0,
@@ -172,8 +172,8 @@ class TestQuantityBoost:
 
         # With 10 products and 50% enrichment, different seeds should produce different results
         # (though not guaranteed, very likely)
-        total_qty1 = sum(s["quantity"] for s in result1)
-        total_qty2 = sum(s["quantity"] for s in result2)
+        total_qty1 = sum(s["ordered_units"] for s in result1)
+        total_qty2 = sum(s["ordered_units"] for s in result2)
 
         # At least verify that the function runs with different seeds
         assert len(result1) == len(result2) == 10
@@ -182,12 +182,12 @@ class TestQuantityBoost:
         assert total_qty2 >= 10  # At least original quantities
 
     def test_quantity_boost_revenue_calculation(self):
-        """Test that revenue is correctly recalculated after quantity boost."""
+        """Test that revenue is correctly recalculated after ordered_units boost."""
         sales = [
             {
                 "product_id": "PROD001",
                 "date": "2024-11-20",
-                "quantity": 2,
+                "ordered_units": 2,
                 "price": 100.0,
                 "unit_price": 100.0,
                 "revenue": 200.0,
@@ -204,12 +204,12 @@ class TestQuantityBoost:
 
         treated_sale = result[0]
         # Quantity should be boosted: 2 * 1.5 = 3
-        assert treated_sale["quantity"] == 3
+        assert treated_sale["ordered_units"] == 3
         # Revenue should be recalculated: 3 * 100 = 300
         assert treated_sale["revenue"] == 300.0
 
     def test_quantity_boost_default_parameters(self):
-        """Test quantity boost with default parameters."""
+        """Test ordered_units boost with default parameters."""
         sales = create_test_sales()
 
         # Test with minimal parameters (should use defaults)
@@ -263,10 +263,10 @@ class TestProbabilityBoost:
         post_enrichment = [s for s in result if s["date"] >= "2024-11-15"]
         original_post = [s for s in sales if s["date"] >= "2024-11-15"]
 
-        total_quantity_original = sum(s["quantity"] for s in original_post)
-        total_quantity_result = sum(s["quantity"] for s in post_enrichment)
+        total_ordered_units_original = sum(s["ordered_units"] for s in original_post)
+        total_ordered_units_result = sum(s["ordered_units"] for s in post_enrichment)
 
-        assert total_quantity_result >= total_quantity_original
+        assert total_ordered_units_result >= total_ordered_units_original
 
 
 class TestCombinedBoost:
@@ -291,10 +291,10 @@ class TestCombinedBoost:
         post_enrichment = [s for s in result if s["date"] >= "2024-11-15"]
         original_post = [s for s in sales if s["date"] >= "2024-11-15"]
 
-        total_quantity_original = sum(s["quantity"] for s in original_post)
-        total_quantity_result = sum(s["quantity"] for s in post_enrichment)
+        total_ordered_units_original = sum(s["ordered_units"] for s in original_post)
+        total_ordered_units_result = sum(s["ordered_units"] for s in post_enrichment)
 
-        assert total_quantity_result >= total_quantity_original
+        assert total_ordered_units_result >= total_ordered_units_original
 
     def test_combined_boost_ramp_effect(self):
         """Test that ramp effect increases over time."""
@@ -303,7 +303,7 @@ class TestCombinedBoost:
             {
                 "product_id": "PROD001",
                 "date": "2024-11-15",  # Day 0 (start)
-                "quantity": 10,
+                "ordered_units": 10,
                 "price": 100.0,
                 "unit_price": 100.0,
                 "revenue": 1000.0,
@@ -311,7 +311,7 @@ class TestCombinedBoost:
             {
                 "product_id": "PROD001",
                 "date": "2024-11-16",  # Day 1
-                "quantity": 10,
+                "ordered_units": 10,
                 "price": 100.0,
                 "unit_price": 100.0,
                 "revenue": 1000.0,
@@ -319,7 +319,7 @@ class TestCombinedBoost:
             {
                 "product_id": "PROD001",
                 "date": "2024-11-18",  # Day 3 (full ramp)
-                "quantity": 10,
+                "ordered_units": 10,
                 "price": 100.0,
                 "unit_price": 100.0,
                 "revenue": 1000.0,
@@ -344,10 +344,10 @@ class TestCombinedBoost:
         day3_sale = next(s for s in result if s["date"] == "2024-11-18")
 
         # Quantities should increase over time due to ramp
-        assert day0_sale["quantity"] <= day1_sale["quantity"] <= day3_sale["quantity"]
+        assert day0_sale["ordered_units"] <= day1_sale["ordered_units"] <= day3_sale["ordered_units"]
 
         # Day 3 should have the full 50% boost: 10 * 1.5 = 15
-        assert day3_sale["quantity"] == 15
+        assert day3_sale["ordered_units"] == 15
 
     def test_combined_boost_no_ramp(self):
         """Test combined boost with ramp_days=1 (immediate full effect)."""
@@ -355,7 +355,7 @@ class TestCombinedBoost:
             {
                 "product_id": "PROD001",
                 "date": "2024-11-20",
-                "quantity": 4,
+                "ordered_units": 4,
                 "price": 100.0,
                 "unit_price": 100.0,
                 "revenue": 400.0,
@@ -374,7 +374,7 @@ class TestCombinedBoost:
         treated_sale = result[0]
         # On day 0 (start date), ramp_factor = 0/1 = 0, so no boost
         # The sale is on the start date, so days_since_start = 0
-        assert treated_sale["quantity"] == 4  # No boost on day 0
+        assert treated_sale["ordered_units"] == 4  # No boost on day 0
         assert treated_sale["revenue"] == 400.0
 
     def test_combined_boost_reproducibility(self):
@@ -416,7 +416,7 @@ class TestCombinedBoost:
             {
                 "product_id": "PROD001",
                 "date": "2024-11-20",
-                "quantity": 2,
+                "ordered_units": 2,
                 "price": 100.0,
                 "unit_price": 100.0,
                 "revenue": 200.0,
@@ -435,7 +435,7 @@ class TestCombinedBoost:
         # Should handle gracefully and apply full effect immediately
         treated_sale = result[0]
         # With ramp_days=0, should get full effect: 2 * 1.5 = 3
-        assert treated_sale["quantity"] == 3
+        assert treated_sale["ordered_units"] == 3
         assert treated_sale["revenue"] == 300.0
 
 
@@ -460,7 +460,7 @@ class TestImpactLibraryEdgeCases:
             {
                 "product_id": "PROD001",
                 "date": "2024-11-20",
-                "quantity": 1,
+                "ordered_units": 1,
                 "price": 50.0,
                 "unit_price": 50.0,
                 "revenue": 50.0,
@@ -483,7 +483,7 @@ class TestImpactLibraryEdgeCases:
             {
                 "product_id": "PROD001",
                 "date": "2024-11-20",
-                "quantity": 2,
+                "ordered_units": 2,
                 "price": 75.0,
                 # No unit_price field
                 "revenue": 150.0,
@@ -500,7 +500,7 @@ class TestImpactLibraryEdgeCases:
 
         treated_sale = result[0]
         # Should use price as unit_price: 3 * 75 = 225
-        assert treated_sale["quantity"] == 3
+        assert treated_sale["ordered_units"] == 3
         assert treated_sale["revenue"] == 225.0
 
     def test_all_products_same_id(self):
@@ -509,7 +509,7 @@ class TestImpactLibraryEdgeCases:
             {
                 "product_id": "PROD001",
                 "date": "2024-11-15",
-                "quantity": 1,
+                "ordered_units": 1,
                 "price": 100.0,
                 "unit_price": 100.0,
                 "revenue": 100.0,
@@ -517,7 +517,7 @@ class TestImpactLibraryEdgeCases:
             {
                 "product_id": "PROD001",
                 "date": "2024-11-20",
-                "quantity": 2,
+                "ordered_units": 2,
                 "price": 100.0,
                 "unit_price": 100.0,
                 "revenue": 200.0,
@@ -537,8 +537,8 @@ class TestImpactLibraryEdgeCases:
         post_enrichment = [s for s in result if s["date"] >= "2024-11-15"]
         original_post = [s for s in same_product_sales if s["date"] >= "2024-11-15"]
 
-        total_qty_original = sum(s["quantity"] for s in original_post)
-        total_qty_result = sum(s["quantity"] for s in post_enrichment)
+        total_qty_original = sum(s["ordered_units"] for s in original_post)
+        total_qty_result = sum(s["ordered_units"] for s in post_enrichment)
 
         # Should be either equal (not enriched) or greater (enriched)
         assert total_qty_result >= total_qty_original

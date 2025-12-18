@@ -65,11 +65,11 @@ def test_use_registered_function():
     """Test using a registered function in enrichment."""
 
     def double_quantity(sales, **kwargs):
-        """Double the quantity of all sales."""
+        """Double the ordered units of all sales."""
         for sale in sales:
-            sale["quantity"] = sale["quantity"] * 2
+            sale["ordered_units"] = sale["ordered_units"] * 2
             unit_price = sale.get("unit_price", sale.get("price"))
-            sale["revenue"] = round(sale["quantity"] * unit_price, 2)
+            sale["revenue"] = round(sale["ordered_units"] * unit_price, 2)
         return sales
 
     # Register function
@@ -101,8 +101,8 @@ IMPACT:
         _, enriched_sales = load_job_results(enriched_job_info)
 
         # Verify doubling effect
-        original_total = original_sales["quantity"].sum()
-        enriched_total = enriched_sales["quantity"].sum()
+        original_total = original_sales["ordered_units"].sum()
+        enriched_total = enriched_sales["ordered_units"].sum()
 
         assert enriched_total == original_total * 2
 

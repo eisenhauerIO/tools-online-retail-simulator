@@ -45,12 +45,12 @@ IMPACT:
         assert len(enriched_sales) == len(original_sales)
         assert list(enriched_sales.columns) == list(original_sales.columns)
 
-        # Verify enrichment effect (should have some quantity increases)
+        # Verify enrichment effect (should have some ordered units increases)
         post_enrichment = enriched_sales[enriched_sales["date"] >= "2024-01-02"]
         original_post = original_sales[original_sales["date"] >= "2024-01-02"]
 
-        # Total quantity should increase due to enrichment
-        assert post_enrichment["quantity"].sum() >= original_post["quantity"].sum()
+        # Total ordered units should increase due to enrichment
+        assert post_enrichment["ordered_units"].sum() >= original_post["ordered_units"].sum()
 
     finally:
         os.unlink(config_path)
@@ -95,7 +95,7 @@ IMPACT:
         post_enrichment = enriched_sales[enriched_sales["date"] >= "2024-01-03"]
         original_post = original_sales[original_sales["date"] >= "2024-01-03"]
 
-        assert post_enrichment["quantity"].sum() >= original_post["quantity"].sum()
+        assert post_enrichment["ordered_units"].sum() >= original_post["ordered_units"].sum()
 
     finally:
         os.unlink(config_path)

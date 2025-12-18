@@ -15,6 +15,9 @@ RULE:
       sale_prob: 0.7
       seed: null
       granularity: "daily"
+      impression_to_visit_rate: 0.15
+      visit_to_cart_rate: 0.25
+      cart_to_order_rate: 0.80
 
 SYNTHESIZER:
   CHARACTERISTICS:

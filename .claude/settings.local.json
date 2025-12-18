@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(hatch env prune:*)",
+      "Bash(hatch run pytest:*)",
+      "Bash(hatch run:*)",
+      "Bash(git clean:*)",
+      "Bash(python:*)"
+    ]
+  }
+}

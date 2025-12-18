@@ -10,12 +10,12 @@ from typing import Dict
 
 def quantity_boost(sales: list, **kwargs) -> list:
     """
-    Boost quantity sold by a percentage for enriched products.
+    Boost ordered units by a percentage for enriched products.
 
     Args:
         sales: List of sale transaction dictionaries
         **kwargs: Parameters including:
-            - effect_size: Percentage increase in quantity (default: 0.5 for 50% boost)
+            - effect_size: Percentage increase in ordered units (default: 0.5 for 50% boost)
             - enrichment_fraction: Fraction of products to enrich (default: 0.3)
             - enrichment_start: Start date of enrichment (default: "2024-11-15")
             - seed: Random seed for product selection (default: 42)
@@ -50,10 +50,10 @@ def quantity_boost(sales: list, **kwargs) -> list:
 
         # Apply boost if product is enriched and date is after start
         if sale_copy["product_id"] in enriched_product_ids and sale_date >= start_date:
-            original_quantity = sale_copy["quantity"]
-            sale_copy["quantity"] = int(original_quantity * (1 + effect_size))
+            original_quantity = sale_copy["ordered_units"]
+            sale_copy["ordered_units"] = int(original_quantity * (1 + effect_size))
             unit_price = sale_copy.get("unit_price", sale_copy.get("price"))
-            sale_copy["revenue"] = round(sale_copy["quantity"] * unit_price, 2)
+            sale_copy["revenue"] = round(sale_copy["ordered_units"] * unit_price, 2)
 
         treated_sales.append(sale_copy)
 
@@ -62,10 +62,10 @@ def quantity_boost(sales: list, **kwargs) -> list:
 
 def probability_boost(sales: list, **kwargs) -> list:
     """
-    Boost sale probability (simulated by quantity increase as proxy).
+    Boost sale probability (simulated by ordered units increase as proxy).
 
     Note: Since sales are already generated, we simulate probability boost
-    by increasing quantity on successful sales.
+    by increasing ordered units on successful sales.
 
     Args:
         sales: List of sale transaction dictionaries
@@ -135,10 +135,10 @@ def combined_boost(sales: list, **kwargs) -> list:
 
             adjusted_effect = effect_size * ramp_factor
 
-            original_quantity = sale_copy["quantity"]
-            sale_copy["quantity"] = int(original_quantity * (1 + adjusted_effect))
+            original_quantity = sale_copy["ordered_units"]
+            sale_copy["ordered_units"] = int(original_quantity * (1 + adjusted_effect))
             unit_price = sale_copy.get("unit_price", sale_copy.get("price"))
-            sale_copy["revenue"] = round(sale_copy["quantity"] * unit_price, 2)
+            sale_copy["revenue"] = round(sale_copy["ordered_units"] * unit_price, 2)
 
         treated_sales.append(sale_copy)
 

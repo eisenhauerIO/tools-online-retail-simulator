@@ -46,10 +46,10 @@ def main():
     enriched_post = enriched_df[enriched_df["date"] >= enrichment_start]
 
     print(f"\nPost-enrichment period ({enrichment_start} onwards):")
-    print(f"Original total quantity: {original_post['quantity'].sum()}")
-    print(f"Enriched total quantity: {enriched_post['quantity'].sum()}")
+    print(f"Original total ordered_units: {original_post['ordered_units'].sum()}")
+    print(f"Enriched total ordered_units: {enriched_post['ordered_units'].sum()}")
     print(
-        f"Quantity lift: {((enriched_post['quantity'].sum() / original_post['quantity'].sum()) - 1) * 100:.1f}%"
+        f"Quantity lift: {((enriched_post['ordered_units'].sum() / original_post['ordered_units'].sum()) - 1) * 100:.1f}%"
     )
 
     print(f"\nOriginal total revenue: ${original_post['revenue'].sum():.2f}")

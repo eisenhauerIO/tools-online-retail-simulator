@@ -13,8 +13,12 @@ def test_metrics_rule():
     assert not df.empty
     assert "asin" in df.columns
     assert "date" in df.columns
-    assert "quantity" in df.columns
+    assert "impressions" in df.columns
+    assert "visits" in df.columns
+    assert "cart_adds" in df.columns
+    assert "ordered_units" in df.columns
     assert "revenue" in df.columns
+    assert "average_selling_price" in df.columns
 
 
 def test_metrics_rule_weekly_granularity():
@@ -30,8 +34,12 @@ def test_metrics_rule_weekly_granularity():
     assert not df.empty
     assert "asin" in df.columns
     assert "date" in df.columns
-    assert "quantity" in df.columns
+    assert "impressions" in df.columns
+    assert "visits" in df.columns
+    assert "cart_adds" in df.columns
+    assert "ordered_units" in df.columns
     assert "revenue" in df.columns
+    assert "average_selling_price" in df.columns
 
     # Weekly-specific validations
     df["date_dt"] = pd.to_datetime(df["date"])
@@ -82,3 +90,167 @@ def test_metrics_rule_weekly_date_adjustment():
     # Jan 1 2024 is Monday, Jan 31 is Wednesday
     # Expanded to Jan 1 (Mon) to Feb 4 (Sun) = 5 weeks
     assert df["date"].nunique() == 5, "Should have 5 weeks from 2024-01-01 to 2024-02-04"
+
+
+def test_funnel_metrics_schema():
+    """Test that new funnel metrics are present with correct types."""
+    import os
+
+    config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
+    products = simulate_characteristics(config_path)
+    df = simulate_metrics(products, config_path)
+
+    # Check all funnel columns exist
+    assert "impressions" in df.columns
+    assert "visits" in df.columns
+    assert "cart_adds" in df.columns
+    assert "ordered_units" in df.columns
+    assert "revenue" in df.columns
+    assert "average_selling_price" in df.columns
+
+    # Check data types
+    assert df["impressions"].dtype == int
+    assert df["visits"].dtype == int
+    assert df["cart_adds"].dtype == int
+    assert df["ordered_units"].dtype == int
+    assert df["revenue"].dtype == float
+    assert df["average_selling_price"].dtype == float
+
+
+def test_funnel_logic_consistency():
+    """Test that funnel stages follow logical hierarchy."""
+    import os
+
+    config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
+    products = simulate_characteristics(config_path)
+    df = simulate_metrics(products, config_path)
+
+    # Filter to rows with any activity
+    active_rows = df[df["impressions"] > 0]
+
+    # Funnel should decrease or stay same at each stage
+    assert all(active_rows["visits"] <= active_rows["impressions"])
+    assert all(active_rows["cart_adds"] <= active_rows["visits"])
+    assert all(active_rows["ordered_units"] <= active_rows["cart_adds"])
+
+    # If ordered_units > 0, revenue should be > 0
+    assert all(df[df["ordered_units"] > 0]["revenue"] > 0)
+
+    # If ordered_units = 0, revenue should be 0
+    assert all(df[df["ordered_units"] == 0]["revenue"] == 0)
+
+
+def test_funnel_zero_activity():
+    """Test products with zero funnel activity have all zeros."""
+    import os
+
+    config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
+    products = simulate_characteristics(config_path)
+    df = simulate_metrics(products, config_path)
+
+    # Find rows with no impressions
+    no_activity = df[df["impressions"] == 0]
+
+    # All funnel metrics should be zero
+    assert all(no_activity["visits"] == 0)
+    assert all(no_activity["cart_adds"] == 0)
+    assert all(no_activity["ordered_units"] == 0)
+    assert all(no_activity["revenue"] == 0.0)
+    assert all(no_activity["average_selling_price"] == 0.0)
+
+
+def test_asp_calculation():
+    """Test average selling price calculation."""
+    import os
+
+    config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
+    products = simulate_characteristics(config_path)
+    df = simulate_metrics(products, config_path)
+
+    # For daily data with no discounts, ASP should equal price when units sold
+    rows_with_sales = df[df["ordered_units"] > 0]
+    assert all(rows_with_sales["average_selling_price"] == rows_with_sales["price"])
+
+    # ASP should be 0 when no units sold
+    rows_no_sales = df[df["ordered_units"] == 0]
+    assert all(rows_no_sales["average_selling_price"] == 0.0)
+
+
+def test_weekly_funnel_aggregation():
+    """Test weekly aggregation of funnel metrics."""
+    import os
+
+    config_path = os.path.join(os.path.dirname(__file__), "config_rule_weekly.yaml")
+    products = simulate_characteristics(config_path)
+    df = simulate_metrics(products, config_path)
+
+    # Check schema
+    assert "impressions" in df.columns
+    assert "visits" in df.columns
+    assert "cart_adds" in df.columns
+    assert "ordered_units" in df.columns
+    assert "average_selling_price" in df.columns
+
+    # All dates should be Mondays
+    df["date_dt"] = pd.to_datetime(df["date"])
+    assert all(df["date_dt"].dt.weekday == 0)
+
+    # ASP calculation for weekly: revenue/ordered_units
+    rows_with_sales = df[df["ordered_units"] > 0]
+    calculated_asp = (rows_with_sales["revenue"] / rows_with_sales["ordered_units"]).round(2)
+    assert all(rows_with_sales["average_selling_price"] == calculated_asp)
+
+    # No sales → ASP = 0
+    rows_no_sales = df[df["ordered_units"] == 0]
+    assert all(rows_no_sales["average_selling_price"] == 0.0)
+
+
+def test_conversion_rate_config():
+    """Test that custom conversion rates are respected."""
+    import os
+    import tempfile
+
+    import yaml
+
+    # Create custom config with extreme rates for testing
+    config = {
+        "RULE": {
+            "CHARACTERISTICS": {
+                "FUNCTION": "simulate_characteristics_rule_based",
+                "PARAMS": {"num_products": 5, "seed": 42},
+            },
+            "METRICS": {
+                "FUNCTION": "simulate_metrics_rule_based",
+                "PARAMS": {
+                    "date_start": "2024-01-01",
+                    "date_end": "2024-01-02",
+                    "sale_prob": 1.0,  # Always trigger funnel
+                    "seed": 42,
+                    "granularity": "daily",
+                    "impression_to_visit_rate": 1.0,  # 100% conversion
+                    "visit_to_cart_rate": 1.0,
+                    "cart_to_order_rate": 1.0,
+                },
+            },
+        }
+    }
+
+    # Write to temp file
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(config, f)
+        config_path = f.name
+
+    try:
+        products = simulate_characteristics(config_path)
+        df = simulate_metrics(products, config_path)
+
+        # With 100% rates and guaranteed funnel activity:
+        # All rows should have activity
+        assert all(df["impressions"] > 0)
+        assert all(df["visits"] > 0)
+
+        # Most should convert through funnel (allowing for randomness)
+        assert (df["cart_adds"] > 0).sum() / len(df) > 0.5
+
+    finally:
+        os.unlink(config_path)

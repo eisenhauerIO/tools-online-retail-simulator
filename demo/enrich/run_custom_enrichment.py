@@ -4,7 +4,7 @@ Example demonstrating custom enrichment with price discount function.
 This script shows:
 1. Definition of a custom enrichment function
 2. Registration and usage of the custom function
-3. Price-based treatment effects (vs quantity-based defaults)
+3. Price-based treatment effects (vs ordered_units-based defaults)
 """
 
 import copy
@@ -64,7 +64,7 @@ def price_discount(sales: List[Dict], **kwargs) -> List[Dict]:
                 sale_copy["price"] = round(discounted_price, 2)
 
             # Recalculate revenue
-            sale_copy["revenue"] = round(sale_copy["quantity"] * discounted_price, 2)
+            sale_copy["revenue"] = round(sale_copy["ordered_units"] * discounted_price, 2)
 
         treated_sales.append(sale_copy)
 
@@ -112,10 +112,10 @@ def main():
     enriched_post = enriched_df[enriched_df["date"] >= enrichment_start]
 
     print(f"\nPost-enrichment period ({enrichment_start} onwards):")
-    print(f"Original total quantity: {original_post['quantity'].sum()}")
-    print(f"Enriched total quantity: {enriched_post['quantity'].sum()}")
+    print(f"Original total ordered_units: {original_post['ordered_units'].sum()}")
+    print(f"Enriched total ordered_units: {enriched_post['ordered_units'].sum()}")
     print(
-        f"Quantity change: {((enriched_post['quantity'].sum() / original_post['quantity'].sum()) - 1) * 100:+.1f}%"
+        f"Quantity change: {((enriched_post['ordered_units'].sum() / original_post['ordered_units'].sum()) - 1) * 100:+.1f}%"
     )
 
     print(f"\nOriginal total revenue: ${original_post['revenue'].sum():.2f}")
@@ -125,8 +125,8 @@ def main():
     )
 
     # Show average price change
-    original_avg_price = (original_post["revenue"] / original_post["quantity"]).mean()
-    enriched_avg_price = (enriched_post["revenue"] / enriched_post["quantity"]).mean()
+    original_avg_price = (original_post["revenue"] / original_post["ordered_units"]).mean()
+    enriched_avg_price = (enriched_post["revenue"] / enriched_post["ordered_units"]).mean()
     print(
         f"\nAverage unit price: ${original_avg_price:.2f} → ${enriched_avg_price:.2f}"
     )
