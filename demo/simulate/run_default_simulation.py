@@ -18,7 +18,12 @@ def main():
 
     # Generate simulation data using default rules
     print("Generating synthetic retail data...")
-    sales_df = simulate("simulate/config_default_simulation.yaml")
+    job_id = simulate("config_default_simulation.yaml")
+    print(f"✓ Simulation completed. Job ID: {job_id}")
+
+    # Load results for analysis
+    from online_retail_simulator import load_job_results
+    products_df, sales_df = load_job_results(job_id)
 
     print(f"✓ Generated {len(sales_df)} sales records")
     print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
@@ -39,6 +44,8 @@ def main():
     print(f"  Total quantity: {sales_df['quantity'].sum()}")
     print(f"  Total revenue: ${sales_df['revenue'].sum():.2f}")
     print(f"  Average order value: ${sales_df['revenue'].mean():.2f}")
+
+    print(f"\n✓ Results saved to: ./output/{job_id}/")
 
     print("\n" + "=" * 60)
     print("Default simulation complete!")

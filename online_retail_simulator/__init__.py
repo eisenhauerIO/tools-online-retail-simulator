@@ -17,6 +17,7 @@ from .simulate import (
     simulate_characteristics,
     simulate_metrics,
 )
+from .storage import cleanup_old_jobs, list_jobs, load_job_metadata, load_job_results
 
 __version__ = "0.1.0"
 __all__ = [
@@ -33,4 +34,8 @@ __all__ = [
     "register_simulation_module",
     "list_simulation_functions",
     "get_simulation_function",
+    "load_job_results",
+    "load_job_metadata",
+    "list_jobs",
+    "cleanup_old_jobs",
 ]

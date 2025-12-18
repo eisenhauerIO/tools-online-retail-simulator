@@ -29,19 +29,25 @@ IMPACT:
     try:
         # Generate test data
         test_config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-        sales_df = simulate(test_config_path)
+        job_id = simulate(test_config_path)
 
         # Apply enrichment
-        enriched_df = enrich(config_path, sales_df)
+        enriched_job_id = enrich(config_path, job_id)
+
+        # Load original and enriched data
+        from online_retail_simulator import load_job_results
+
+        _, original_sales = load_job_results(job_id)
+        _, enriched_sales = load_job_results(enriched_job_id)
 
         # Verify structure
-        assert isinstance(enriched_df, pd.DataFrame)
-        assert len(enriched_df) == len(sales_df)
-        assert list(enriched_df.columns) == list(sales_df.columns)
+        assert isinstance(enriched_sales, pd.DataFrame)
+        assert len(enriched_sales) == len(original_sales)
+        assert list(enriched_sales.columns) == list(original_sales.columns)
 
         # Verify enrichment effect (should have some quantity increases)
-        post_enrichment = enriched_df[enriched_df["date"] >= "2024-01-02"]
-        original_post = sales_df[sales_df["date"] >= "2024-01-02"]
+        post_enrichment = enriched_sales[enriched_sales["date"] >= "2024-01-02"]
+        original_post = original_sales[original_sales["date"] >= "2024-01-02"]
 
         # Total quantity should increase due to enrichment
         assert post_enrichment["quantity"].sum() >= original_post["quantity"].sum()
@@ -70,18 +76,24 @@ IMPACT:
     try:
         # Generate test data
         test_config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-        sales_df = simulate(test_config_path)
+        job_id = simulate(test_config_path)
 
         # Apply enrichment
-        enriched_df = enrich(config_path, sales_df)
+        enriched_job_id = enrich(config_path, job_id)
+
+        # Load results
+        from online_retail_simulator import load_job_results
+
+        _, original_sales = load_job_results(job_id)
+        _, enriched_sales = load_job_results(enriched_job_id)
 
         # Verify basic structure
-        assert isinstance(enriched_df, pd.DataFrame)
-        assert len(enriched_df) == len(sales_df)
+        assert isinstance(enriched_sales, pd.DataFrame)
+        assert len(enriched_sales) == len(original_sales)
 
         # Verify enrichment effect exists
-        post_enrichment = enriched_df[enriched_df["date"] >= "2024-01-03"]
-        original_post = sales_df[sales_df["date"] >= "2024-01-03"]
+        post_enrichment = enriched_sales[enriched_sales["date"] >= "2024-01-03"]
+        original_post = original_sales[original_sales["date"] >= "2024-01-03"]
 
         assert post_enrichment["quantity"].sum() >= original_post["quantity"].sum()
 
@@ -126,12 +138,9 @@ IMPACT:
         config_path = f.name
 
     try:
-        # Create DataFrame without asin column
-        invalid_df = pd.DataFrame({"product_id": ["A", "B"], "quantity": [1, 2]})
-
-        # Should raise error for missing asin
-        with pytest.raises(ValueError, match="Input DataFrame must contain 'asin' column"):
-            enrich(config_path, invalid_df)
+        # Test with invalid job_id
+        with pytest.raises(FileNotFoundError, match="Job directory not found"):
+            enrich(config_path, "invalid-job-id")
 
     finally:
         os.unlink(config_path)
@@ -156,11 +165,17 @@ IMPACT:
     try:
         # Generate test data
         test_config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-        sales_df = simulate(test_config_path)
+        job_id = simulate(test_config_path)
 
         # Apply enrichment twice with same config (same seed)
-        enriched_df1 = enrich(config_path, sales_df)
-        enriched_df2 = enrich(config_path, sales_df)
+        enriched_job_id1 = enrich(config_path, job_id)
+        enriched_job_id2 = enrich(config_path, job_id)
+
+        # Load results
+        from online_retail_simulator import load_job_results
+
+        _, enriched_df1 = load_job_results(enriched_job_id1)
+        _, enriched_df2 = load_job_results(enriched_job_id2)
 
         # Results should be identical
         pd.testing.assert_frame_equal(enriched_df1, enriched_df2)

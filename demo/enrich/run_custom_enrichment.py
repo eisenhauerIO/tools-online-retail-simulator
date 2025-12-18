@@ -84,16 +84,25 @@ def main():
 
     # Step 2: Generate base simulation data
     print("\nStep 2: Generating base simulation data...")
-    sales_df = simulate("simulate/config_default_simulation.yaml")
+    job_id = simulate("../simulate/config_default_simulation.yaml")
+    print(f"✓ Simulation completed. Job ID: {job_id}")
+
+    # Load simulation results
+    from online_retail_simulator import load_job_results
+    products_df, sales_df = load_job_results(job_id)
     print(f"✓ Generated {len(sales_df)} sales records")
     print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
     print(f"✓ Products: {sales_df['asin'].nunique()} unique ASINs")
 
     # Step 3: Apply custom enrichment
     print("\nStep 3: Applying custom enrichment (price_discount)...")
-    enriched_df = enrich("enrich/config_custom_enrichment.yaml", sales_df)
-    print(f"✓ Applied enrichment to {len(enriched_df)} sales records")
+    enriched_job_id = enrich("config_custom_enrichment.yaml", job_id)
+    print(f"✓ Enrichment completed. Job ID: {enriched_job_id}")
     print("✓ Uses 25% price discount on 40% of products")
+
+    # Load enriched results
+    _, enriched_df = load_job_results(enriched_job_id)
+    print(f"✓ Applied enrichment to {len(enriched_df)} sales records")
 
     # Step 4: Compare results
     print("\nStep 4: Comparing results...")
@@ -123,6 +132,9 @@ def main():
     print(
         f"Price change: {((enriched_avg_price / original_avg_price) - 1) * 100:+.1f}%"
     )
+
+    print(f"\n✓ Original results saved to: ./output/{job_id}/")
+    print(f"✓ Enriched results saved to: ./output/{enriched_job_id}/")
 
     print("\n" + "=" * 60)
     print("Custom enrichment complete!")

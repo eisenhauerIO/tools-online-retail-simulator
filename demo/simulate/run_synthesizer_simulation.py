@@ -19,7 +19,7 @@ def main():
     try:
         # Step 1: Generate synthetic characteristics
         print("Step 1: Generating synthetic product characteristics...")
-        products_df = simulate_characteristics("simulate/config_synthesizer_simulation.yaml")
+        products_df = simulate_characteristics("config_synthesizer_simulation.yaml")
 
         print(f"✓ Generated {len(products_df)} synthetic products")
         print(f"✓ Columns: {list(products_df.columns)}")
@@ -40,7 +40,7 @@ def main():
 
         # Step 2: Generate synthetic metrics
         print(f"\nStep 2: Generating synthetic sales metrics...")
-        sales_df = simulate_metrics(products_df, "simulate/config_synthesizer_simulation.yaml")
+        sales_df = simulate_metrics(products_df, "config_synthesizer_simulation.yaml")
 
         print(f"✓ Generated {len(sales_df)} synthetic sales records")
         print(f"✓ Columns: {list(sales_df.columns)}")
