@@ -27,13 +27,15 @@ def main():
 
     # Show category breakdown
     print(f"\nCategory breakdown:")
-    category_counts = sales_df['category'].value_counts()
+    category_counts = sales_df["category"].value_counts()
     for category, count in category_counts.items():
         print(f"  {category}: {count} sales")
 
     # Show price and revenue summary
     print(f"\nSummary statistics:")
-    print(f"  Price range: ${sales_df['price'].min():.2f} - ${sales_df['price'].max():.2f}")
+    print(
+        f"  Price range: ${sales_df['price'].min():.2f} - ${sales_df['price'].max():.2f}"
+    )
     print(f"  Total quantity: {sales_df['quantity'].sum()}")
     print(f"  Total revenue: ${sales_df['revenue'].sum():.2f}")
     print(f"  Average order value: ${sales_df['revenue'].mean():.2f}")

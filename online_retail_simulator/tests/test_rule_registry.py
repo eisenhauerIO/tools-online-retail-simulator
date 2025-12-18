@@ -161,7 +161,10 @@ def test_clear_registry():
     # Clear and verify only defaults remain
     SimulationRegistry.clear_registry()
     functions = SimulationRegistry.list_all_functions()
-    assert functions["characteristics"] == ["simulate_characteristics_rule_based", "default"]
+    assert functions["characteristics"] == [
+        "simulate_characteristics_rule_based",
+        "default",
+    ]
     assert functions["metrics"] == ["simulate_metrics_rule_based", "default"]
 
 

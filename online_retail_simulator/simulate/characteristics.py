@@ -15,38 +15,30 @@ def simulate_characteristics(config_path: str, config: Optional[Dict] = None) ->
         config_path: Path to JSON configuration file
         config: Optional pre-loaded config (avoids re-reading)
     Returns:
-        List of product dictionaries
+        DataFrame of product characteristics
     """
     from ..config_processor import process_config
 
     config_loaded = process_config(config_path)
 
-    # Detect mode based on which block is present
-    has_rule = "RULE" in config_loaded
-    has_synthesizer = "SYNTHESIZER" in config_loaded
-
-    if has_rule and not has_synthesizer:
-        # Check if a custom rule function is specified
+    # Simple either/or logic: RULE or SYNTHESIZER, not both, not neither
+    if "RULE" in config_loaded:
+        # Rule-based generation
         rule_config = config_loaded["RULE"]
-        characteristics_config = rule_config.get("CHARACTERISTICS", {})
-        custom_function = characteristics_config.get("FUNCTION", "default")
-
-        # Merge PARAMS into rule_config for backward compatibility
-        if "PARAMS" in characteristics_config:
-            # Convert lowercase params to uppercase for backward compatibility
-            params = {k.upper(): v for k, v in characteristics_config["PARAMS"].items()}
-            rule_config.update(params)
+        characteristics_config = rule_config["CHARACTERISTICS"]
+        function_name = characteristics_config.get("FUNCTION")
 
         from .rule_registry import SimulationRegistry
 
-        func = SimulationRegistry.get_characteristics_function(custom_function)
+        func = SimulationRegistry.get_characteristics_function(function_name)
         return func(config_path, config_loaded)
 
-    elif has_synthesizer and not has_rule:
+    elif "SYNTHESIZER" in config_loaded:
+        # Synthesizer-based generation
         from .characteristics_synthesizer_based import simulate_characteristics_synthesizer_based
 
         return simulate_characteristics_synthesizer_based(config_loaded)
-    elif has_rule and has_synthesizer:
-        raise ValueError("Config must contain exactly one of RULE or SYNTHESIZER block, not both")
+
     else:
+        # Hard failure - no valid configuration
         raise ValueError("Config must contain either RULE or SYNTHESIZER block")

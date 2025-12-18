@@ -11,7 +11,11 @@ import pandas as pd
 
 
 def save_simulation_data(
-    products_df: pd.DataFrame, sales_df: pd.DataFrame, storage_path: str, config: Dict, config_path: str
+    products_df: pd.DataFrame,
+    sales_df: pd.DataFrame,
+    storage_path: str,
+    config: Dict,
+    config_path: str,
 ) -> None:
     """
     Save simulation data to CSV files with metadata.

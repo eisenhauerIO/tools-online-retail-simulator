@@ -32,17 +32,21 @@ def main():
     # Step 3: Compare results
     print("\nStep 3: Comparing results...")
     enrichment_start = "2024-11-15"
-    original_post = sales_df[sales_df['date'] >= enrichment_start]
-    enriched_post = enriched_df[enriched_df['date'] >= enrichment_start]
+    original_post = sales_df[sales_df["date"] >= enrichment_start]
+    enriched_post = enriched_df[enriched_df["date"] >= enrichment_start]
 
     print(f"\nPost-enrichment period ({enrichment_start} onwards):")
     print(f"Original total quantity: {original_post['quantity'].sum()}")
     print(f"Enriched total quantity: {enriched_post['quantity'].sum()}")
-    print(f"Quantity lift: {((enriched_post['quantity'].sum() / original_post['quantity'].sum()) - 1) * 100:.1f}%")
+    print(
+        f"Quantity lift: {((enriched_post['quantity'].sum() / original_post['quantity'].sum()) - 1) * 100:.1f}%"
+    )
 
     print(f"\nOriginal total revenue: ${original_post['revenue'].sum():.2f}")
     print(f"Enriched total revenue: ${enriched_post['revenue'].sum():.2f}")
-    print(f"Revenue lift: {((enriched_post['revenue'].sum() / original_post['revenue'].sum()) - 1) * 100:.1f}%")
+    print(
+        f"Revenue lift: {((enriched_post['revenue'].sum() / original_post['revenue'].sum()) - 1) * 100:.1f}%"
+    )
 
     print("\n" + "=" * 60)
     print("Default enrichment complete!")

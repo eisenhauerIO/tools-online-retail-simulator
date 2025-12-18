@@ -26,28 +26,35 @@ def simulate_metrics(
 
     config_loaded = process_config(config_path)
 
-    # Check for mode configuration - exactly one must be present
+    # Simple either/or logic: RULE or SYNTHESIZER, not both, not neither
     if "RULE" in config_loaded:
-        # Check if a custom rule function is specified
-        rule_config = config_loaded["RULE"]
-        metrics_config = rule_config.get("METRICS", {})
-        custom_function = metrics_config.get("FUNCTION", "default")
+        if "SYNTHESIZER" in config_loaded:
+            raise ValueError("Config cannot contain both RULE and SYNTHESIZER blocks")
 
-        # Merge PARAMS into rule_config for backward compatibility
+        # Rule-based generation
+        rule_config = config_loaded["RULE"]
+        if "METRICS" not in rule_config:
+            raise ValueError("RULE block must contain METRICS section")
+
+        metrics_config = rule_config["METRICS"]
+        function_name = metrics_config.get("FUNCTION", "default")
+
+        # Merge PARAMS for backward compatibility
         if "PARAMS" in metrics_config:
-            # Convert lowercase params to uppercase for backward compatibility
             params = {k.upper(): v for k, v in metrics_config["PARAMS"].items()}
             rule_config.update(params)
 
         from .rule_registry import SimulationRegistry
 
-        func = SimulationRegistry.get_metrics_function(custom_function)
+        func = SimulationRegistry.get_metrics_function(function_name)
         return func(product_characteristics, config_path, config=config_loaded)
 
     elif "SYNTHESIZER" in config_loaded:
+        # Synthesizer-based generation
         from .metrics_synthesizer_based import simulate_metrics_synthesizer_based
 
         return simulate_metrics_synthesizer_based(product_characteristics, config_path)
 
     else:
+        # Hard failure - no valid configuration
         raise ValueError("Config must contain either RULE or SYNTHESIZER block")

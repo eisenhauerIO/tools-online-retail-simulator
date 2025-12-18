@@ -1,14 +1,14 @@
 STORAGE:
-  PATH: demo/simulate/output/custom_demo
+  PATH: demo/simulate/output/sim_demo
 
 RULE:
   CHARACTERISTICS:
-    FUNCTION: electronics_only
+    FUNCTION: simulate_characteristics_rule_based
     PARAMS:
-      num_products: 30
+      num_products: 50
   METRICS:
     FUNCTION: simulate_metrics_rule_based
     PARAMS:
       date_start: "2024-11-01"
       date_end: "2024-11-30"
-      sale_prob: 0.6
+      sale_prob: 0.7

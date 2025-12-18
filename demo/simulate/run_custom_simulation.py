@@ -15,7 +15,9 @@ import pandas as pd
 from online_retail_simulator import simulate, register_characteristics_function
 
 
-def generate_electronics_only(config_path: str, config: Optional[Dict] = None) -> pd.DataFrame:
+def generate_electronics_only(
+    config_path: str, config: Optional[Dict] = None
+) -> pd.DataFrame:
     """
     Custom characteristics function that generates only electronics products.
 
@@ -50,13 +52,17 @@ def generate_electronics_only(config_path: str, config: Optional[Dict] = None) -
         price = round(random.uniform(price_min, price_max), 2)
 
         # Generate electronics-style ASIN
-        asin = "E" + "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(9))
+        asin = "E" + "".join(
+            random.choice(string.ascii_uppercase + string.digits) for _ in range(9)
+        )
 
-        products.append({
-            "asin": asin,
-            "category": category,
-            "price": price,
-        })
+        products.append(
+            {
+                "asin": asin,
+                "category": category,
+                "price": price,
+            }
+        )
 
     return pd.DataFrame(products)
 
@@ -83,13 +89,15 @@ def main():
 
     # Show category breakdown (should be electronics only)
     print(f"\nElectronics category breakdown:")
-    category_counts = sales_df['category'].value_counts()
+    category_counts = sales_df["category"].value_counts()
     for category, count in category_counts.items():
         print(f"  {category}: {count} sales")
 
     # Show price and revenue summary
     print(f"\nSummary statistics:")
-    print(f"  Price range: ${sales_df['price'].min():.2f} - ${sales_df['price'].max():.2f}")
+    print(
+        f"  Price range: ${sales_df['price'].min():.2f} - ${sales_df['price'].max():.2f}"
+    )
     print(f"  Total quantity: {sales_df['quantity'].sum()}")
     print(f"  Total revenue: ${sales_df['revenue'].sum():.2f}")
     print(f"  Average order value: ${sales_df['revenue'].mean():.2f}")

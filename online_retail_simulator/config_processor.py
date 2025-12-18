@@ -51,7 +51,11 @@ def validate_config(config: Dict[str, Any]) -> None:
 
     # STORAGE is optional - if present, PATH is required
     if "STORAGE" in config:
-        _require(config, "STORAGE.PATH", "Configuration with STORAGE must include STORAGE.PATH")
+        _require(
+            config,
+            "STORAGE.PATH",
+            "Configuration with STORAGE must include STORAGE.PATH",
+        )
 
     # Validate that exactly one of RULE or SYNTHESIZER is present
     has_rule = "RULE" in config
