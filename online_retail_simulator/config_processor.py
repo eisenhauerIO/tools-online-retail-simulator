@@ -71,8 +71,18 @@ def validate_config(config: Dict[str, Any]) -> None:
         syn = config["SYNTHESIZER"]
         _require(
             {"SYNTHESIZER": syn},
-            "SYNTHESIZER.SYNTHESIZER_TYPE",
-            "SYNTHESIZER.SYNTHESIZER_TYPE is required",
+            "SYNTHESIZER.CHARACTERISTICS",
+            "SYNTHESIZER.CHARACTERISTICS is required",
+        )
+        _require(
+            {"SYNTHESIZER": syn},
+            "SYNTHESIZER.CHARACTERISTICS.FUNCTION",
+            "SYNTHESIZER.CHARACTERISTICS.FUNCTION is required",
+        )
+        _require(
+            {"SYNTHESIZER": syn},
+            "SYNTHESIZER.CHARACTERISTICS.PARAMS",
+            "SYNTHESIZER.CHARACTERISTICS.PARAMS is required",
         )
 
 

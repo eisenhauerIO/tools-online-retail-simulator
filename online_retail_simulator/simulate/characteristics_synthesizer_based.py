@@ -23,33 +23,62 @@ def generate_random_asin(prefix: str = "B") -> str:
 def simulate_characteristics_synthesizer_based(config):
     try:
         from sdv.metadata import SingleTableMetadata
-        from sdv.single_table import CTGANSynthesizer, GaussianCopulaSynthesizer, TVAESynthesizer
+        from sdv.single_table import GaussianCopulaSynthesizer
     except ImportError:
         raise ImportError(
             "SDV is required for synthesizer-based simulation. "
             "Install with: pip install online-retail-simulator[synthesizer]"
         )
 
-    # For now, create dummy data since dataframe_path is not in config
-    # This is a placeholder implementation
-    import numpy as np
+    synthesizer_config = config["SYNTHESIZER"]
 
-    seed = config.get("SEED", None)
-    if seed is not None:
-        np.random.seed(seed)
-    num_rows = config["SYNTHESIZER"].get("DEFAULT_PRODUCTS_ROWS", 10)
+    # Get characteristics config
+    if "CHARACTERISTICS" not in synthesizer_config:
+        raise ValueError("SYNTHESIZER block must contain CHARACTERISTICS section")
+    char_config = synthesizer_config["CHARACTERISTICS"]
 
-    # Create dummy product data for demonstration
-    categories = ["Electronics", "Clothing", "Books", "Home", "Sports"]
-    products = []
-    for i in range(num_rows):
-        products.append(
-            {
-                "asin": generate_random_asin(),
-                "category": np.random.choice(categories),
-                "price": np.random.uniform(10, 1000),
-            }
+    # Get function (synthesizer type)
+    synthesizer_type = char_config.get("FUNCTION")
+    if not synthesizer_type:
+        raise ValueError("FUNCTION is required in CHARACTERISTICS section")
+    if synthesizer_type != "gaussian_copula":
+        raise NotImplementedError(
+            f"Synthesizer function '{synthesizer_type}' not implemented. " "Only 'gaussian_copula' is supported."
         )
 
-    synthetic_df = pd.DataFrame(products)
-    return synthetic_df
+    # Get parameters
+    if "PARAMS" not in char_config:
+        raise ValueError("PARAMS is required in CHARACTERISTICS section")
+    params = char_config["PARAMS"]
+
+    # Get required parameters
+    training_data_path = params.get("training_data_path")
+    if not training_data_path:
+        raise ValueError("training_data_path is required in PARAMS")
+
+    num_rows = params.get("num_rows")
+    if not num_rows:
+        raise ValueError("num_rows is required in PARAMS")
+
+    seed = params.get("seed")
+    if seed is None:
+        raise ValueError("seed is required in PARAMS")
+
+    # Load training data
+    training_data = pd.read_csv(training_data_path)
+
+    # Step 1: Create metadata and synthesizer
+    metadata = SingleTableMetadata()
+    metadata.detect_from_dataframe(training_data)
+    synthesizer = GaussianCopulaSynthesizer(metadata)
+
+    # Step 2: Train the synthesizer
+    synthesizer.fit(training_data)
+
+    # Step 3: Generate synthetic data with seed
+    import numpy as np
+
+    np.random.seed(seed)
+    synthetic_data = synthesizer.sample(num_rows=num_rows)
+
+    return synthetic_data

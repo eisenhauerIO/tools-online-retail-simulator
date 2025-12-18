@@ -15,5 +15,6 @@ def test_characteristics_synthesizer():
     df = simulate_characteristics(config_path)
     assert isinstance(df, pd.DataFrame)
     assert not df.empty
-    assert "asin" in df.columns
+    assert "product_id" in df.columns
     assert "price" in df.columns
+    assert "category" in df.columns

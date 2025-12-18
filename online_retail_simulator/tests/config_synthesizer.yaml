@@ -2,9 +2,11 @@ OUTPUT:
   PATH: output/test
 
 SYNTHESIZER:
-  SYNTHESIZER_TYPE: gaussian_copula
-  DEFAULT_PRODUCTS_ROWS: 10
-  DEFAULT_SALES_ROWS: 100
-  DATAFRAME_PATH: online_retail_simulator/tests/df_start.pkl
+  CHARACTERISTICS:
+    FUNCTION: gaussian_copula
+    PARAMS:
+      training_data_path: online_retail_simulator/tests/df_start.csv
+      num_rows: 10
+      seed: 42
 
 EFFECT: "quantity_boost:0.5"

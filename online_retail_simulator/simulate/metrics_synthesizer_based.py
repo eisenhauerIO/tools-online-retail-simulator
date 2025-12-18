@@ -29,9 +29,11 @@ def simulate_metrics_synthesizer_based(product_characteristics, config_path):
             quantity = np.random.poisson(5)
             price = row["price"]
             revenue = price * quantity
+            # Use product_id or asin depending on what's available
+            product_id = row.get("product_id", row.get("asin", "unknown"))
             rows.append(
                 {
-                    "asin": row["asin"],
+                    "product_id": product_id,
                     "date": date,
                     "quantity": quantity,
                     "revenue": revenue,
