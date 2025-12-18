@@ -15,20 +15,13 @@ import pandas as pd
 from online_retail_simulator import simulate, register_characteristics_function
 
 
-def generate_electronics_only(
-    config_path: str, config: Optional[Dict] = None
-) -> pd.DataFrame:
+def generate_electronics_only(config: Dict) -> pd.DataFrame:
     """
     Custom characteristics function that generates only electronics products.
 
     This demonstrates how to create a custom rule that follows the same
     pattern as the default rule-based simulation but with specialized logic.
     """
-    from online_retail_simulator.config_processor import process_config
-
-    if config is None:
-        config = process_config(config_path)
-
     rule_config = config["RULE"]
     seed = config.get("SEED", 42)
     num_products = rule_config.get("NUM_PRODUCTS", 50)
@@ -104,7 +97,7 @@ def main():
     print(
         f"  Price range: ${sales_df['price'].min():.2f} - ${sales_df['price'].max():.2f}"
     )
-    print(f"  Total quantity: {sales_df['quantity'].sum()}")
+    print(f"  Total ordered units: {sales_df['ordered_units'].sum()}")
     print(f"  Total revenue: ${sales_df['revenue'].sum():.2f}")
     print(f"  Average order value: ${sales_df['revenue'].mean():.2f}")
 

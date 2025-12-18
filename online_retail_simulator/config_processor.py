@@ -77,7 +77,15 @@ def _require(config: Dict[str, Any], path: str, message: str) -> None:
 
 
 def _validate_params(backend: str, section: str, function_name: str, params: Dict[str, Any]) -> None:
-    """Validate parameters against expected schema."""
+    """Validate parameters against expected schema.
+
+    For built-in functions defined in config_defaults.yaml, this performs strict
+    parameter validation to catch configuration errors early (typos, missing params, etc.).
+
+    For custom functions registered via register_characteristics_function() or
+    register_metrics_function(), validation is skipped since their parameter
+    schemas are not known at config processing time.
+    """
     schemas = _get_param_schemas()
 
     if backend not in schemas:
@@ -87,7 +95,8 @@ def _validate_params(backend: str, section: str, function_name: str, params: Dic
         raise ValueError(f"Unknown section: {section} for backend {backend}")
 
     if function_name not in schemas[backend][section]:
-        raise ValueError(f"Unknown function: {function_name} for {backend}.{section}")
+        # Custom function - skip validation, trust the registry and runtime
+        return
 
     expected_params = schemas[backend][section][function_name]
     provided_params = set(params.keys())

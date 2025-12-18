@@ -30,7 +30,10 @@ def simulate_characteristics(config_path: str, config: Optional[Dict] = None) ->
 
         from .rule_registry import SimulationRegistry
 
-        func = SimulationRegistry.get_characteristics_function(function_name)
+        try:
+            func = SimulationRegistry.get_characteristics_function(function_name)
+        except KeyError as e:
+            raise KeyError(f"Error in RULE.CHARACTERISTICS: {str(e)}") from e
         return func(config_loaded)
 
     elif "SYNTHESIZER" in config_loaded:

@@ -41,7 +41,10 @@ def simulate_metrics(
 
         from .rule_registry import SimulationRegistry
 
-        func = SimulationRegistry.get_metrics_function(function_name)
+        try:
+            func = SimulationRegistry.get_metrics_function(function_name)
+        except KeyError as e:
+            raise KeyError(f"Error in RULE.METRICS: {str(e)}") from e
         return func(product_characteristics, config_loaded)
 
     elif "SYNTHESIZER" in config_loaded:

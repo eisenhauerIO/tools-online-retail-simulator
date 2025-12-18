@@ -45,14 +45,14 @@ class SimulationRegistry:
 
         Args:
             name: Name to register the function under
-            func: Function that takes (config_path: str, config: Optional[Dict] = None) -> pd.DataFrame
+            func: Function that takes (config: Dict) -> pd.DataFrame
 
         Raises:
             ValueError: If function signature is invalid
         """
         # Validate function signature
         sig = inspect.signature(func)
-        required_params = {"config_path"}
+        required_params = {"config"}
         if not required_params.issubset(sig.parameters.keys()):
             raise ValueError(
                 f"Function {func.__name__} must have parameters: {required_params}. "
