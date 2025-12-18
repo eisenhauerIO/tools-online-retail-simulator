@@ -6,7 +6,9 @@
       "Bash(hatch run:*)",
       "Bash(git clean:*)",
       "Bash(python:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)"
     ]
   }
 }
