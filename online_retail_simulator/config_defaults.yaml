@@ -14,6 +14,7 @@ RULE:
       date_end: "2024-01-31"
       sale_prob: 0.7
       seed: null
+      granularity: "daily"
 
 SYNTHESIZER:
   CHARACTERISTICS:

@@ -1,15 +1,17 @@
-STORAGE:
-  PATH: demo/simulate/output/sim_demo
+OUTPUT:
+  PATH: output/test
 
 RULE:
   CHARACTERISTICS:
     FUNCTION: simulate_characteristics_rule_based
     PARAMS:
-      num_products: 50
+      num_products: 10
+      seed: 42
   METRICS:
     FUNCTION: simulate_metrics_rule_based
     PARAMS:
-      date_start: "2024-11-01"
-      date_end: "2024-11-30"
+      date_start: "2024-01-01"
+      date_end: "2024-01-31"
       sale_prob: 0.7
-      granularity: "daily"
+      seed: 42
+      granularity: "weekly"

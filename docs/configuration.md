@@ -63,6 +63,54 @@ RULE:
   DATE_START: "2024-11-01"    # Start date (YYYY-MM-DD)
   DATE_END: "2024-11-30"      # End date (YYYY-MM-DD)
   SALE_PROB: 0.7              # Daily probability of sale per product (0.0-1.0)
+  GRANULARITY: "daily"        # Time granularity: "daily" or "weekly" (default: "daily")
+```
+
+#### Granularity Parameter
+
+The `GRANULARITY` parameter controls the time granularity of the generated metrics data.
+
+**Options:**
+- `"daily"` (default): One row per product per day
+- `"weekly"`: One row per product per week (ISO week, Monday-Sunday)
+
+**Weekly Granularity Behavior:**
+
+When set to `"weekly"`:
+1. **Date range adjustment**: The date range is automatically expanded to full week boundaries
+   - `DATE_START` is moved back to the Monday of that week
+   - `DATE_END` is moved forward to the Sunday of that week
+   - Example: `2024-01-03` to `2024-01-25` becomes `2024-01-01` (Monday) to `2024-01-28` (Sunday)
+
+2. **Data aggregation**:
+   - `quantity` and `revenue` are summed across the week
+   - `date` column shows the Monday of each week (YYYY-MM-DD format)
+   - All products appear for all weeks, including weeks with zero sales
+
+3. **ISO week standard**: Weeks run from Monday to Sunday
+
+**Example - Daily (default):**
+```yaml
+RULE:
+  METRICS:
+    FUNCTION: simulate_metrics_rule_based
+    PARAMS:
+      date_start: "2024-01-01"
+      date_end: "2024-01-31"
+      sale_prob: 0.7
+      granularity: "daily"  # 310 rows (10 products × 31 days)
+```
+
+**Example - Weekly:**
+```yaml
+RULE:
+  METRICS:
+    FUNCTION: simulate_metrics_rule_based
+    PARAMS:
+      date_start: "2024-01-01"
+      date_end: "2024-01-31"
+      sale_prob: 0.7
+      granularity: "weekly"  # 50 rows (10 products × 5 weeks)
 ```
 
 ### Advanced Parameters
