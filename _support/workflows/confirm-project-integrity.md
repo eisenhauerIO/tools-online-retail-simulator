@@ -36,7 +36,20 @@ All steps must be run inside a freshly pruned [hatch](https://hatch.pypa.io/) en
      ```
    - If any demo script fails (non-zero exit code), STOP. Ask the user for input before continuing.
 
-5. **Clean Untracked Files and Directories**
+5. **Verify Documentation Integrity**
+   - Build the Sphinx documentation:
+     ```bash
+     hatch run make
+     ```
+   - If the build fails or produces warnings, STOP. Ask the user for input before continuing.
+   - Manually verify (spot check):
+     * No duplicate user stories across README.md and docs/user-guide.md
+     * No duplicate configuration examples across docs/
+     * Data schemas only appear in docs/user-guide.md (other files should link)
+     * All internal cross-references point to correct locations
+   - See [maintain-documentation.md](maintain-documentation.md) for the complete content ownership matrix
+
+6. **Clean Untracked Files and Directories**
    - Run:
      ```bash
      git clean -xdf

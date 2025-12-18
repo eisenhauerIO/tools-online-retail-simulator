@@ -2,6 +2,8 @@
 
 The Online Retail Simulator uses YAML configuration files to control all aspects of data generation and enrichment. This guide covers the complete configuration schema and common patterns.
 
+> **See Also**: For practical examples and tutorials on using these configurations, see the [User Guide](user-guide.md).
+
 ## Configuration Structure
 
 All configuration files follow a hierarchical YAML structure with these main sections:

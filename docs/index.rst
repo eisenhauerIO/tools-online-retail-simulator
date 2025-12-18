@@ -20,7 +20,7 @@ Key Features
 ~~~~~~~~~~~~
 
 * **Two simulation modes**: Rule-based (simple) and synthesizer-based (ML-powered with SDV)
-* **JSON configuration-driven workflow** for easy customization
+* **Configuration-driven workflow** for easy customization
 * **Deterministic output** with seed control for reproducibility
 * **Realistic data patterns** across 8 product categories
 * **Treatment effect simulation** for A/B testing scenarios
@@ -29,37 +29,25 @@ Key Features
 Quick Start
 -----------
 
-Installation
-~~~~~~~~~~~~
-
 .. code-block:: bash
 
-   # Basic installation (rule-based generation)
+   # Install
    pip install -e .
 
-   # With ML-based generation (optional)
-   pip install -e ".[synthesizer]"
-
-   # For development
-   pip install -e ".[dev]"
-
-Basic Usage
-~~~~~~~~~~~
-
-.. code-block:: python
-
-   from online_retail_simulator import simulate
-
-   # Generate data using config file
-   sales_df = simulate("demo/simulate/config_default_simulation.yaml")
-   print(f"Generated {len(sales_df)} sales records")
-
-Run Demo
-~~~~~~~~
-
-.. code-block:: bash
-
+   # Run demo
    python demo/run_all_demos.py
+
+For detailed installation instructions, tutorials, and use cases, see the :doc:`user-guide`.
+
+Documentation Structure
+-----------------------
+
+This documentation is organized into:
+
+* **User Guide**: Tutorials, use cases, and practical examples for all skill levels
+* **Configuration Reference**: Complete parameter documentation
+* **API Reference**: Detailed function and class documentation
+* **Design Architecture**: System design and extension points
 
 Table of Contents
 -----------------
@@ -68,29 +56,17 @@ Table of Contents
    :maxdepth: 2
    :caption: Contents:
 
-   use_cases
+   user-guide
+   configuration
    design
    api_reference
-   configuration
-   examples
-
-User Stories
-------------
-
-📊 **Data Scientists**: Generate realistic e-commerce data for ML model training without using production data.
-
-🧪 **Product Managers**: Simulate A/B test results before launching catalog enrichment experiments.
-
-🎓 **Educators**: Provide clean, privacy-safe datasets for teaching e-commerce analytics concepts.
-
-🔧 **Developers**: Create synthetic data for testing e-commerce applications without production dependencies.
 
 Getting Help
 ------------
 
 * **GitHub Issues**: Report bugs or request features
-* **Documentation**: Comprehensive guides and API reference
-* **Examples**: Working code samples in the demo/ directory
+* **User Guide**: Start with tutorials and examples
+* **Configuration Reference**: Complete parameter documentation
 
 Indices and tables
 ==================

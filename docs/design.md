@@ -216,22 +216,7 @@ IMPACT:
 
 ## Data Schemas
 
-### Products DataFrame
-| Column | Type | Description |
-|--------|------|-------------|
-| asin | string | Unique product identifier |
-| category | string | Product category (8 categories) |
-| price | float | Unit price |
-
-### Sales DataFrame
-| Column | Type | Description |
-|--------|------|-------------|
-| asin | string | Product identifier (FK to products) |
-| category | string | Product category |
-| price | float | Unit price |
-| date | string | Sale date (YYYY-MM-DD) |
-| quantity | int | Units sold |
-| revenue | float | Total revenue (price × quantity) |
+For complete data schema documentation, see the [User Guide](user-guide.md).
 
 ## Extension Points
 
