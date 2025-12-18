@@ -227,6 +227,16 @@ for scenario in scenarios:
 python demo/enrich/run_default_enrichment.py
 ```
 
+## Documentation
+
+📚 **[Full Documentation](https://eisenhauerio.github.io/tools-catalog-generator/)** - Complete guides, API reference, and examples
+
+- **[Use Cases](https://eisenhauerio.github.io/tools-catalog-generator/use_cases.html)** - Real-world scenarios and user stories
+- **[Design Architecture](https://eisenhauerio.github.io/tools-catalog-generator/design.html)** - System design and technical details
+- **[Configuration Guide](https://eisenhauerio.github.io/tools-catalog-generator/configuration.html)** - Complete configuration reference
+- **[API Reference](https://eisenhauerio.github.io/tools-catalog-generator/api_reference.html)** - Detailed API documentation
+- **[Examples](https://eisenhauerio.github.io/tools-catalog-generator/examples.html)** - Code examples and tutorials
+
 ## Key Capabilities
 
 ### 🎯 **Flexible Generation Modes**
