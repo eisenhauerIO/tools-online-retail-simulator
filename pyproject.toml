@@ -65,7 +65,7 @@ classifiers = [
 dependencies = [
     "pandas>=1.3.0",
     "pyyaml",
-    "artifact-store @ git+https://github.com/eisenhauerIO/utils-artifact-store.git@159535ff55a0bf02339cff88050eddfad945fa23"
+    "artifact-store @ file:///home/peisenha/office/business/eisenhauer-io/tools/impact-engine/_external/utils-artifact-store"
 ]
 
 

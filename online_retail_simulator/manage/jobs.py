@@ -35,7 +35,9 @@ def create_job(config: Dict, config_path: str, job_id: Optional[str] = None) -> 
         JobInfo: Information about the created job
     """
     if job_id is None:
-        job_id = generate_job_id()
+        # Use PREFIX from config if available, default to "job"
+        prefix = config.get("STORAGE", {}).get("PREFIX", "job")
+        job_id = generate_job_id(prefix)
 
     # Extract storage path from config
     storage_path = config.get("STORAGE", {}).get("PATH", ".")

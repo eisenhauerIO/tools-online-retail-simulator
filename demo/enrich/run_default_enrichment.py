@@ -56,7 +56,7 @@ def main():
         f"Revenue lift: {((enriched_post['revenue'].sum() / original_post['revenue'].sum()) - 1) * 100:.1f}%"
     )
 
-    print(f"\n✓ Results saved to: {job_info.storage_path}/{job_info.job_id}/")
+    print(f"\n✓ Results saved to: {job_info.full_path}/")
 
     print("\n" + "=" * 60)
     print("Default enrichment complete!")
