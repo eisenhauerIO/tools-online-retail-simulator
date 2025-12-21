@@ -33,7 +33,7 @@ dependencies = [
     "pyyaml",
     "pytest>=7.0",
     "ruff>=0.8.0",
-    "artifact-store @ git+https://github.com/eisenhauerIO/utils-artifacts-store.git@bc3a7d6e02266ddb24348279f75bf314de16a21a"
+    "artifact-store @ git+https://github.com/eisenhauerIO/utils-artifact-store.git@3ae2b5e80e69d262a6b10a702c567fbc4a97ff47"
 ]
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
