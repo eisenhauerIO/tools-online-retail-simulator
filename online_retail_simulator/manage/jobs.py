@@ -1,45 +1,33 @@
 """
 Job management functions for simulation data.
+
+Generic job utilities (JobInfo, list_jobs, cleanup_old_jobs) are provided by artifact_store.
+This module provides simulation-specific helpers that build on top of those primitives.
 """
 
-import uuid
-from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import pandas as pd
-from artifact_store import ArtifactStore
-
-
-@dataclass
-class JobInfo:
-    """Information about a simulation job and its storage location."""
-
-    job_id: str
-    storage_path: str
-
-    def __str__(self) -> str:
-        return self.job_id
-
-    def get_store(self) -> ArtifactStore:
-        """Get an ArtifactStore for this job's directory."""
-        return ArtifactStore(f"{self.storage_path}/{self.job_id}")
-
-
-def generate_job_id() -> str:
-    """Generate a unique job ID with timestamp and short UUID."""
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    short_uuid = str(uuid.uuid4())[:8]
-    return f"job-{timestamp}-{short_uuid}"
+from artifact_store import (
+    ArtifactStore,
+    JobInfo,
+    cleanup_old_jobs,
+    generate_job_id,
+    list_jobs,
+)
 
 
 def create_job(config: Dict, config_path: str, job_id: Optional[str] = None) -> JobInfo:
     """
     Create a new job directory with config.
 
+    This is a simulation-specific wrapper that extracts storage path from config
+    and copies the original config file to the job directory.
+
     Args:
-        config: Configuration dictionary
+        config: Configuration dictionary (expects STORAGE.PATH)
         config_path: Path to original config file
         job_id: Optional job ID, auto-generated if not provided
 
@@ -63,39 +51,6 @@ def create_job(config: Dict, config_path: str, job_id: Optional[str] = None) -> 
         store.write_text("config.yaml", config_content)
 
     return job_info
-
-
-def save_dataframe(job_info: JobInfo, name: str, df: pd.DataFrame) -> None:
-    """
-    Save a DataFrame to a job directory.
-
-    Args:
-        job_info: JobInfo for the job
-        name: Name of the file (without extension)
-        df: DataFrame to save
-    """
-    store = job_info.get_store()
-    store.write_csv(f"{name}.csv", df)
-
-
-def load_dataframe(job_info: JobInfo, name: str) -> Optional[pd.DataFrame]:
-    """
-    Load a DataFrame from a job directory.
-
-    Args:
-        job_info: JobInfo for the job
-        name: Name of the file (without extension)
-
-    Returns:
-        DataFrame if file exists, None otherwise
-    """
-    store = job_info.get_store()
-    file_path = f"{name}.csv"
-
-    if not store.exists(file_path):
-        return None
-
-    return store.read_csv(file_path)
 
 
 def save_job_metadata(job_info: JobInfo, config: Dict, config_path: str, **extra) -> None:
@@ -146,8 +101,9 @@ def save_job_data(
     """
     job_info = create_job(config, config_path, job_id)
 
-    save_dataframe(job_info, "products", products_df)
-    save_dataframe(job_info, "sales", sales_df)
+    # Use JobInfo.save_df method
+    job_info.save_df("products", products_df)
+    job_info.save_df("sales", sales_df)
     save_job_metadata(
         job_info,
         config,
@@ -179,7 +135,7 @@ def load_job_results(job_info: JobInfo) -> Dict[str, pd.DataFrame]:
 
     results = {}
     for name in ["products", "sales", "enriched"]:
-        df = load_dataframe(job_info, name)
+        df = job_info.load_df(name)
         if df is not None:
             results[name] = df
 
@@ -205,54 +161,3 @@ def load_job_metadata(job_info: JobInfo) -> Dict:
         raise FileNotFoundError(f"Metadata file not found: {store.full_path('metadata.json')}")
 
     return store.read_json("metadata.json")
-
-
-def list_jobs(storage_path: str = ".") -> List[str]:
-    """
-    List all available job IDs in a storage path.
-
-    Args:
-        storage_path: Base path where job directories are stored
-
-    Returns:
-        List of job IDs sorted by creation time (newest first)
-    """
-    output_dir = Path(storage_path)
-    if not output_dir.exists():
-        return []
-
-    jobs = []
-    for job_dir in output_dir.iterdir():
-        if job_dir.is_dir() and job_dir.name.startswith("job-"):
-            jobs.append(job_dir.name)
-
-    # Sort by timestamp in job name (newest first)
-    return sorted(jobs, reverse=True)
-
-
-def cleanup_old_jobs(storage_path: str = ".", keep_count: int = 10) -> List[str]:
-    """
-    Clean up old job directories, keeping only the most recent ones.
-
-    Args:
-        storage_path: Base path where job directories are stored
-        keep_count: Number of recent jobs to keep
-
-    Returns:
-        List of removed job IDs
-    """
-    jobs = list_jobs(storage_path)
-    if len(jobs) <= keep_count:
-        return []
-
-    jobs_to_remove = jobs[keep_count:]
-    removed_jobs = []
-
-    for job_id in jobs_to_remove:
-        job_info = JobInfo(job_id=job_id, storage_path=storage_path)
-        store = job_info.get_store()
-        if store.exists(""):
-            store.delete()
-            removed_jobs.append(job_id)
-
-    return removed_jobs

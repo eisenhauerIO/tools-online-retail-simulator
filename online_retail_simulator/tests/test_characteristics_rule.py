@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from online_retail_simulator import JobInfo, load_dataframe
+from online_retail_simulator import JobInfo
 from online_retail_simulator.simulate import simulate_characteristics
 
 
@@ -12,7 +12,7 @@ def test_characteristics_rule():
 
     assert isinstance(job_info, JobInfo)
 
-    df = load_dataframe(job_info, "products")
+    df = job_info.load_df("products")
     assert isinstance(df, pd.DataFrame)
     assert not df.empty
     assert "asin" in df.columns

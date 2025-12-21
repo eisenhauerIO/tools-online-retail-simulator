@@ -12,10 +12,8 @@ from .manage import (
     cleanup_old_jobs,
     create_job,
     list_jobs,
-    load_dataframe,
     load_job_metadata,
     load_job_results,
-    save_dataframe,
 )
 from .simulate import (
     get_simulation_function,
@@ -49,8 +47,6 @@ __all__ = [
     # Job management
     "JobInfo",
     "create_job",
-    "save_dataframe",
-    "load_dataframe",
     "load_job_results",
     "load_job_metadata",
     "list_jobs",

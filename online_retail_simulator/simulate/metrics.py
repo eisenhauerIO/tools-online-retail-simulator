@@ -5,10 +5,10 @@ Dispatches to appropriate backend based on config.
 
 from ..config_processor import process_config
 from ..core.backends import BackendRegistry
-from ..manage import JobInfo, load_dataframe, save_dataframe, save_job_metadata
+from ..manage import save_job_metadata
 
 
-def simulate_metrics(job_info: JobInfo, config_path: str) -> JobInfo:
+def simulate_metrics(job_info, config_path: str):
     """
     Simulate product metrics using the backend specified in config.
 
@@ -22,7 +22,7 @@ def simulate_metrics(job_info: JobInfo, config_path: str) -> JobInfo:
     config = process_config(config_path)
 
     # Load products from job
-    products_df = load_dataframe(job_info, "products")
+    products_df = job_info.load_df("products")
     if products_df is None:
         raise FileNotFoundError(f"products.csv not found in job {job_info.job_id}")
 
@@ -31,7 +31,7 @@ def simulate_metrics(job_info: JobInfo, config_path: str) -> JobInfo:
     sales_df = backend.simulate_metrics(products_df)
 
     # Save sales to same job
-    save_dataframe(job_info, "sales", sales_df)
+    job_info.save_df("sales", sales_df)
     save_job_metadata(
         job_info,
         config,

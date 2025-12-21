@@ -9,7 +9,6 @@ from online_retail_simulator import (
     clear_enrichment_registry,
     enrich,
     list_enrichment_functions,
-    load_dataframe,
     register_enrichment_function,
     register_enrichment_module,
     simulate,
@@ -90,13 +89,13 @@ IMPACT:
         job_info = simulate(test_config_path)
 
         # Load original sales before enrichment
-        original_sales = load_dataframe(job_info, "sales")
+        original_sales = job_info.load_df("sales")
 
         # Apply enrichment using registered function
         enriched_job_info = enrich(config_path, job_info)
 
         # Load enriched results
-        enriched_sales = load_dataframe(enriched_job_info, "enriched")
+        enriched_sales = enriched_job_info.load_df("enriched")
 
         # Verify doubling effect
         original_total = original_sales["ordered_units"].sum()
@@ -152,13 +151,13 @@ IMPACT:
         job_info = simulate(test_config_path)
 
         # Load original sales before enrichment
-        original_sales = load_dataframe(job_info, "sales")
+        original_sales = job_info.load_df("sales")
 
         # Apply enrichment - should use registered version (triple)
         enriched_job_info = enrich(config_path, job_info)
 
         # Load enriched results
-        enriched_sales = load_dataframe(enriched_job_info, "enriched")
+        enriched_sales = enriched_job_info.load_df("enriched")
 
         # Verify tripling effect (not the built-in boost)
         original_total = original_sales["quantity"].sum()

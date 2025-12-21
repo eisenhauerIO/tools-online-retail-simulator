@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import pytest
 
-from online_retail_simulator import JobInfo, load_dataframe
+from online_retail_simulator import JobInfo
 from online_retail_simulator.simulate import simulate_characteristics
 
 from .import_helpers import has_synthesizer
@@ -17,7 +17,7 @@ def test_characteristics_synthesizer():
 
     assert isinstance(job_info, JobInfo)
 
-    df = load_dataframe(job_info, "products")
+    df = job_info.load_df("products")
     assert isinstance(df, pd.DataFrame)
     assert not df.empty
     assert "product_id" in df.columns

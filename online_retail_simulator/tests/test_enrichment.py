@@ -6,7 +6,7 @@ import tempfile
 import pandas as pd
 import pytest
 
-from online_retail_simulator import enrich, load_dataframe, simulate
+from online_retail_simulator import enrich, simulate
 
 
 def test_enrich_basic():
@@ -32,13 +32,13 @@ IMPACT:
         job_info = simulate(test_config_path)
 
         # Load original sales before enrichment
-        original_sales = load_dataframe(job_info, "sales")
+        original_sales = job_info.load_df("sales")
 
         # Apply enrichment
         enriched_job_info = enrich(config_path, job_info)
 
         # Load enriched data
-        enriched_sales = load_dataframe(enriched_job_info, "enriched")
+        enriched_sales = enriched_job_info.load_df("enriched")
 
         # Verify structure
         assert isinstance(enriched_sales, pd.DataFrame)
@@ -79,13 +79,13 @@ IMPACT:
         job_info = simulate(test_config_path)
 
         # Load original sales before enrichment
-        original_sales = load_dataframe(job_info, "sales")
+        original_sales = job_info.load_df("sales")
 
         # Apply enrichment
         enriched_job_info = enrich(config_path, job_info)
 
         # Load enriched data
-        enriched_sales = load_dataframe(enriched_job_info, "enriched")
+        enriched_sales = enriched_job_info.load_df("enriched")
 
         # Verify basic structure
         assert isinstance(enriched_sales, pd.DataFrame)
@@ -172,16 +172,16 @@ IMPACT:
         job_info2 = simulate(test_config_path)
 
         # Load original sales
-        sales1 = load_dataframe(job_info1, "sales")
-        sales2 = load_dataframe(job_info2, "sales")
+        sales1 = job_info1.load_df("sales")
+        sales2 = job_info2.load_df("sales")
 
         # Apply enrichment with same config (same seed)
         enriched_job_info1 = enrich(config_path, job_info1)
         enriched_job_info2 = enrich(config_path, job_info2)
 
         # Load enriched results
-        enriched_df1 = load_dataframe(enriched_job_info1, "enriched")
-        enriched_df2 = load_dataframe(enriched_job_info2, "enriched")
+        enriched_df1 = enriched_job_info1.load_df("enriched")
+        enriched_df2 = enriched_job_info2.load_df("enriched")
 
         # Both should have identical structure
         assert list(enriched_df1.columns) == list(enriched_df2.columns)
