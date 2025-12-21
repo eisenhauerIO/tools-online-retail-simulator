@@ -40,7 +40,9 @@ from online_retail_simulator import simulate, load_job_results
 job_info = simulate("demo/simulate/config_default_simulation.yaml")
 
 # Load the results
-products_df, sales_df = load_job_results(job_info)
+results = load_job_results(job_info)
+products_df = results["products"]
+sales_df = results["sales"]
 
 # Explore the data
 print(f"Generated {len(sales_df)} sales records")
@@ -109,7 +111,8 @@ from online_retail_simulator import simulate, load_job_results
 
 # Generate 30 days of sales data across 8 categories
 job_info = simulate("config.yaml")
-products_df, sales_df = load_job_results(job_info)
+results = load_job_results(job_info)
+sales_df = results["sales"]
 print(f"Generated {len(sales_df)} sales records for ML training")
 ```
 
@@ -153,8 +156,9 @@ baseline_job = simulate("simulation_config.yaml")
 enriched_job = enrich("enrichment_config.yaml", baseline_job)
 
 # Load and compare results
-_, baseline_df = load_job_results(baseline_job)
-_, enriched_df = load_job_results(enriched_job)
+from online_retail_simulator import load_dataframe
+baseline_df = load_dataframe(baseline_job, "sales")
+enriched_df = load_dataframe(enriched_job, "enriched")
 
 lift = (enriched_df['revenue'].sum() / baseline_df['revenue'].sum() - 1) * 100
 print(f"Projected revenue lift: {lift:.1f}%")
@@ -234,11 +238,11 @@ RULE:
 **Solution**:
 ```python
 # Quick integration testing
-from online_retail_simulator import simulate, load_job_results
+from online_retail_simulator import simulate, load_dataframe
 
 # Generate test data matching your schema
 job_info = simulate("test_config.yaml")
-_, sales_df = load_job_results(job_info)
+sales_df = load_dataframe(job_info, "sales")
 
 # Use in your tests
 assert len(sales_df) > 0
@@ -307,7 +311,9 @@ from online_retail_simulator import simulate, load_job_results
 job_info = simulate("demo/simulate/config_default_simulation.yaml")
 
 # Load the results
-products_df, sales_df = load_job_results(job_info)
+results = load_job_results(job_info)
+products_df = results["products"]
+sales_df = results["sales"]
 
 # Explore the data
 print(f"Generated {len(sales_df)} sales records")
@@ -319,14 +325,16 @@ print(f"Total revenue: ${sales_df['revenue'].sum():,.2f}")
 **Two-Step Generation** for more control:
 
 ```python
-from online_retail_simulator import simulate_characteristics, simulate_metrics
+from online_retail_simulator import simulate_characteristics, simulate_metrics, load_dataframe
 
 # Step 1: Generate product catalog
-products_df = simulate_characteristics("config.yaml")
+job_info = simulate_characteristics("config.yaml")
+products_df = load_dataframe(job_info, "products")
 print(f"Generated {len(products_df)} products")
 
 # Step 2: Generate sales transactions
-sales_df = simulate_metrics(products_df, "config.yaml")
+job_info = simulate_metrics(job_info, "config.yaml")
+sales_df = load_dataframe(job_info, "sales")
 print(f"Generated {len(sales_df)} sales records")
 ```
 
@@ -399,16 +407,16 @@ SYNTHESIZER:
 **Basic Enrichment**:
 
 ```python
-from online_retail_simulator import simulate, enrich, load_job_results
+from online_retail_simulator import simulate, enrich, load_dataframe
 
 # Generate baseline data
 baseline_job = simulate("simulation_config.yaml")
-_, baseline_df = load_job_results(baseline_job)
+baseline_df = load_dataframe(baseline_job, "sales")
 print(f"Baseline revenue: ${baseline_df['revenue'].sum():,.2f}")
 
 # Apply enrichment
 enriched_job = enrich("enrichment_config.yaml", baseline_job)
-_, enriched_df = load_job_results(enriched_job)
+enriched_df = load_dataframe(enriched_job, "enriched")
 print(f"Enriched revenue: ${enriched_df['revenue'].sum():,.2f}")
 
 # Calculate lift
@@ -432,13 +440,13 @@ IMPACT:
 **Multiple Enrichment Scenarios**:
 
 ```python
-from online_retail_simulator import simulate, enrich, load_job_results
+from online_retail_simulator import simulate, enrich, load_dataframe
 import yaml
 from pathlib import Path
 
 # Generate baseline once
 baseline_job = simulate("simulation_config.yaml")
-_, baseline_df = load_job_results(baseline_job)
+baseline_df = load_dataframe(baseline_job, "sales")
 baseline_revenue = baseline_df['revenue'].sum()
 
 # Test multiple scenarios
@@ -469,7 +477,7 @@ for i, params in enumerate(scenarios):
 
     # Apply enrichment
     enriched_job = enrich(config_path, baseline_job)
-    _, enriched_df = load_job_results(enriched_job)
+    enriched_df = load_dataframe(enriched_job, "enriched")
     lift = (enriched_df['revenue'].sum() / baseline_revenue - 1) * 100
 
     results.append({
@@ -492,7 +500,7 @@ for result in results:
 **Complete A/B Test Simulation**:
 
 ```python
-from online_retail_simulator import simulate, enrich, load_job_results
+from online_retail_simulator import simulate, enrich, load_dataframe
 import pandas as pd
 
 def run_ab_test(simulation_config, enrichment_config, test_name):
@@ -500,12 +508,12 @@ def run_ab_test(simulation_config, enrichment_config, test_name):
 
     # Generate control group (baseline)
     control_job = simulate(simulation_config)
-    _, control_df = load_job_results(control_job)
+    control_df = load_dataframe(control_job, "sales")
     control_revenue = control_df['revenue'].sum()
 
     # Generate treatment group (enriched)
     treatment_job = enrich(enrichment_config, control_job)
-    _, treatment_df = load_job_results(treatment_job)
+    treatment_df = load_dataframe(treatment_job, "enriched")
     treatment_revenue = treatment_df['revenue'].sum()
 
     # Calculate metrics
@@ -576,13 +584,13 @@ print(results_df[['test_name', 'relative_lift_pct', 'absolute_lift']])
 **Category Analysis**:
 
 ```python
-from online_retail_simulator import simulate, load_job_results
+from online_retail_simulator import simulate, load_dataframe
 import pandas as pd
 import matplotlib.pyplot as plt
 
 # Generate data
 job_info = simulate("config.yaml")
-_, sales_df = load_job_results(job_info)
+sales_df = load_dataframe(job_info, "sales")
 
 # Revenue by category
 category_revenue = sales_df.groupby('category')['revenue'].sum().sort_values(ascending=False)
@@ -653,11 +661,11 @@ print(top_efficiency[['asin', 'category', 'revenue_per_unit']])
 %matplotlib inline
 import pandas as pd
 import matplotlib.pyplot as plt
-from online_retail_simulator import simulate, enrich, load_job_results
+from online_retail_simulator import simulate, enrich, load_dataframe
 
 # Cell 2: Generate data
 job_info = simulate("config.yaml")
-_, sales_df = load_job_results(job_info)
+sales_df = load_dataframe(job_info, "sales")
 print(f"Generated {len(sales_df)} records")
 sales_df.head()
 
@@ -675,11 +683,11 @@ plt.show()
 ### Pandas Integration
 
 ```python
-from online_retail_simulator import simulate, load_job_results
+from online_retail_simulator import simulate, load_dataframe
 
 # Seamless pandas integration
 job_info = simulate("config.yaml")
-_, sales_df = load_job_results(job_info)
+sales_df = load_dataframe(job_info, "sales")
 
 # Standard pandas operations work immediately
 summary_stats = sales_df.describe()

@@ -2,15 +2,14 @@
 Job management functions for simulation data.
 """
 
-import json
-import shutil
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import pandas as pd
+from artifact_store import ArtifactStore
 
 
 @dataclass
@@ -23,6 +22,10 @@ class JobInfo:
     def __str__(self) -> str:
         return self.job_id
 
+    def get_store(self) -> ArtifactStore:
+        """Get an ArtifactStore for this job's directory."""
+        return ArtifactStore(f"{self.storage_path}/{self.job_id}")
+
 
 def generate_job_id() -> str:
     """Generate a unique job ID with timestamp and short UUID."""
@@ -31,9 +34,94 @@ def generate_job_id() -> str:
     return f"job-{timestamp}-{short_uuid}"
 
 
-def get_job_directory(job_info: JobInfo) -> Path:
-    """Get the directory path for a job."""
-    return Path(job_info.storage_path) / job_info.job_id
+def create_job(config: Dict, config_path: str, job_id: Optional[str] = None) -> JobInfo:
+    """
+    Create a new job directory with config.
+
+    Args:
+        config: Configuration dictionary
+        config_path: Path to original config file
+        job_id: Optional job ID, auto-generated if not provided
+
+    Returns:
+        JobInfo: Information about the created job
+    """
+    if job_id is None:
+        job_id = generate_job_id()
+
+    # Extract storage path from config
+    storage_path = config.get("STORAGE", {}).get("PATH", ".")
+
+    # Create JobInfo
+    job_info = JobInfo(job_id=job_id, storage_path=storage_path)
+
+    # Copy original config using ArtifactStore
+    if Path(config_path).exists():
+        store = job_info.get_store()
+        source_store, filename = ArtifactStore.from_file_path(config_path)
+        config_content = source_store.read_text(filename)
+        store.write_text("config.yaml", config_content)
+
+    return job_info
+
+
+def save_dataframe(job_info: JobInfo, name: str, df: pd.DataFrame) -> None:
+    """
+    Save a DataFrame to a job directory.
+
+    Args:
+        job_info: JobInfo for the job
+        name: Name of the file (without extension)
+        df: DataFrame to save
+    """
+    store = job_info.get_store()
+    store.write_csv(f"{name}.csv", df)
+
+
+def load_dataframe(job_info: JobInfo, name: str) -> Optional[pd.DataFrame]:
+    """
+    Load a DataFrame from a job directory.
+
+    Args:
+        job_info: JobInfo for the job
+        name: Name of the file (without extension)
+
+    Returns:
+        DataFrame if file exists, None otherwise
+    """
+    store = job_info.get_store()
+    file_path = f"{name}.csv"
+
+    if not store.exists(file_path):
+        return None
+
+    return store.read_csv(file_path)
+
+
+def save_job_metadata(job_info: JobInfo, config: Dict, config_path: str, **extra) -> None:
+    """
+    Save or update job metadata.
+
+    Args:
+        job_info: JobInfo for the job
+        config: Configuration dictionary
+        config_path: Path to original config file
+        **extra: Additional metadata fields
+    """
+    store = job_info.get_store()
+
+    metadata = {
+        "job_id": job_info.job_id,
+        "timestamp": datetime.now().isoformat(),
+        "config_path": config_path,
+        "storage_path": job_info.storage_path,
+        "seed": config.get("SEED"),
+        "mode": "RULE" if "RULE" in config else "SYNTHESIZER",
+        "config": config,
+        **extra,
+    }
+
+    store.write_json("metadata.json", metadata)
 
 
 def save_job_data(
@@ -56,48 +144,22 @@ def save_job_data(
     Returns:
         JobInfo: Information about the saved job
     """
-    if job_id is None:
-        job_id = generate_job_id()
+    job_info = create_job(config, config_path, job_id)
 
-    # Extract storage path from config
-    storage_path = config.get("STORAGE", {}).get("PATH", ".")
-
-    # Create JobInfo
-    job_info = JobInfo(job_id=job_id, storage_path=storage_path)
-
-    # Create job directory
-    job_path = get_job_directory(job_info)
-    job_path.mkdir(parents=True, exist_ok=True)
-
-    # Save data files
-    products_df.to_csv(job_path / "products.csv", index=False)
-    sales_df.to_csv(job_path / "sales.csv", index=False)
-
-    # Copy original config
-    if Path(config_path).exists():
-        shutil.copy2(config_path, job_path / "config.yaml")
-
-    # Create metadata
-    metadata = {
-        "job_id": job_id,
-        "timestamp": datetime.now().isoformat(),
-        "config_path": config_path,
-        "storage_path": storage_path,
-        "seed": config.get("SEED"),
-        "mode": "RULE" if "RULE" in config else "SYNTHESIZER",
-        "num_products": len(products_df),
-        "num_sales": len(sales_df),
-        "config": config,
-    }
-
-    # Save metadata
-    with open(job_path / "metadata.json", "w") as f:
-        json.dump(metadata, f, indent=2, default=str)
+    save_dataframe(job_info, "products", products_df)
+    save_dataframe(job_info, "sales", sales_df)
+    save_job_metadata(
+        job_info,
+        config,
+        config_path,
+        num_products=len(products_df),
+        num_sales=len(sales_df),
+    )
 
     return job_info
 
 
-def load_job_results(job_info: JobInfo) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def load_job_results(job_info: JobInfo) -> Dict[str, pd.DataFrame]:
     """
     Load simulation results for a job.
 
@@ -105,28 +167,23 @@ def load_job_results(job_info: JobInfo) -> Tuple[pd.DataFrame, pd.DataFrame]:
         job_info: JobInfo containing job details
 
     Returns:
-        Tuple of (products_df, sales_df)
+        Dict with available DataFrames: 'products', 'sales', 'enriched'
 
     Raises:
-        FileNotFoundError: If job directory or files don't exist
+        FileNotFoundError: If job directory doesn't exist
     """
-    job_path = get_job_directory(job_info)
+    store = job_info.get_store()
 
-    if not job_path.exists():
-        raise FileNotFoundError(f"Job directory not found: {job_path}")
+    if not store.exists(""):
+        raise FileNotFoundError(f"Job directory not found: {store.base_path}")
 
-    products_path = job_path / "products.csv"
-    sales_path = job_path / "sales.csv"
+    results = {}
+    for name in ["products", "sales", "enriched"]:
+        df = load_dataframe(job_info, name)
+        if df is not None:
+            results[name] = df
 
-    if not products_path.exists():
-        raise FileNotFoundError(f"Products file not found: {products_path}")
-    if not sales_path.exists():
-        raise FileNotFoundError(f"Sales file not found: {sales_path}")
-
-    products_df = pd.read_csv(products_path)
-    sales_df = pd.read_csv(sales_path)
-
-    return products_df, sales_df
+    return results
 
 
 def load_job_metadata(job_info: JobInfo) -> Dict:
@@ -142,14 +199,12 @@ def load_job_metadata(job_info: JobInfo) -> Dict:
     Raises:
         FileNotFoundError: If job directory or metadata file doesn't exist
     """
-    job_path = get_job_directory(job_info)
-    metadata_path = job_path / "metadata.json"
+    store = job_info.get_store()
 
-    if not metadata_path.exists():
-        raise FileNotFoundError(f"Metadata file not found: {metadata_path}")
+    if not store.exists("metadata.json"):
+        raise FileNotFoundError(f"Metadata file not found: {store.full_path('metadata.json')}")
 
-    with open(metadata_path, "r") as f:
-        return json.load(f)
+    return store.read_json("metadata.json")
 
 
 def list_jobs(storage_path: str = ".") -> List[str]:
@@ -195,9 +250,9 @@ def cleanup_old_jobs(storage_path: str = ".", keep_count: int = 10) -> List[str]
 
     for job_id in jobs_to_remove:
         job_info = JobInfo(job_id=job_id, storage_path=storage_path)
-        job_path = get_job_directory(job_info)
-        if job_path.exists():
-            shutil.rmtree(job_path)
+        store = job_info.get_store()
+        if store.exists(""):
+            store.delete()
             removed_jobs.append(job_id)
 
     return removed_jobs

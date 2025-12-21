@@ -1,14 +1,17 @@
+import os
+
 import pandas as pd
 
+from online_retail_simulator import load_dataframe
 from online_retail_simulator.simulate import simulate_characteristics, simulate_metrics
 
 
 def test_metrics_rule():
-    import os
-
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    products = simulate_characteristics(config_path)
-    df = simulate_metrics(products, config_path)
+    job_info = simulate_characteristics(config_path)
+    job_info = simulate_metrics(job_info, config_path)
+
+    df = load_dataframe(job_info, "sales")
     assert isinstance(df, pd.DataFrame)
     assert not df.empty
     assert "asin" in df.columns
@@ -23,11 +26,11 @@ def test_metrics_rule():
 
 def test_metrics_rule_weekly_granularity():
     """Test weekly aggregation produces correct output."""
-    import os
-
     config_path = os.path.join(os.path.dirname(__file__), "config_rule_weekly.yaml")
-    products = simulate_characteristics(config_path)
-    df = simulate_metrics(products, config_path)
+    job_info = simulate_characteristics(config_path)
+    products = load_dataframe(job_info, "products")
+    job_info = simulate_metrics(job_info, config_path)
+    df = load_dataframe(job_info, "sales")
 
     # Basic validations
     assert isinstance(df, pd.DataFrame)
@@ -72,14 +75,13 @@ def test_metrics_rule_weekly_granularity():
 
 def test_metrics_rule_weekly_date_adjustment():
     """Test that weekly granularity adjusts dates to full week boundaries."""
-    import os
-
     # The config has date_start: "2024-01-01" (Monday) to date_end: "2024-01-31" (Wednesday)
     # Should expand to 2024-01-01 (Monday) to 2024-02-04 (Sunday) = 5 weeks
 
     config_path = os.path.join(os.path.dirname(__file__), "config_rule_weekly.yaml")
-    products = simulate_characteristics(config_path)
-    df = simulate_metrics(products, config_path)
+    job_info = simulate_characteristics(config_path)
+    job_info = simulate_metrics(job_info, config_path)
+    df = load_dataframe(job_info, "sales")
 
     df["date_dt"] = pd.to_datetime(df["date"])
 
@@ -94,11 +96,10 @@ def test_metrics_rule_weekly_date_adjustment():
 
 def test_funnel_metrics_schema():
     """Test that new funnel metrics are present with correct types."""
-    import os
-
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    products = simulate_characteristics(config_path)
-    df = simulate_metrics(products, config_path)
+    job_info = simulate_characteristics(config_path)
+    job_info = simulate_metrics(job_info, config_path)
+    df = load_dataframe(job_info, "sales")
 
     # Check all funnel columns exist
     assert "impressions" in df.columns
@@ -119,11 +120,10 @@ def test_funnel_metrics_schema():
 
 def test_funnel_logic_consistency():
     """Test that funnel stages follow logical hierarchy."""
-    import os
-
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    products = simulate_characteristics(config_path)
-    df = simulate_metrics(products, config_path)
+    job_info = simulate_characteristics(config_path)
+    job_info = simulate_metrics(job_info, config_path)
+    df = load_dataframe(job_info, "sales")
 
     # Filter to rows with any activity
     active_rows = df[df["impressions"] > 0]
@@ -142,11 +142,10 @@ def test_funnel_logic_consistency():
 
 def test_funnel_zero_activity():
     """Test products with zero funnel activity have all zeros."""
-    import os
-
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    products = simulate_characteristics(config_path)
-    df = simulate_metrics(products, config_path)
+    job_info = simulate_characteristics(config_path)
+    job_info = simulate_metrics(job_info, config_path)
+    df = load_dataframe(job_info, "sales")
 
     # Find rows with no impressions
     no_activity = df[df["impressions"] == 0]
@@ -161,11 +160,10 @@ def test_funnel_zero_activity():
 
 def test_asp_calculation():
     """Test average selling price calculation."""
-    import os
-
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    products = simulate_characteristics(config_path)
-    df = simulate_metrics(products, config_path)
+    job_info = simulate_characteristics(config_path)
+    job_info = simulate_metrics(job_info, config_path)
+    df = load_dataframe(job_info, "sales")
 
     # For daily data with no discounts, ASP should equal price when units sold
     rows_with_sales = df[df["ordered_units"] > 0]
@@ -178,11 +176,10 @@ def test_asp_calculation():
 
 def test_weekly_funnel_aggregation():
     """Test weekly aggregation of funnel metrics."""
-    import os
-
     config_path = os.path.join(os.path.dirname(__file__), "config_rule_weekly.yaml")
-    products = simulate_characteristics(config_path)
-    df = simulate_metrics(products, config_path)
+    job_info = simulate_characteristics(config_path)
+    job_info = simulate_metrics(job_info, config_path)
+    df = load_dataframe(job_info, "sales")
 
     # Check schema
     assert "impressions" in df.columns
@@ -207,7 +204,6 @@ def test_weekly_funnel_aggregation():
 
 def test_conversion_rate_config():
     """Test that custom conversion rates are respected."""
-    import os
     import tempfile
 
     import yaml
@@ -241,8 +237,9 @@ def test_conversion_rate_config():
         config_path = f.name
 
     try:
-        products = simulate_characteristics(config_path)
-        df = simulate_metrics(products, config_path)
+        job_info = simulate_characteristics(config_path)
+        job_info = simulate_metrics(job_info, config_path)
+        df = load_dataframe(job_info, "sales")
 
         # With 100% rates and guaranteed funnel activity:
         # All rows should have activity

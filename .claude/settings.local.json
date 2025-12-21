@@ -9,7 +9,11 @@
       "Bash(cat:*)",
       "Bash(wc:*)",
       "Bash(find:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git clone:*)",
+      "Bash(git push:*)",
+      "Bash(git ls-remote:*)",
+      "Bash(hatch -e light run pytest:*)"
     ]
   }
 }

@@ -12,6 +12,7 @@ All simulation behavior is controlled through YAML configuration files, enabling
 
 ### 2. Modular Architecture
 The system is organized into distinct, loosely-coupled modules:
+- **Core**: Shared infrastructure including `FunctionRegistry` for extensible function registration
 - **Simulation**: Core data generation logic
 - **Enrichment**: Treatment effect application
 - **Configuration**: Parameter processing and validation
@@ -83,16 +84,18 @@ def load_config(config_path):
 
 #### Phase 1: Product Characteristics
 ```python
-# Generate product catalog
-products_df = simulate_characteristics(config)
-# Output: DataFrame with asin, category, price columns
+# Generate product catalog, returns JobInfo
+job_info = simulate_characteristics(config)
+# Output: JobInfo (products.csv saved to job directory)
+products_df = load_dataframe(job_info, "products")
 ```
 
 #### Phase 2: Sales Metrics
 ```python
-# Generate sales transactions
-sales_df = simulate_metrics(products_df, config)
-# Output: DataFrame with asin, date, quantity, revenue columns
+# Generate sales transactions, takes JobInfo
+job_info = simulate_metrics(job_info, config)
+# Output: JobInfo (sales.csv saved to job directory)
+sales_df = load_dataframe(job_info, "sales")
 ```
 
 ### 3. Optional Enrichment
@@ -142,16 +145,23 @@ enriched_job = enrich("enrichment_config.yaml", baseline_job)
 
 ## Enrichment System
 
-### Impact Function Registry
-```python
-# enrichment_registry.py
-class EnrichmentRegistry:
-    def register_function(self, name, func):
-        """Register custom enrichment functions"""
+### Function Registry
+The system uses a unified `FunctionRegistry` class for all extensible function types:
 
-    def get_function(self, name):
-        """Retrieve registered functions"""
+```python
+# core/registry.py
+class FunctionRegistry:
+    def register(self, name, func):
+        """Register function with signature validation"""
+
+    def get(self, name):
+        """Retrieve registered function (lazy loads defaults)"""
+
+    def list(self):
+        """List all registered function names"""
 ```
+
+Both simulation and enrichment registries use this common infrastructure.
 
 ### Built-in Impact Functions
 

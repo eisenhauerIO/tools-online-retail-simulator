@@ -10,6 +10,7 @@ from online_retail_simulator import (
     clear_enrichment_registry,
     enrich,
     list_enrichment_functions,
+    load_dataframe,
     register_enrichment_function,
     register_enrichment_module,
     simulate,
@@ -40,16 +41,14 @@ def test_register_function_invalid_signature():
         return data
 
     # Should raise error for invalid signature
-    with pytest.raises(ValueError, match="must have 'sales' parameter"):
+    with pytest.raises(ValueError, match="must have parameters"):
         register_enrichment_function("bad_function", bad_function)
 
 
 def test_register_module():
     """Test module registration."""
     # Clear registry first
-    from online_retail_simulator.enrich.enrichment_registry import _ENRICHMENT_REGISTRY
-
-    _ENRICHMENT_REGISTRY.clear()
+    clear_enrichment_registry()
 
     # Register the enrichment library module
     register_enrichment_module("enrich.enrichment_library")
@@ -91,14 +90,14 @@ IMPACT:
         test_config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
         job_info = simulate(test_config_path)
 
+        # Load original sales before enrichment
+        original_sales = load_dataframe(job_info, "sales")
+
         # Apply enrichment using registered function
         enriched_job_info = enrich(config_path, job_info)
 
-        # Load results
-        from online_retail_simulator import load_job_results
-
-        _, original_sales = load_job_results(job_info)
-        _, enriched_sales = load_job_results(enriched_job_info)
+        # Load enriched results
+        enriched_sales = load_dataframe(enriched_job_info, "enriched")
 
         # Verify doubling effect
         original_total = original_sales["ordered_units"].sum()
@@ -153,14 +152,14 @@ IMPACT:
         test_config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
         job_info = simulate(test_config_path)
 
+        # Load original sales before enrichment
+        original_sales = load_dataframe(job_info, "sales")
+
         # Apply enrichment - should use registered version (triple)
         enriched_job_info = enrich(config_path, job_info)
 
-        # Load results
-        from online_retail_simulator import load_job_results
-
-        _, original_sales = load_job_results(job_info)
-        _, enriched_sales = load_job_results(enriched_job_info)
+        # Load enriched results
+        enriched_sales = load_dataframe(enriched_job_info, "enriched")
 
         # Verify tripling effect (not the built-in boost)
         original_total = original_sales["quantity"].sum()
@@ -175,14 +174,13 @@ IMPACT:
 def test_list_functions():
     """Test listing registered functions."""
     # Clear registry
-    from online_retail_simulator.enrich.enrichment_registry import _ENRICHMENT_REGISTRY
+    clear_enrichment_registry()
 
-    _ENRICHMENT_REGISTRY.clear()
+    # After clear, list() triggers lazy loading of defaults
+    defaults = list_enrichment_functions()
+    assert len(defaults) == 3  # quantity_boost, probability_boost, combined_boost
 
-    # Should be empty initially
-    assert list_enrichment_functions() == []
-
-    # Register some functions
+    # Register some custom functions
     def func1(sales, **kwargs):
         return sales
 
@@ -192,11 +190,12 @@ def test_list_functions():
     register_enrichment_function("func1", func1)
     register_enrichment_function("func2", func2)
 
-    # Should list both
+    # Should list defaults + custom
     functions = list_enrichment_functions()
     assert "func1" in functions
     assert "func2" in functions
-    assert len(functions) == 2
+    assert "quantity_boost" in functions
+    assert len(functions) == 5  # 3 defaults + 2 custom
 
 
 def test_register_function_overwrites():
@@ -220,7 +219,7 @@ def test_register_function_overwrites():
     assert count == 1
 
     # Should use the second function
-    from online_retail_simulator.enrich.enrichment_registry import _ENRICHMENT_REGISTRY
+    from online_retail_simulator.enrich.enrichment_registry import _enrichment_registry
 
-    result = _ENRICHMENT_REGISTRY["test_func"]([], test="value")
+    result = _enrichment_registry.get("test_func")([], test="value")
     assert result == [{"test": "second"}]

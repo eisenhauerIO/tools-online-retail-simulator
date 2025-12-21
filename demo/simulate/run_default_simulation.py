@@ -8,9 +8,10 @@ This script shows:
 4. Customer journey funnel metrics (impressions → visits → cart adds → orders)
 """
 
-from online_retail_simulator import simulate, load_job_results
 import pandas as pd
 import yaml
+
+from online_retail_simulator import load_job_results, simulate
 
 
 def analyze_results(sales_df, products_df, granularity, job_info):
@@ -93,7 +94,9 @@ def main():
         print(f"✓ Simulation completed. Job ID: {job_info}")
 
         # Load results for analysis
-        products_df, sales_df = load_job_results(job_info)
+        results = load_job_results(job_info)
+        products_df = results["products"]
+        sales_df = results["sales"]
 
         # Display analysis
         analyze_results(sales_df, products_df, granularity, job_info)

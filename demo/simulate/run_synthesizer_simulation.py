@@ -7,7 +7,7 @@ This script shows:
 3. Generating synthetic product characteristics and sales metrics
 """
 
-from online_retail_simulator import simulate_characteristics, simulate_metrics
+from online_retail_simulator import load_dataframe, simulate_characteristics, simulate_metrics
 
 
 def main():
@@ -19,7 +19,8 @@ def main():
     try:
         # Step 1: Generate synthetic characteristics
         print("Step 1: Generating synthetic product characteristics...")
-        products_df = simulate_characteristics("config_synthesizer_simulation.yaml")
+        job_info = simulate_characteristics("config_synthesizer_simulation.yaml")
+        products_df = load_dataframe(job_info, "products")
 
         print(f"✓ Generated {len(products_df)} synthetic products")
         print(f"✓ Columns: {list(products_df.columns)}")
@@ -40,7 +41,8 @@ def main():
 
         # Step 2: Generate synthetic metrics
         print(f"\nStep 2: Generating synthetic sales metrics...")
-        sales_df = simulate_metrics(products_df, "config_synthesizer_simulation.yaml")
+        job_info = simulate_metrics(job_info, "config_synthesizer_simulation.yaml")
+        sales_df = load_dataframe(job_info, "sales")
 
         print(f"✓ Generated {len(sales_df)} synthetic sales records")
         print(f"✓ Columns: {list(sales_df.columns)}")

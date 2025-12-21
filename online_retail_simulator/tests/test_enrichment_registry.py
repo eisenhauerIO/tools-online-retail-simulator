@@ -60,7 +60,7 @@ def test_invalid_enrichment_function_signature():
         return []
 
     # Test that invalid function raises error
-    with pytest.raises(ValueError, match="must have 'sales' parameter"):
+    with pytest.raises(ValueError, match="must have parameters"):
         register_enrichment_function("invalid", invalid_enrichment)
 
 

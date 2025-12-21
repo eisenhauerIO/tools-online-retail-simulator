@@ -4,13 +4,11 @@ Dispatches to impact-based implementation based on config.
 """
 
 import copy
-import json
 import random
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
 
 import pandas as pd
-import yaml
+from artifact_store import ArtifactStore
 
 
 def parse_impact_spec(impact_spec: Dict) -> Tuple[str, str, Dict[str, Any]]:
@@ -112,19 +110,18 @@ def enrich(config_path: str, df: pd.DataFrame) -> pd.DataFrame:
     Apply enrichment to a DataFrame using a config file.
 
     Args:
-        config_path: Path to enrichment config (YAML or JSON)
+        config_path: Path to enrichment config (YAML or JSON, local or S3)
         df: DataFrame with sales data (must include asin)
 
     Returns:
         DataFrame with enrichment applied (factual version)
     """
-    # Load config - support both YAML and JSON
-    config_file = Path(config_path)
-    with open(config_file, "r") as f:
-        if config_file.suffix.lower() in [".yaml", ".yml"]:
-            config = yaml.safe_load(f)
-        else:
-            config = json.load(f)
+    # Load config using ArtifactStore - support both YAML and JSON
+    store, filename = ArtifactStore.from_file_path(config_path)
+    if filename.lower().endswith((".yaml", ".yml")):
+        config = store.read_yaml(filename)
+    else:
+        config = store.read_json(filename)
 
     # Get impact specification from config
     impact_spec = config.get("IMPACT")

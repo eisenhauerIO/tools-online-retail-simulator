@@ -1,11 +1,10 @@
 """Configuration processing with defaults and validation."""
 
 import copy
-import json
 from pathlib import Path
-from typing import Any, Dict, Set
+from typing import Any, Dict
 
-import yaml
+from artifact_store import ArtifactStore
 
 
 def _extract_param_schemas_from_defaults() -> Dict[str, Any]:
@@ -40,9 +39,9 @@ def _get_param_schemas() -> Dict[str, Any]:
 
 def load_defaults() -> Dict[str, Any]:
     """Load default configuration from package."""
-    defaults_path = Path(__file__).parent / "config_defaults.yaml"
-    with open(defaults_path, "r") as f:
-        return yaml.safe_load(f)
+    defaults_path = str(Path(__file__).parent / "config_defaults.yaml")
+    store, filename = ArtifactStore.from_file_path(defaults_path)
+    return store.read_yaml(filename)
 
 
 def deep_merge(base: Dict, override: Dict) -> Dict:
@@ -191,7 +190,7 @@ def process_config(config_path: str) -> Dict[str, Any]:
     Load, merge with defaults, and validate configuration.
 
     Args:
-        config_path: Path to user configuration file
+        config_path: Path to user configuration file (local or S3)
 
     Returns:
         Complete validated configuration
@@ -200,17 +199,16 @@ def process_config(config_path: str) -> Dict[str, Any]:
         FileNotFoundError: If config file doesn't exist
         ValueError: If configuration is invalid
     """
-    config_file = Path(config_path)
+    store, filename = ArtifactStore.from_file_path(config_path)
 
-    if not config_file.exists():
+    if not store.exists(filename):
         raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
     # Load user config - support both YAML and JSON for backward compatibility
-    with open(config_file, "r") as f:
-        if config_file.suffix.lower() in [".yaml", ".yml"]:
-            user_config = yaml.safe_load(f)
-        else:
-            user_config = json.load(f)
+    if filename.lower().endswith((".yaml", ".yml")):
+        user_config = store.read_yaml(filename)
+    else:
+        user_config = store.read_json(filename)
 
     # Load defaults
     defaults = load_defaults()

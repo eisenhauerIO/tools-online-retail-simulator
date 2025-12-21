@@ -3,42 +3,55 @@ Interface for simulating product characteristics.
 Dispatches to rule-based or synthesizer-based implementation based on config.
 """
 
-from typing import Dict, Optional
+from ..config_processor import process_config
+from ..manage import JobInfo, create_job, save_dataframe, save_job_metadata
 
-import pandas as pd
 
-
-def simulate_characteristics(config_path: str, config: Optional[Dict] = None) -> pd.DataFrame:
+def simulate_characteristics(config_path: str) -> JobInfo:
     """
     Simulate product characteristics using the backend specified in config.
-    Args:
-        config_path: Path to JSON configuration file
-        config: Optional pre-loaded config (avoids re-reading)
-    Returns:
-        DataFrame of product characteristics
-    """
-    from ..config_processor import process_config
 
-    config_loaded = process_config(config_path)
+    Args:
+        config_path: Path to configuration file
+
+    Returns:
+        JobInfo: Job containing products.csv
+    """
+    config = process_config(config_path)
+
+    # Generate products DataFrame
+    products_df = _generate_characteristics(config)
+
+    # Create job and save products
+    job_info = create_job(config, config_path)
+    save_dataframe(job_info, "products", products_df)
+    save_job_metadata(job_info, config, config_path, num_products=len(products_df))
+
+    return job_info
+
+
+def _generate_characteristics(config: dict):
+    """Generate characteristics DataFrame based on config backend."""
+    import pandas as pd
 
     # Simple either/or logic: RULE or SYNTHESIZER, not both, not neither
-    if "RULE" in config_loaded:
+    if "RULE" in config:
         # Rule-based generation
-        rule_config = config_loaded["RULE"]
+        rule_config = config["RULE"]
         characteristics_config = rule_config["CHARACTERISTICS"]
         function_name = characteristics_config.get("FUNCTION")
 
-        from .rule_registry import SimulationRegistry
+        from .rule_registry import get_simulation_function
 
         try:
-            func = SimulationRegistry.get_characteristics_function(function_name)
+            func = get_simulation_function("characteristics", function_name)
         except KeyError as e:
             raise KeyError(f"Error in RULE.CHARACTERISTICS: {str(e)}") from e
-        return func(config_loaded)
+        return func(config)
 
-    elif "SYNTHESIZER" in config_loaded:
+    elif "SYNTHESIZER" in config:
         # Synthesizer-based generation
-        synthesizer_config = config_loaded["SYNTHESIZER"]
+        synthesizer_config = config["SYNTHESIZER"]
         characteristics_config = synthesizer_config["CHARACTERISTICS"]
         function_name = characteristics_config.get("FUNCTION")
 
@@ -47,7 +60,7 @@ def simulate_characteristics(config_path: str, config: Optional[Dict] = None) ->
 
         from .characteristics_synthesizer_based import simulate_characteristics_synthesizer_based
 
-        return simulate_characteristics_synthesizer_based(config_loaded)
+        return simulate_characteristics_synthesizer_based(config)
 
     else:
         # Hard failure - no valid configuration

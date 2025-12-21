@@ -78,30 +78,24 @@ Create consistent error handling across the codebase:
 
 ### Phase 2: Core Architecture (Weeks 3-5)
 
-#### 2.1 Unified Registry Framework
+#### 2.1 Unified Registry Framework ✅ COMPLETED
 **Priority: HIGH | Risk: LOW-MEDIUM | Effort: 5-7 days**
+
+**Status**: Implemented. Created `online_retail_simulator/core/registry.py` with unified `FunctionRegistry` class. Both simulation and enrichment registries now use this framework.
 
 Replace dual registry implementations with a unified, generic framework:
 
 **New file:** `online_retail_simulator/core/registry.py`
-- `FunctionRegistry[T]` - Generic registry with validation
-- `FunctionSignature` protocol for signature validation
+- `FunctionRegistry` - Generic registry with validation
 - Built-in support for lazy default loading, module registration
 - Eliminates global `_DEFAULTS_REGISTERED` flags
 
 **Refactored files:**
-- `simulate/rule_registry.py` - Migrate to new framework while keeping backward-compatible API
-- `enrich/enrichment_registry.py` - Migrate to new framework
-- Keep existing convenience functions as thin wrappers
+- `simulate/rule_registry.py` - Uses two `FunctionRegistry` instances
+- `enrich/enrichment_registry.py` - Uses one `FunctionRegistry` instance
+- Convenience functions delegate to registry instances
 
-**Migration approach:**
-1. Implement new registry framework
-2. Create adapters for existing registries
-3. Run all tests to ensure compatibility
-4. Gradually migrate internals
-5. Remove old implementation once stable
-
-**Benefits:**
+**Benefits achieved:**
 - Single source of truth for registry logic
 - Consistent behavior across all function types
 - Easier to add new function types in future
