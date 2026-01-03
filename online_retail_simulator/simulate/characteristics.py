@@ -5,10 +5,10 @@ Dispatches to appropriate backend based on config.
 
 from ..config_processor import process_config
 from ..core.backends import BackendRegistry
-from ..manage import JobInfo, create_job, save_dataframe, update_job_metadata
+from ..manage import create_job, save_job_metadata
 
 
-def simulate_characteristics(config_path: str) -> JobInfo:
+def simulate_characteristics(config_path: str):
     """
     Simulate product characteristics using the backend specified in config.
 
@@ -26,7 +26,7 @@ def simulate_characteristics(config_path: str) -> JobInfo:
 
     # Create job and save products
     job_info = create_job(config, config_path)
-    save_dataframe(job_info, "products", products_df)
-    update_job_metadata(job_info, has_characteristics=True)
+    job_info.save_df("products", products_df)
+    save_job_metadata(job_info, config, config_path, num_products=len(products_df))
 
     return job_info

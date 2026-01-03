@@ -33,7 +33,7 @@ dependencies = [
     "pyyaml",
     "pytest>=7.0",
     "ruff>=0.8.0",
-    "artifact-store @ git+https://github.com/eisenhauerIO/utils-artifacts-store.git@bc3a7d6e02266ddb24348279f75bf314de16a21a"
+    "artifact-store @ git+https://github.com/eisenhauerIO/utils-artifact-store.git@b389fc5c3e558659626408996d9c896daed00b68"
 ]
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
@@ -65,7 +65,7 @@ classifiers = [
 dependencies = [
     "pandas>=1.3.0",
     "pyyaml",
-    "artifact-store @ git+https://github.com/eisenhauerIO/utils-artifacts-store.git@bc3a7d6e02266ddb24348279f75bf314de16a21a",
+    "artifact-store @ git+https://github.com/eisenhauerIO/utils-artifact-store.git@b389fc5c3e558659626408996d9c896daed00b68"
 ]
 
 
@@ -74,7 +74,7 @@ synthesizer = [
     "sdv>=1.0.0"
 ]
 cloud = [
-    "artifact-store[cloud] @ git+https://github.com/eisenhauerIO/utils-artifacts-store.git@bc3a7d6e02266ddb24348279f75bf314de16a21a",
+    "artifact-store[cloud] @ git+https://github.com/eisenhauerIO/utils-artifact-store.git@b389fc5c3e558659626408996d9c896daed00b68",
 ]
 dev = [
     "pytest>=7.0",
@@ -141,3 +141,8 @@ ignore = ["E203", "F841"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["online_retail_simulator"]
+
+[tool.pytest.ini_options]
+markers = [
+    "llm: marks tests requiring LLM (skip without --with-llm)",
+]

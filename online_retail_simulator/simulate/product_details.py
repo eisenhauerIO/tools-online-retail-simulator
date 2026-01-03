@@ -1,7 +1,7 @@
 """Product details simulation with backend dispatch."""
 
 from ..config_processor import process_config
-from ..manage import JobInfo, load_dataframe, save_dataframe, update_job_metadata
+from ..manage import JobInfo, save_job_metadata
 from .product_details_mock import simulate_product_details_mock
 from .product_details_ollama import simulate_product_details_ollama
 
@@ -38,10 +38,10 @@ def simulate_product_details(job_info: JobInfo, config_path: str) -> JobInfo:
         raise ValueError(f"Unknown product details function: {function_name}")
 
     backend_fn = PRODUCT_DETAILS_REGISTRY[function_name]
-    products_df = load_dataframe(job_info, "products")
+    products_df = job_info.load_df("products")
     detailed_df = backend_fn(products_df)
 
-    save_dataframe(job_info, "products", detailed_df)
-    update_job_metadata(job_info, has_product_details=True)
+    job_info.save_df("products", detailed_df)
+    save_job_metadata(job_info, config, config_path, has_product_details=True)
 
     return job_info

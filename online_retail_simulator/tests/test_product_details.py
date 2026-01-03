@@ -59,25 +59,12 @@ class TestProductDetailsMock:
         assert isinstance(result["features"].iloc[0], list)
 
 
+@pytest.mark.llm
 class TestProductDetailsOllama:
-    """Tests for Ollama backend (skipped if not running)."""
+    """Tests for Ollama backend (requires --with-llm flag)."""
 
-    @pytest.fixture
-    def ollama_available(self):
-        """Check if Ollama is running."""
-        import requests
-
-        try:
-            resp = requests.get("http://localhost:11434/api/tags", timeout=2)
-            return resp.status_code == 200
-        except Exception:
-            return False
-
-    def test_ollama_generates_details(self, sample_products, ollama_available):
+    def test_ollama_generates_details(self, sample_products):
         """Ollama should generate product details."""
-        if not ollama_available:
-            pytest.skip("Ollama not running")
-
         from online_retail_simulator.simulate.product_details_ollama import simulate_product_details_ollama
 
         result = simulate_product_details_ollama(sample_products)

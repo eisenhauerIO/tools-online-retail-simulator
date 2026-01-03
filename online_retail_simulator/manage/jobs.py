@@ -26,12 +26,25 @@ class JobInfo:
         """Get an ArtifactStore for this job's directory."""
         return ArtifactStore(f"{self.storage_path}/{self.job_id}")
 
+    def save_df(self, name: str, df: pd.DataFrame) -> None:
+        """Save a DataFrame to this job's directory."""
+        store = self.get_store()
+        store.write_csv(f"{name}.csv", df)
 
-def generate_job_id() -> str:
+    def load_df(self, name: str) -> Optional[pd.DataFrame]:
+        """Load a DataFrame from this job's directory."""
+        store = self.get_store()
+        file_path = f"{name}.csv"
+        if not store.exists(file_path):
+            return None
+        return store.read_csv(file_path)
+
+
+def generate_job_id(prefix: str = "job") -> str:
     """Generate a unique job ID with timestamp and short UUID."""
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     short_uuid = str(uuid.uuid4())[:8]
-    return f"job-{timestamp}-{short_uuid}"
+    return f"{prefix}-{timestamp}-{short_uuid}"
 
 
 def create_job(config: Dict, config_path: str, job_id: Optional[str] = None) -> JobInfo:
@@ -39,7 +52,7 @@ def create_job(config: Dict, config_path: str, job_id: Optional[str] = None) -> 
     Create a new job directory with config.
 
     Args:
-        config: Configuration dictionary
+        config: Configuration dictionary (expects STORAGE.PATH)
         config_path: Path to original config file
         job_id: Optional job ID, auto-generated if not provided
 
@@ -47,12 +60,10 @@ def create_job(config: Dict, config_path: str, job_id: Optional[str] = None) -> 
         JobInfo: Information about the created job
     """
     if job_id is None:
-        job_id = generate_job_id()
+        prefix = config.get("STORAGE", {}).get("PREFIX", "job")
+        job_id = generate_job_id(prefix)
 
-    # Extract storage path from config
     storage_path = config.get("STORAGE", {}).get("PATH", ".")
-
-    # Create JobInfo
     job_info = JobInfo(job_id=job_id, storage_path=storage_path)
 
     # Copy original config using ArtifactStore
@@ -65,46 +76,15 @@ def create_job(config: Dict, config_path: str, job_id: Optional[str] = None) -> 
     return job_info
 
 
-def save_dataframe(job_info: JobInfo, name: str, df: pd.DataFrame) -> None:
+def save_job_metadata(job_info: JobInfo, config: Dict, config_path: str, **extra) -> None:
     """
-    Save a DataFrame to a job directory.
+    Save/update job metadata.
 
     Args:
         job_info: JobInfo for the job
-        name: Name of the file (without extension)
-        df: DataFrame to save
-    """
-    store = job_info.get_store()
-    store.write_csv(f"{name}.csv", df)
-
-
-def load_dataframe(job_info: JobInfo, name: str) -> Optional[pd.DataFrame]:
-    """
-    Load a DataFrame from a job directory.
-
-    Args:
-        job_info: JobInfo for the job
-        name: Name of the file (without extension)
-
-    Returns:
-        DataFrame if file exists, None otherwise
-    """
-    store = job_info.get_store()
-    file_path = f"{name}.csv"
-
-    if not store.exists(file_path):
-        return None
-
-    return store.read_csv(file_path)
-
-
-def update_job_metadata(job_info: JobInfo, **flags) -> None:
-    """
-    Update job metadata with step completion flags.
-
-    Args:
-        job_info: JobInfo for the job
-        **flags: Step completion flags (e.g., has_characteristics=True)
+        config: Configuration dictionary
+        config_path: Path to config file
+        **extra: Additional metadata fields (e.g., num_products=10, is_enriched=True)
     """
     store = job_info.get_store()
 
@@ -115,10 +95,11 @@ def update_job_metadata(job_info: JobInfo, **flags) -> None:
         metadata = {
             "job_id": job_info.job_id,
             "storage_path": job_info.storage_path,
+            "config_path": config_path,
         }
 
-    # Merge flags and update timestamp
-    metadata.update(flags)
+    # Merge extra fields and update timestamp
+    metadata.update(extra)
     metadata["timestamp"] = datetime.now().isoformat()
 
     store.write_json("metadata.json", metadata)
@@ -146,9 +127,15 @@ def save_job_data(
     """
     job_info = create_job(config, config_path, job_id)
 
-    save_dataframe(job_info, "products", products_df)
-    save_dataframe(job_info, "sales", sales_df)
-    update_job_metadata(job_info, has_characteristics=True, has_metrics=True)
+    job_info.save_df("products", products_df)
+    job_info.save_df("sales", sales_df)
+    save_job_metadata(
+        job_info,
+        config,
+        config_path,
+        num_products=len(products_df),
+        num_sales=len(sales_df),
+    )
 
     return job_info
 
@@ -173,7 +160,7 @@ def load_job_results(job_info: JobInfo) -> Dict[str, pd.DataFrame]:
 
     results = {}
     for name in ["products", "sales", "enriched"]:
-        df = load_dataframe(job_info, name)
+        df = job_info.load_df(name)
         if df is not None:
             results[name] = df
 
@@ -220,7 +207,6 @@ def list_jobs(storage_path: str = ".") -> List[str]:
         if job_dir.is_dir() and job_dir.name.startswith("job-"):
             jobs.append(job_dir.name)
 
-    # Sort by timestamp in job name (newest first)
     return sorted(jobs, reverse=True)
 
 

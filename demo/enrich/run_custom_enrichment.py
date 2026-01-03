@@ -132,7 +132,7 @@ def main():
         f"Price change: {((enriched_avg_price / original_avg_price) - 1) * 100:+.1f}%"
     )
 
-    print(f"\n✓ Results saved to: {job_info.storage_path}/{job_info.job_id}/")
+    print(f"\n✓ Results saved to: {job_info.full_path}/")
 
     print("\n" + "=" * 60)
     print("Custom enrichment complete!")
