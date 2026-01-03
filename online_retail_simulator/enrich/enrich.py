@@ -28,8 +28,11 @@ def enrich(config_path: str, job_info: JobInfo) -> JobInfo:
     if sales_df is None:
         raise FileNotFoundError(f"sales.csv not found in job {job_info.job_id}")
 
-    # Apply enrichment
-    enriched_df = apply_enrichment(config_path, sales_df)
+    # Load products from job (optional, for product-aware enrichment functions)
+    products_df = job_info.load_df("products")
+
+    # Apply enrichment (pass job_info and products for product-aware functions)
+    enriched_df = apply_enrichment(config_path, sales_df, job_info=job_info, products_df=products_df)
 
     # Save enriched to same job
     job_info.save_df("enriched", enriched_df)

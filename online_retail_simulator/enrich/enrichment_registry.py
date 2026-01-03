@@ -12,11 +12,17 @@ from online_retail_simulator.core import FunctionRegistry
 
 def _load_enrichment_defaults(registry: FunctionRegistry) -> None:
     """Load default enrichment functions."""
-    from .enrichment_library import combined_boost, probability_boost, quantity_boost
+    from .enrichment_library import (
+        combined_boost,
+        probability_boost,
+        product_detail_boost,
+        quantity_boost,
+    )
 
     registry.register("quantity_boost", quantity_boost)
     registry.register("probability_boost", probability_boost)
     registry.register("combined_boost", combined_boost)
+    registry.register("product_detail_boost", product_detail_boost)
 
 
 # Registry instance

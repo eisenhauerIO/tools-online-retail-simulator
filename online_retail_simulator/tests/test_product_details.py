@@ -3,6 +3,7 @@
 import pandas as pd
 import pytest
 
+from conftest import OLLAMA_AVAILABLE
 from online_retail_simulator.simulate.product_details_mock import simulate_product_details_mock
 
 
@@ -60,8 +61,9 @@ class TestProductDetailsMock:
 
 
 @pytest.mark.llm
+@pytest.mark.skipif(not OLLAMA_AVAILABLE, reason="Ollama server not available")
 class TestProductDetailsOllama:
-    """Tests for Ollama backend (requires --with-llm flag)."""
+    """Tests for Ollama backend (requires Ollama server running)."""
 
     def test_ollama_generates_details(self, sample_products):
         """Ollama should generate product details."""

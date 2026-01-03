@@ -105,13 +105,15 @@ def apply_enrichment_to_sales(
     return treated_sales
 
 
-def enrich(config_path: str, df: pd.DataFrame) -> pd.DataFrame:
+def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) -> pd.DataFrame:
     """
     Apply enrichment to a DataFrame using a config file.
 
     Args:
         config_path: Path to enrichment config (YAML or JSON, local or S3)
         df: DataFrame with sales data (must include asin)
+        job_info: Optional JobInfo for product-aware enrichment functions
+        products_df: Optional products DataFrame for product-aware enrichment functions
 
     Returns:
         DataFrame with enrichment applied (factual version)
@@ -146,8 +148,12 @@ def enrich(config_path: str, df: pd.DataFrame) -> pd.DataFrame:
         if "price" in sale and "unit_price" not in sale:
             sale["unit_price"] = sale["price"]  # Ensure unit_price exists
 
+    # Convert products to list of dicts if provided
+    products = products_df.to_dict(orient="records") if products_df is not None else None
+
     # Apply impact function with all parameters - let the function handle everything
-    treated_sales = impact_function(sales, **all_params)
+    # Pass job_info and products for product-aware enrichment functions
+    treated_sales = impact_function(sales, job_info=job_info, products=products, **all_params)
 
     # Convert back to DataFrame and clean up
     for sale in treated_sales:

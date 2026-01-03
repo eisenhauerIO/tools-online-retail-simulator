@@ -87,14 +87,14 @@ def test_clear_enrichment_registry():
     functions = list_enrichment_functions()
     assert "test" in functions
     assert "quantity_boost" in functions
-    assert len(functions) >= 4  # test + 3 defaults
+    assert len(functions) >= 5  # test + 4 defaults
 
     # Clear and verify only defaults remain
     clear_enrichment_registry()
     functions = list_enrichment_functions()
     assert "test" not in functions
     assert "quantity_boost" in functions  # Defaults should be re-registered
-    assert len(functions) == 3  # Only the 3 defaults
+    assert len(functions) == 4  # Only the 4 defaults
 
 
 def test_backward_compatibility_with_module_parameter():
