@@ -5,8 +5,10 @@
 
 # Online Retail Simulator
 
-*Generate synthetic retail data for testing, experimentation, and causal inference*
+*Generating synthetic product and sales data for testing causal inference pipelines*
 
-Organizations need realistic e-commerce data to build analytics, train models, and validate A/B testing pipelines—but using production data creates privacy risks, compliance burdens, and dependency bottlenecks. This package solves that by generating synthetic retail datasets that preserve statistical properties while remaining entirely fictional.
+Building and validating causal inference pipelines requires realistic data—but using production datasets introduces privacy, compliance, and operational constraints.
 
-The simulator goes beyond random data generation: it models realistic customer behavior, daily sales patterns, and conversion funnels. For teams running catalog enrichment experiments, it can simulate treatment effects to forecast lift before committing resources to production tests.
+Online Retail Simulator generates fully synthetic retail data designed specifically for end-to-end testing of causal inference pipelines. It simulates products, customers, sales, and conversion funnels while preserving key statistical and behavioral patterns found in real e-commerce systems.
+
+Unlike generic data generators, the simulator supports controlled treatment effects, enabling teams to validate estimation methods, stress-test assumptions, and compare causal models against known ground truth—before running experiments in production.

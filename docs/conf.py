@@ -27,6 +27,20 @@ extensions = [
 # -- nbsphinx configuration --------------------------------------------------
 nbsphinx_execute = "always"  # Execute notebooks during build
 
+# Add notebook info bar with Colab badge (applies to all notebooks)
+nbsphinx_prolog = r"""
+{% set docname = env.doc2path(env.docname, base=None) %}
+.. |colab| image:: https://colab.research.google.com/assets/colab-badge.svg
+    :target: https://colab.research.google.com/github/eisenhauerIO/tools-catalog-generator/blob/main/docs/{{ docname }}
+
+.. only:: html
+
+    .. nbinfo::
+        Download the notebook `here <https://github.com/eisenhauerIO/tools-catalog-generator/blob/main/docs/{{ docname }}>`__!
+        Interactive online version: |colab|
+
+"""
+
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 

@@ -1,4 +1,4 @@
-# Design Architecture
+# Architecture
 
 The Online Retail Simulator follows a modular, configuration-driven architecture that supports multiple generation modes and extensible enrichment capabilities.
 
