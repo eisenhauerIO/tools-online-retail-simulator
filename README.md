@@ -9,6 +9,6 @@
 
 Building and validating causal inference pipelines requires realistic data—but using production datasets introduces privacy, compliance, and operational constraints.
 
-Online Retail Simulator generates fully synthetic retail data designed specifically for end-to-end testing of causal inference pipelines. It simulates products, customers, sales, and conversion funnels while preserving key statistical and behavioral patterns found in real e-commerce systems.
+**Online Retail Simulator** generates fully synthetic retail data for ***end-to-end testing of causal inference workflows***. It simulates products, customers, sales, and conversion funnels while preserving key statistical and behavioral patterns found in real e-commerce systems.
 
-Unlike generic data generators, the simulator supports controlled treatment effects, enabling teams to validate estimation methods, stress-test assumptions, and compare causal models against known ground truth—before running experiments in production.
+Unlike generic data generators, the simulator supports ***controlled treatment effects***, enabling teams to validate estimators, stress-test identifying assumptions, and compare causal models against known ground truth—before running causal analysis on production data.

@@ -2,7 +2,7 @@
 
 The Online Retail Simulator uses YAML configuration files to control all aspects of data generation and enrichment. This guide documents the **actual configuration schema** as implemented in the code.
 
-> **See Also**: For practical examples and tutorials, see the [User Guide](user-guide.md).
+> **See Also**: For practical examples, see the [Demo notebook](notebooks/demo.ipynb).
 
 ## Configuration Structure
 
@@ -486,6 +486,6 @@ RULE:
 
 ## Next Steps
 
-- **Examples**: See [User Guide](user-guide.md) for practical examples
+- **Examples**: See the [Demo notebook](notebooks/demo.ipynb) for practical examples
 - **API**: See [API Reference](api_reference.rst) for function documentation
 - **Architecture**: See [Architecture](architecture.md) for system internals

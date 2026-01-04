@@ -107,43 +107,6 @@ enriched_job = enrich("enrichment_config.yaml", baseline_job)
 # Output: JobInfo for enriched results
 ```
 
-## Generation Modes
-
-### Rule-Based Generation
-
-**Characteristics Generation**:
-- Deterministic product creation across 8 categories
-- Category-specific price ranges
-- Configurable product counts per category
-
-**Metrics Generation**:
-- Daily sales probability per product
-- Quantity sampling from configured distributions
-- Revenue calculation (price × quantity)
-
-**Benefits**:
-- Fast execution
-- Predictable patterns
-- Easy to understand and debug
-- No external dependencies
-
-### Synthesizer-Based Generation
-
-**Characteristics Generation**:
-- ML model training on synthetic seed data
-- Gaussian Copula or other SDV synthesizers
-- Learned price-category relationships
-
-**Metrics Generation**:
-- Temporal pattern learning
-- Complex correlation modeling
-- Realistic sales distributions
-
-**Benefits**:
-- More sophisticated patterns
-- Learned correlations
-- Scalable to complex scenarios
-- Research-grade synthetic data
 
 ## Backend Plugin Architecture
 
@@ -289,49 +252,9 @@ def combined_boost(sales, effect_size=0.5, ramp_days=7, enrichment_fraction=0.3,
     # Returns: List of modified sale dictionaries
 ```
 
-## Configuration Schema
+## Configuration
 
-### Simulation Configuration
-```yaml
-SEED: 42                    # Reproducibility control (optional)
-
-STORAGE:
-  PATH: "output"            # Output directory for job results
-
-RULE:                       # Rule-based mode settings
-  CHARACTERISTICS:
-    FUNCTION: simulate_characteristics_rule_based
-    PARAMS:
-      num_products: 100
-  METRICS:
-    FUNCTION: simulate_metrics_rule_based
-    PARAMS:
-      date_start: "2024-11-01"
-      date_end: "2024-11-30"
-      sale_prob: 0.7
-      granularity: "daily"  # or "weekly"
-
-SYNTHESIZER:                # ML-based mode settings (alternative to RULE)
-  SYNTHESIZER_TYPE: "gaussian_copula"
-  DEFAULT_PRODUCTS_ROWS: 50
-  DEFAULT_SALES_ROWS: 1000
-```
-
-### Enrichment Configuration
-```yaml
-IMPACT:
-  FUNCTION: "combined_boost"
-  PARAMS:
-    effect_size: 0.5
-    ramp_days: 7
-    enrichment_fraction: 0.3
-    enrichment_start: "2024-11-15"
-    seed: 42
-```
-
-## Data Schemas
-
-For complete data schema documentation, see the [User Guide](user-guide.md).
+For complete configuration schema and parameter documentation, see the [Configuration Guide](configuration.md).
 
 ## Extension Points
 
@@ -357,38 +280,3 @@ class MyCustomSynthesizer:
     def sample(self, num_rows):
         """Generate synthetic data"""
 ```
-
-## Performance Considerations
-
-### Rule-Based Mode
-- **Speed**: Very fast (< 1 second for typical datasets)
-- **Memory**: Minimal (direct DataFrame creation)
-- **Scalability**: Linear with product count and date range
-
-### Synthesizer Mode
-- **Speed**: Moderate (model training overhead)
-- **Memory**: Higher (model storage and training)
-- **Scalability**: Depends on SDV synthesizer choice
-
-### Optimization Strategies
-- Use rule-based mode for rapid prototyping
-- Cache synthesizer models for repeated use
-- Batch process multiple scenarios
-- Lazy import SDV to reduce startup time
-
-## Error Handling
-
-### Configuration Validation
-- Schema validation for required fields
-- Type checking for parameters
-- Range validation for dates and probabilities
-
-### Graceful Degradation
-- Fallback to rule-based if synthesizer fails
-- Default parameter substitution
-- Informative error messages
-
-### Debugging Support
-- Verbose logging options
-- Intermediate output inspection
-- Seed-based reproducible debugging
