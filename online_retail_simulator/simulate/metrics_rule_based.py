@@ -17,9 +17,9 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config: D
         product_characteristics: DataFrame of product characteristics
         config: Complete configuration dictionary
     Returns:
-        DataFrame of product metrics (one row per product per time period)
-        Columns: [asin, category, price, date, impressions, visits, cart_adds,
-                 ordered_units, revenue, average_selling_price]
+        DataFrame of product metrics (one row per product per time period).
+        Columns: asin, category, price, date, impressions, visits, cart_adds,
+        ordered_units, revenue, average_selling_price.
     """
     import random
     from datetime import datetime, timedelta

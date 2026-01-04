@@ -18,6 +18,7 @@ Simulation Module
    :members:
    :undoc-members:
    :show-inheritance:
+   :no-index:
 
 Characteristics Generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,6 +63,7 @@ Enrichment Module
    :members:
    :undoc-members:
    :show-inheritance:
+   :no-index:
 
 .. automodule:: online_retail_simulator.enrich.enrichment
    :members:
