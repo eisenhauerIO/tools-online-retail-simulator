@@ -23,6 +23,7 @@ dependencies = [
 ]
 
 [tool.hatch.envs.default.scripts]
+docs = "cd docs && make html"
 docs-build = "cd docs && make html"
 docs-clean = "cd docs && make clean"
 docs-serve = "python -m http.server 8000 --directory docs/_build/html"
