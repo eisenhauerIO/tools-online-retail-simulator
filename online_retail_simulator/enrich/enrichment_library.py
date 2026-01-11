@@ -7,7 +7,7 @@ from datetime import datetime
 import pandas as pd
 
 
-def quantity_boost(sales: list, **kwargs) -> list:
+def quantity_boost(sales: list, **kwargs) -> tuple:
     """
     Boost ordered units by a percentage for enriched products.
 
@@ -21,7 +21,9 @@ def quantity_boost(sales: list, **kwargs) -> list:
             - min_units: Minimum units for enriched products with zero sales (default: 1)
 
     Returns:
-        List of modified sale dictionaries with treatment applied
+        Tuple of (treated_sales, potential_outcomes_df):
+            - treated_sales: List of modified sale dictionaries with treatment applied
+            - potential_outcomes_df: DataFrame with Y0_revenue and Y1_revenue for all products
     """
     effect_size = kwargs.get("effect_size", 0.5)
     enrichment_fraction = kwargs.get("enrichment_fraction", 0.3)
@@ -37,28 +39,60 @@ def quantity_boost(sales: list, **kwargs) -> list:
     enriched_product_ids = set(random.sample(unique_products, n_enriched))
 
     treated_sales = []
+    potential_outcomes = {}  # {(product_id, date): {'Y0_revenue': x, 'Y1_revenue': y}}
     start_date = datetime.strptime(enrichment_start, "%Y-%m-%d")
 
     for sale in sales:
         sale_copy = copy.deepcopy(sale)
-        sale_date = datetime.strptime(sale_copy["date"], "%Y-%m-%d")
+        product_id = sale_copy["product_id"]
+        sale_date_str = sale_copy["date"]
+        sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d")
 
-        is_enriched = sale_copy["product_id"] in enriched_product_ids
+        is_enriched = product_id in enriched_product_ids
         sale_copy["enriched"] = is_enriched
 
-        if is_enriched and sale_date >= start_date:
+        # Calculate Y(0) - baseline revenue (no treatment)
+        y0_revenue = sale_copy["revenue"]
+
+        # Calculate Y(1) - revenue if treated (for ALL products)
+        unit_price = sale_copy.get("unit_price", sale_copy.get("price"))
+        if sale_date >= start_date:
             original_quantity = sale_copy["ordered_units"]
             boosted_quantity = int(original_quantity * (1 + effect_size))
-            sale_copy["ordered_units"] = max(min_units, boosted_quantity)
-            unit_price = sale_copy.get("unit_price", sale_copy.get("price"))
-            sale_copy["revenue"] = round(sale_copy["ordered_units"] * unit_price, 2)
+            boosted_quantity = max(min_units, boosted_quantity)
+            y1_revenue = round(boosted_quantity * unit_price, 2)
+        else:
+            # Before treatment start, Y(1) = Y(0)
+            y1_revenue = y0_revenue
+
+        # Store potential outcomes for ALL products
+        key = (product_id, sale_date_str)
+        potential_outcomes[key] = {"Y0_revenue": y0_revenue, "Y1_revenue": y1_revenue}
+
+        # Apply factual outcome (only for treated products)
+        if is_enriched and sale_date >= start_date:
+            sale_copy["ordered_units"] = boosted_quantity
+            sale_copy["revenue"] = y1_revenue
 
         treated_sales.append(sale_copy)
 
-    return treated_sales
+    # Build potential outcomes DataFrame
+    potential_outcomes_df = pd.DataFrame(
+        [
+            {
+                "product_identifier": pid,
+                "date": d,
+                "Y0_revenue": v["Y0_revenue"],
+                "Y1_revenue": v["Y1_revenue"],
+            }
+            for (pid, d), v in potential_outcomes.items()
+        ]
+    )
+
+    return treated_sales, potential_outcomes_df
 
 
-def probability_boost(sales: list, **kwargs) -> list:
+def probability_boost(sales: list, **kwargs) -> tuple:
     """
     Boost sale probability (simulated by ordered units increase as proxy).
 
@@ -67,12 +101,12 @@ def probability_boost(sales: list, **kwargs) -> list:
         **kwargs: Same parameters as quantity_boost
 
     Returns:
-        List of modified sale dictionaries
+        Tuple of (treated_sales, potential_outcomes_df) - same as quantity_boost
     """
     return quantity_boost(sales, **kwargs)
 
 
-def product_detail_boost(sales: list, **kwargs) -> list:
+def product_detail_boost(sales: list, **kwargs) -> tuple:
     """
     Product detail regeneration and sales boost for enrichment experiments.
 
@@ -94,7 +128,9 @@ def product_detail_boost(sales: list, **kwargs) -> list:
             - backend: Backend to use for regeneration ("mock" or "ollama", default: "mock")
 
     Returns:
-        List of modified sale dictionaries with treatment applied
+        Tuple of (treated_sales, potential_outcomes_df):
+            - treated_sales: List of modified sale dictionaries with treatment applied
+            - potential_outcomes_df: DataFrame with Y0_revenue and Y1_revenue for all products
     """
     job_info = kwargs.get("job_info")
     products = kwargs.get("products")
@@ -127,31 +163,62 @@ def product_detail_boost(sales: list, **kwargs) -> list:
         updated_products = _regenerate_product_details(products, treatment_ids, prompt_path, backend, seed)
         job_info.save_df("product_details_enriched", pd.DataFrame(updated_products))
 
-    # 4. Apply sales boost effect
+    # 4. Apply sales boost effect and calculate potential outcomes
     treated_sales = []
+    potential_outcomes = {}  # {(product_id, date): {'Y0_revenue': x, 'Y1_revenue': y}}
     start_date = datetime.strptime(enrichment_start, "%Y-%m-%d")
 
     for sale in sales:
         sale_copy = copy.deepcopy(sale)
         product_id = sale_copy.get("product_id", sale_copy.get("product_identifier"))
-        sale_date = datetime.strptime(sale_copy["date"], "%Y-%m-%d")
+        sale_date_str = sale_copy["date"]
+        sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d")
 
         is_enriched = product_id in treatment_ids
         sale_copy["enriched"] = is_enriched
 
-        if is_enriched and sale_date >= start_date:
+        # Calculate Y(0) - baseline revenue (no treatment)
+        y0_revenue = sale_copy["revenue"]
+
+        # Calculate Y(1) - revenue if treated (for ALL products, with ramp-up)
+        unit_price = sale_copy.get("unit_price", sale_copy.get("price"))
+        if sale_date >= start_date:
             days_since_start = (sale_date - start_date).days
             ramp_factor = 1.0 if ramp_days <= 0 else min(1.0, days_since_start / ramp_days)
             adjusted_effect = effect_size * ramp_factor
 
             original_quantity = sale_copy["ordered_units"]
-            sale_copy["ordered_units"] = int(original_quantity * (1 + adjusted_effect))
-            unit_price = sale_copy.get("unit_price", sale_copy.get("price"))
-            sale_copy["revenue"] = round(sale_copy["ordered_units"] * unit_price, 2)
+            boosted_quantity = int(original_quantity * (1 + adjusted_effect))
+            y1_revenue = round(boosted_quantity * unit_price, 2)
+        else:
+            # Before treatment start, Y(1) = Y(0)
+            y1_revenue = y0_revenue
+
+        # Store potential outcomes for ALL products
+        key = (product_id, sale_date_str)
+        potential_outcomes[key] = {"Y0_revenue": y0_revenue, "Y1_revenue": y1_revenue}
+
+        # Apply factual outcome (only for treated products)
+        if is_enriched and sale_date >= start_date:
+            sale_copy["ordered_units"] = boosted_quantity
+            sale_copy["revenue"] = y1_revenue
 
         treated_sales.append(sale_copy)
 
-    return treated_sales
+    # Build potential outcomes DataFrame
+    potential_outcomes_df = pd.DataFrame(
+        [
+            {
+                "product_identifier": pid,
+                "date": d,
+                "Y0_revenue": v["Y0_revenue"],
+                "Y1_revenue": v["Y1_revenue"],
+            }
+            for (pid, d), v in potential_outcomes.items()
+        ]
+    )
+
+    return treated_sales, potential_outcomes_df
 
 
 def _regenerate_product_details(

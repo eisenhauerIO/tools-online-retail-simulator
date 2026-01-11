@@ -105,7 +105,7 @@ def apply_enrichment_to_sales(
     return treated_sales
 
 
-def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) -> pd.DataFrame:
+def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) -> tuple:
     """
     Apply enrichment to a DataFrame using a config file.
 
@@ -116,7 +116,9 @@ def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) 
         products_df: Optional products DataFrame for product-aware enrichment functions
 
     Returns:
-        DataFrame with enrichment applied (factual version)
+        Tuple of (enriched_df, potential_outcomes_df):
+            - enriched_df: DataFrame with enrichment applied (factual version)
+            - potential_outcomes_df: DataFrame with Y0/Y1 for all products, or None if not provided
     """
     # Load config using ArtifactStore - support both YAML and JSON
     store, filename = ArtifactStore.from_file_path(config_path)
@@ -153,7 +155,14 @@ def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) 
 
     # Apply impact function with all parameters - let the function handle everything
     # Pass job_info and products for product-aware enrichment functions
-    treated_sales = impact_function(sales, job_info=job_info, products=products, **all_params)
+    result = impact_function(sales, job_info=job_info, products=products, **all_params)
+
+    # Handle both return types: tuple (with potential outcomes) or list (without)
+    if isinstance(result, tuple):
+        treated_sales, potential_outcomes_df = result
+    else:
+        treated_sales = result
+        potential_outcomes_df = None
 
     # Convert back to DataFrame and clean up
     for sale in treated_sales:
@@ -167,4 +176,4 @@ def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) 
     new_cols = [col for col in enriched_df.columns if col not in df.columns]
     enriched_df = enriched_df[original_cols + new_cols]
 
-    return enriched_df
+    return enriched_df, potential_outcomes_df

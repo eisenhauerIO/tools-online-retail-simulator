@@ -18,7 +18,7 @@ def enrich(config_path: str, job_info: JobInfo) -> JobInfo:
         job_info: JobInfo object to load sales data from
 
     Returns:
-        JobInfo: Same job, now also containing enriched.csv
+        JobInfo: Same job, now also containing enriched.csv and optionally potential_outcomes.csv
     """
     # Load config
     config = process_config(config_path)
@@ -32,10 +32,16 @@ def enrich(config_path: str, job_info: JobInfo) -> JobInfo:
     products_df = job_info.load_df("products")
 
     # Apply enrichment (pass job_info and products for product-aware functions)
-    enriched_df = apply_enrichment(config_path, sales_df, job_info=job_info, products_df=products_df)
+    enriched_df, potential_outcomes_df = apply_enrichment(
+        config_path, sales_df, job_info=job_info, products_df=products_df
+    )
 
     # Save enriched to same job
     job_info.save_df("enriched", enriched_df)
+
+    # Save potential outcomes if provided by the enrichment function
+    if potential_outcomes_df is not None:
+        job_info.save_df("potential_outcomes", potential_outcomes_df)
 
     # Update metadata
     save_job_metadata(job_info, config, config_path, is_enriched=True)

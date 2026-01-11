@@ -159,7 +159,14 @@ def load_job_results(job_info: JobInfo) -> Dict[str, pd.DataFrame]:
         raise FileNotFoundError(f"Job directory not found: {store.base_path}")
 
     results = {}
-    for name in ["products", "product_details_original", "product_details_enriched", "sales", "enriched"]:
+    for name in [
+        "products",
+        "product_details_original",
+        "product_details_enriched",
+        "sales",
+        "enriched",
+        "potential_outcomes",
+    ]:
         df = job_info.load_df(name)
         if df is not None:
             results[name] = df

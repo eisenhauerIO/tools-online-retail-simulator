@@ -1,5 +1,6 @@
 """Tests for enrichment impact library functions."""
 
+import pandas as pd
 
 from online_retail_simulator.enrich.enrichment_library import probability_boost, quantity_boost
 
@@ -57,7 +58,7 @@ class TestQuantityBoost:
         """Test basic ordered_units boost functionality."""
         sales = create_test_sales()
 
-        result = quantity_boost(
+        result, potential_outcomes = quantity_boost(
             sales,
             effect_size=0.5,
             enrichment_fraction=0.5,
@@ -67,6 +68,13 @@ class TestQuantityBoost:
 
         # Should return same number of sales
         assert len(result) == len(sales)
+
+        # Should return potential outcomes DataFrame
+        assert isinstance(potential_outcomes, pd.DataFrame)
+        assert "product_identifier" in potential_outcomes.columns
+        assert "date" in potential_outcomes.columns
+        assert "Y0_revenue" in potential_outcomes.columns
+        assert "Y1_revenue" in potential_outcomes.columns
 
         # Check that some sales after enrichment start have increased quantities
         post_enrichment = [s for s in result if s["date"] >= "2024-11-15"]
@@ -82,7 +90,7 @@ class TestQuantityBoost:
         """Test that no enrichment is applied before start date."""
         sales = create_test_sales()
 
-        result = quantity_boost(
+        result, _ = quantity_boost(
             sales,
             effect_size=0.5,
             enrichment_fraction=1.0,  # All products enriched
@@ -99,7 +107,7 @@ class TestQuantityBoost:
         """Test that no enrichment is applied with zero fraction."""
         sales = create_test_sales()
 
-        result = quantity_boost(
+        result, _ = quantity_boost(
             sales,
             effect_size=0.5,
             enrichment_fraction=0.0,  # No products enriched
@@ -116,7 +124,7 @@ class TestQuantityBoost:
         """Test that results are reproducible with same seed."""
         sales = create_test_sales()
 
-        result1 = quantity_boost(
+        result1, po1 = quantity_boost(
             sales,
             effect_size=0.3,
             enrichment_fraction=0.5,
@@ -124,7 +132,7 @@ class TestQuantityBoost:
             seed=123,
         )
 
-        result2 = quantity_boost(
+        result2, po2 = quantity_boost(
             sales,
             effect_size=0.3,
             enrichment_fraction=0.5,
@@ -134,6 +142,8 @@ class TestQuantityBoost:
 
         # Results should be identical
         assert result1 == result2
+        # Potential outcomes should also be identical
+        pd.testing.assert_frame_equal(po1, po2)
 
     def test_quantity_boost_different_seeds(self):
         """Test that different seeds can produce different results."""
@@ -151,7 +161,7 @@ class TestQuantityBoost:
                 }
             )
 
-        result1 = quantity_boost(
+        result1, _ = quantity_boost(
             sales,
             effect_size=0.5,
             enrichment_fraction=0.5,
@@ -159,7 +169,7 @@ class TestQuantityBoost:
             seed=42,
         )
 
-        result2 = quantity_boost(
+        result2, _ = quantity_boost(
             sales,
             effect_size=0.5,
             enrichment_fraction=0.5,
@@ -191,7 +201,7 @@ class TestQuantityBoost:
             }
         ]
 
-        result = quantity_boost(
+        result, _ = quantity_boost(
             sales,
             effect_size=0.5,  # 50% boost
             enrichment_fraction=1.0,  # All products enriched
@@ -210,10 +220,36 @@ class TestQuantityBoost:
         sales = create_test_sales()
 
         # Test with minimal parameters (should use defaults)
-        result = quantity_boost(sales)
+        result, potential_outcomes = quantity_boost(sales)
 
         assert len(result) == len(sales)
         assert isinstance(result, list)
+        assert isinstance(potential_outcomes, pd.DataFrame)
+
+    def test_quantity_boost_potential_outcomes_all_products(self):
+        """Test that potential outcomes are generated for ALL products."""
+        sales = create_test_sales()
+
+        result, potential_outcomes = quantity_boost(
+            sales,
+            effect_size=0.5,
+            enrichment_fraction=0.5,  # Only 50% treated
+            enrichment_start="2024-11-15",
+            seed=42,
+        )
+
+        # Potential outcomes should exist for all product-date combinations
+        sales_product_dates = set((s["product_id"], s["date"]) for s in sales)
+        po_product_dates = set(zip(potential_outcomes["product_identifier"], potential_outcomes["date"]))
+        assert sales_product_dates == po_product_dates
+
+        # Y1 should be >= Y0 for dates after enrichment start
+        post_start = potential_outcomes[potential_outcomes["date"] >= "2024-11-15"]
+        assert (post_start["Y1_revenue"] >= post_start["Y0_revenue"]).all()
+
+        # Y1 should equal Y0 for dates before enrichment start
+        pre_start = potential_outcomes[potential_outcomes["date"] < "2024-11-15"]
+        assert (pre_start["Y1_revenue"] == pre_start["Y0_revenue"]).all()
 
 
 class TestProbabilityBoost:
@@ -223,7 +259,7 @@ class TestProbabilityBoost:
         """Test that probability_boost delegates to quantity_boost."""
         sales = create_test_sales()
 
-        prob_result = probability_boost(
+        prob_result, prob_po = probability_boost(
             sales,
             effect_size=0.3,
             enrichment_fraction=0.5,
@@ -231,7 +267,7 @@ class TestProbabilityBoost:
             seed=42,
         )
 
-        qty_result = quantity_boost(
+        qty_result, qty_po = quantity_boost(
             sales,
             effect_size=0.3,
             enrichment_fraction=0.5,
@@ -241,12 +277,13 @@ class TestProbabilityBoost:
 
         # Results should be identical since probability_boost calls quantity_boost
         assert prob_result == qty_result
+        pd.testing.assert_frame_equal(prob_po, qty_po)
 
     def test_probability_boost_basic(self):
         """Test basic probability boost functionality."""
         sales = create_test_sales()
 
-        result = probability_boost(
+        result, potential_outcomes = probability_boost(
             sales,
             effect_size=0.4,
             enrichment_fraction=0.6,
@@ -255,6 +292,7 @@ class TestProbabilityBoost:
         )
 
         assert len(result) == len(sales)
+        assert isinstance(potential_outcomes, pd.DataFrame)
 
         # Should have some impact on post-enrichment sales
         post_enrichment = [s for s in result if s["date"] >= "2024-11-15"]
@@ -273,11 +311,13 @@ class TestImpactLibraryEdgeCases:
         """Test impact functions with empty sales list."""
         empty_sales = []
 
-        result_qty = quantity_boost(empty_sales)
-        result_prob = probability_boost(empty_sales)
+        result_qty, po_qty = quantity_boost(empty_sales)
+        result_prob, po_prob = probability_boost(empty_sales)
 
         assert result_qty == []
         assert result_prob == []
+        assert len(po_qty) == 0
+        assert len(po_prob) == 0
 
     def test_single_sale(self):
         """Test impact functions with single sale."""
@@ -292,11 +332,17 @@ class TestImpactLibraryEdgeCases:
             }
         ]
 
-        result_qty = quantity_boost(single_sale, enrichment_fraction=1.0, enrichment_start="2024-11-15", seed=42)
-        result_prob = probability_boost(single_sale, enrichment_fraction=1.0, enrichment_start="2024-11-15", seed=42)
+        result_qty, po_qty = quantity_boost(
+            single_sale, enrichment_fraction=1.0, enrichment_start="2024-11-15", seed=42
+        )
+        result_prob, po_prob = probability_boost(
+            single_sale, enrichment_fraction=1.0, enrichment_start="2024-11-15", seed=42
+        )
 
         assert len(result_qty) == 1
         assert len(result_prob) == 1
+        assert len(po_qty) == 1
+        assert len(po_prob) == 1
 
     def test_missing_unit_price_fallback(self):
         """Test that functions handle missing unit_price by using price."""
@@ -311,7 +357,7 @@ class TestImpactLibraryEdgeCases:
             }
         ]
 
-        result = quantity_boost(
+        result, _ = quantity_boost(
             sales,
             effect_size=0.5,
             enrichment_fraction=1.0,
@@ -345,7 +391,7 @@ class TestImpactLibraryEdgeCases:
             },
         ]
 
-        result = quantity_boost(
+        result, _ = quantity_boost(
             same_product_sales,
             effect_size=0.5,
             enrichment_fraction=0.5,  # 50% chance this product is enriched
