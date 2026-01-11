@@ -8,10 +8,7 @@ import pytest
 
 from conftest import OLLAMA_AVAILABLE
 from online_retail_simulator import enrich, load_job_results, simulate
-from online_retail_simulator.enrich.enrichment_library import (
-    _apply_sales_boost,
-    _regenerate_product_details,
-)
+from online_retail_simulator.enrich.enrichment_library import _regenerate_product_details
 
 
 def test_product_detail_boost_basic():
@@ -205,27 +202,6 @@ def test_regenerate_product_details_helper():
         if p["product_identifier"] in treatment_ids:
             assert "title" in p
             # Treatment mode uses different adjectives/brands
-
-
-def test_apply_sales_boost_helper():
-    """Test the _apply_sales_boost helper function."""
-    sales = [
-        {"product_id": "A001", "date": "2024-01-01", "ordered_units": 10, "unit_price": 10.0, "revenue": 100.0},
-        {"product_id": "A001", "date": "2024-01-05", "ordered_units": 10, "unit_price": 10.0, "revenue": 100.0},
-        {"product_id": "A002", "date": "2024-01-05", "ordered_units": 10, "unit_price": 10.0, "revenue": 100.0},
-    ]
-    treatment_ids = {"A001"}
-
-    treated = _apply_sales_boost(sales, treatment_ids, "2024-01-03", 0.5, 0)
-
-    # Check before treatment start - no change
-    assert treated[0]["ordered_units"] == 10
-
-    # Check treatment product after start - boosted
-    assert treated[1]["ordered_units"] == 15  # 10 * 1.5
-
-    # Check control product after start - no change
-    assert treated[2]["ordered_units"] == 10
 
 
 def test_product_detail_boost_reproducibility():

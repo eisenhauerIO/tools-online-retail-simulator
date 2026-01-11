@@ -1,7 +1,7 @@
 """Tests for enrichment impact library functions."""
 
 
-from online_retail_simulator.enrich.enrichment_library import combined_boost, probability_boost, quantity_boost
+from online_retail_simulator.enrich.enrichment_library import probability_boost, quantity_boost
 
 
 def create_test_sales():
@@ -266,176 +266,6 @@ class TestProbabilityBoost:
         assert total_ordered_units_result >= total_ordered_units_original
 
 
-class TestCombinedBoost:
-    """Test combined_boost function."""
-
-    def test_combined_boost_basic(self):
-        """Test basic combined boost functionality."""
-        sales = create_test_sales()
-
-        result = combined_boost(
-            sales,
-            effect_size=0.5,
-            ramp_days=3,
-            enrichment_fraction=0.5,
-            enrichment_start="2024-11-15",
-            seed=42,
-        )
-
-        assert len(result) == len(sales)
-
-        # Should have some impact on post-enrichment sales
-        post_enrichment = [s for s in result if s["date"] >= "2024-11-15"]
-        original_post = [s for s in sales if s["date"] >= "2024-11-15"]
-
-        total_ordered_units_original = sum(s["ordered_units"] for s in original_post)
-        total_ordered_units_result = sum(s["ordered_units"] for s in post_enrichment)
-
-        assert total_ordered_units_result >= total_ordered_units_original
-
-    def test_combined_boost_ramp_effect(self):
-        """Test that ramp effect increases over time."""
-        # Create sales with specific dates to test ramp
-        sales = [
-            {
-                "product_id": "PROD001",
-                "date": "2024-11-15",  # Day 0 (start)
-                "ordered_units": 10,
-                "price": 100.0,
-                "unit_price": 100.0,
-                "revenue": 1000.0,
-            },
-            {
-                "product_id": "PROD001",
-                "date": "2024-11-16",  # Day 1
-                "ordered_units": 10,
-                "price": 100.0,
-                "unit_price": 100.0,
-                "revenue": 1000.0,
-            },
-            {
-                "product_id": "PROD001",
-                "date": "2024-11-18",  # Day 3 (full ramp)
-                "ordered_units": 10,
-                "price": 100.0,
-                "unit_price": 100.0,
-                "revenue": 1000.0,
-            },
-        ]
-
-        result = combined_boost(
-            sales,
-            effect_size=0.5,  # 50% max boost
-            ramp_days=3,  # 3-day ramp
-            enrichment_fraction=1.0,  # All products enriched
-            enrichment_start="2024-11-15",
-            seed=42,
-        )
-
-        # Day 0: 0% of full effect (0% boost)
-        # Day 1: 33% of full effect (~17% boost)
-        # Day 3: 100% of full effect (50% boost)
-
-        day0_sale = next(s for s in result if s["date"] == "2024-11-15")
-        day1_sale = next(s for s in result if s["date"] == "2024-11-16")
-        day3_sale = next(s for s in result if s["date"] == "2024-11-18")
-
-        # Quantities should increase over time due to ramp
-        assert day0_sale["ordered_units"] <= day1_sale["ordered_units"] <= day3_sale["ordered_units"]
-
-        # Day 3 should have the full 50% boost: 10 * 1.5 = 15
-        assert day3_sale["ordered_units"] == 15
-
-    def test_combined_boost_no_ramp(self):
-        """Test combined boost with ramp_days=1 (immediate full effect)."""
-        sales = [
-            {
-                "product_id": "PROD001",
-                "date": "2024-11-20",
-                "ordered_units": 4,
-                "price": 100.0,
-                "unit_price": 100.0,
-                "revenue": 400.0,
-            }
-        ]
-
-        result = combined_boost(
-            sales,
-            effect_size=0.25,  # 25% boost
-            ramp_days=1,  # Full effect after 1 day
-            enrichment_fraction=1.0,
-            enrichment_start="2024-11-20",
-            seed=42,
-        )
-
-        treated_sale = result[0]
-        # On day 0 (start date), ramp_factor = 0/1 = 0, so no boost
-        # The sale is on the start date, so days_since_start = 0
-        assert treated_sale["ordered_units"] == 4  # No boost on day 0
-        assert treated_sale["revenue"] == 400.0
-
-    def test_combined_boost_reproducibility(self):
-        """Test that combined boost is reproducible with same seed."""
-        sales = create_test_sales()
-
-        result1 = combined_boost(
-            sales,
-            effect_size=0.3,
-            ramp_days=5,
-            enrichment_fraction=0.4,
-            enrichment_start="2024-11-15",
-            seed=456,
-        )
-
-        result2 = combined_boost(
-            sales,
-            effect_size=0.3,
-            ramp_days=5,
-            enrichment_fraction=0.4,
-            enrichment_start="2024-11-15",
-            seed=456,
-        )
-
-        assert result1 == result2
-
-    def test_combined_boost_default_parameters(self):
-        """Test combined boost with default parameters."""
-        sales = create_test_sales()
-
-        result = combined_boost(sales)
-
-        assert len(result) == len(sales)
-        assert isinstance(result, list)
-
-    def test_combined_boost_zero_ramp_days(self):
-        """Test combined boost with zero ramp days (should handle gracefully)."""
-        sales = [
-            {
-                "product_id": "PROD001",
-                "date": "2024-11-20",
-                "ordered_units": 2,
-                "price": 100.0,
-                "unit_price": 100.0,
-                "revenue": 200.0,
-            }
-        ]
-
-        result = combined_boost(
-            sales,
-            effect_size=0.5,
-            ramp_days=0,  # Zero ramp days
-            enrichment_fraction=1.0,
-            enrichment_start="2024-11-20",
-            seed=42,
-        )
-
-        # Should handle gracefully and apply full effect immediately
-        treated_sale = result[0]
-        # With ramp_days=0, should get full effect: 2 * 1.5 = 3
-        assert treated_sale["ordered_units"] == 3
-        assert treated_sale["revenue"] == 300.0
-
-
 class TestImpactLibraryEdgeCases:
     """Test edge cases and error conditions for impact library."""
 
@@ -445,11 +275,9 @@ class TestImpactLibraryEdgeCases:
 
         result_qty = quantity_boost(empty_sales)
         result_prob = probability_boost(empty_sales)
-        result_combined = combined_boost(empty_sales)
 
         assert result_qty == []
         assert result_prob == []
-        assert result_combined == []
 
     def test_single_sale(self):
         """Test impact functions with single sale."""
@@ -465,14 +293,10 @@ class TestImpactLibraryEdgeCases:
         ]
 
         result_qty = quantity_boost(single_sale, enrichment_fraction=1.0, enrichment_start="2024-11-15", seed=42)
-
         result_prob = probability_boost(single_sale, enrichment_fraction=1.0, enrichment_start="2024-11-15", seed=42)
-
-        result_combined = combined_boost(single_sale, enrichment_fraction=1.0, enrichment_start="2024-11-15", seed=42)
 
         assert len(result_qty) == 1
         assert len(result_prob) == 1
-        assert len(result_combined) == 1
 
     def test_missing_unit_price_fallback(self):
         """Test that functions handle missing unit_price by using price."""

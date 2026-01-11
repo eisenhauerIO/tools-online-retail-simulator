@@ -65,11 +65,11 @@ IMPACT:
         os.unlink(config_path)
 
 
-def test_enrich_combined_boost():
-    """Test combined boost with ramp-up."""
+def test_enrich_product_detail_boost():
+    """Test product detail boost with ramp-up."""
     config_content = """
 IMPACT:
-  FUNCTION: "combined_boost"
+  FUNCTION: "product_detail_boost"
   PARAMS:
     effect_size: 0.3
     ramp_days: 3

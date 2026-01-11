@@ -1,5 +1,5 @@
 """
-Example demonstrating default enrichment using built-in combined_boost function.
+Example demonstrating default enrichment using built-in product_detail_boost function.
 
 This script shows:
 1. Basic simulation data generation
@@ -14,7 +14,7 @@ def main():
     print("\n" + "=" * 60)
     print("DEFAULT ENRICHMENT DEMO")
     print("=" * 60)
-    print("Using built-in 'combined_boost' function with gradual ramp-up\n")
+    print("Using built-in 'product_detail_boost' function with gradual ramp-up\n")
 
     # Step 1: Generate base simulation data
     print("Step 1: Generating base simulation data...")
@@ -28,7 +28,7 @@ def main():
     print(f"✓ Products: {sales_df['product_identifier'].nunique()} unique products")
 
     # Step 2: Apply default enrichment
-    print("\nStep 2: Applying default enrichment (combined_boost)...")
+    print("\nStep 2: Applying default enrichment (product_detail_boost)...")
     enriched_job_info = enrich("config_default_enrichment.yaml", job_info)
     print(f"✓ Enrichment completed. Job ID: {enriched_job_info}")
     print("✓ Uses gradual 7-day ramp-up with 50% max effect")
@@ -61,7 +61,7 @@ def main():
     print("\n" + "=" * 60)
     print("Default enrichment complete!")
     print("=" * 60)
-    print("This demonstrates the built-in combined_boost function")
+    print("This demonstrates the built-in product_detail_boost function")
     print("with gradual ramp-up for realistic A/B testing scenarios.\n")
 
 

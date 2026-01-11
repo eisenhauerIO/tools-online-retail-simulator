@@ -123,7 +123,8 @@ def simulate_product_details_mock(
         category = product.get("category", "General")
         data = _get_mock_data(category, treatment_mode=treatment_mode)
 
-        brand = rng.choice(data["brands"])
+        # Preserve existing brand if present, otherwise generate new one
+        brand = product.get("brand") or rng.choice(data["brands"])
         adj = rng.choice(data["adjectives"])
         features = rng.sample(data["features"], min(4, len(data["features"])))
 

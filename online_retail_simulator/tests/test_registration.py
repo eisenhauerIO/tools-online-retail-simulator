@@ -54,8 +54,8 @@ def test_register_module():
     # Should have registered the built-in functions
     registered = list_enrichment_functions()
     assert "quantity_boost" in registered
-    assert "combined_boost" in registered
     assert "probability_boost" in registered
+    assert "product_detail_boost" in registered
 
 
 def test_use_registered_function():
@@ -176,7 +176,7 @@ def test_list_functions():
 
     # After clear, list() triggers lazy loading of defaults
     defaults = list_enrichment_functions()
-    assert len(defaults) == 4  # quantity_boost, probability_boost, combined_boost, product_detail_boost
+    assert len(defaults) == 3  # quantity_boost, probability_boost, product_detail_boost
 
     # Register some custom functions
     def func1(sales, **kwargs):
@@ -193,7 +193,7 @@ def test_list_functions():
     assert "func1" in functions
     assert "func2" in functions
     assert "quantity_boost" in functions
-    assert len(functions) == 6  # 4 defaults + 2 custom
+    assert len(functions) == 5  # 3 defaults + 2 custom
 
 
 def test_register_function_overwrites():

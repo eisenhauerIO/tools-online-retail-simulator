@@ -20,14 +20,14 @@ def test_default_enrichment_functions_registered():
 
     assert "quantity_boost" in functions
     assert "probability_boost" in functions
-    assert "combined_boost" in functions
+    assert "product_detail_boost" in functions
 
     # Verify we can get the default functions
     quantity_func = load_effect_function("", "quantity_boost")
-    combined_func = load_effect_function("", "combined_boost")
+    product_detail_func = load_effect_function("", "product_detail_boost")
 
     assert quantity_func is not None
-    assert combined_func is not None
+    assert product_detail_func is not None
 
 
 def test_custom_enrichment_function_registration():
@@ -87,14 +87,14 @@ def test_clear_enrichment_registry():
     functions = list_enrichment_functions()
     assert "test" in functions
     assert "quantity_boost" in functions
-    assert len(functions) >= 5  # test + 4 defaults
+    assert len(functions) >= 4  # test + 3 defaults
 
     # Clear and verify only defaults remain
     clear_enrichment_registry()
     functions = list_enrichment_functions()
     assert "test" not in functions
     assert "quantity_boost" in functions  # Defaults should be re-registered
-    assert len(functions) == 4  # Only the 4 defaults
+    assert len(functions) == 3  # Only the 3 defaults
 
 
 def test_backward_compatibility_with_module_parameter():

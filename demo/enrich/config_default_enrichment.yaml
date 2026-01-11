@@ -1,6 +1,6 @@
 # Treatment impact specification
 IMPACT:
-  FUNCTION: "combined_boost"
+  FUNCTION: "product_detail_boost"
   PARAMS:
     effect_size: 0.5
     ramp_days: 7

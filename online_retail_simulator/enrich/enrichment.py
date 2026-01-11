@@ -16,7 +16,7 @@ def parse_impact_spec(impact_spec: Dict) -> Tuple[str, str, Dict[str, Any]]:
     Parse IMPACT specification into module, function, and params.
 
     Supports dict format with capitalized keys:
-    {"FUNCTION": "combined_boost", "PARAMS": {"effect_size": 0.5, "ramp_days": 7}}
+    {"FUNCTION": "product_detail_boost", "PARAMS": {"effect_size": 0.5, "ramp_days": 7}}
     {"MODULE": "my_module", "FUNCTION": "my_func", "PARAMS": {...}}  # MODULE ignored, kept for compatibility
 
     Args:
