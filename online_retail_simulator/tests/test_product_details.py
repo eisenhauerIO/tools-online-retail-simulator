@@ -12,9 +12,9 @@ def sample_products():
     """Sample products DataFrame for testing."""
     return pd.DataFrame(
         [
-            {"asin": "A001", "category": "Electronics", "price": 99.99},
-            {"asin": "A002", "category": "Clothing", "price": 29.99},
-            {"asin": "A003", "category": "Home & Kitchen", "price": 49.99},
+            {"product_identifier": "A001", "category": "Electronics", "price": 99.99},
+            {"product_identifier": "A002", "category": "Clothing", "price": 29.99},
+            {"product_identifier": "A003", "category": "Home & Kitchen", "price": 49.99},
         ]
     )
 
@@ -33,7 +33,7 @@ class TestProductDetailsMock:
     def test_preserves_original_columns(self, sample_products):
         """Mock should preserve original columns."""
         result = simulate_product_details_mock(sample_products)
-        assert "asin" in result.columns
+        assert "product_identifier" in result.columns
         assert "category" in result.columns
         assert "price" in result.columns
 

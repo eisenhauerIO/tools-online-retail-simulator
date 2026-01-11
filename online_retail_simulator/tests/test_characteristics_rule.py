@@ -15,5 +15,5 @@ def test_characteristics_rule():
     df = job_info.load_df("products")
     assert isinstance(df, pd.DataFrame)
     assert not df.empty
-    assert "asin" in df.columns
+    assert "product_identifier" in df.columns
     assert "price" in df.columns

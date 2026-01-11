@@ -13,14 +13,13 @@ def test_metrics_rule():
     df = job_info.load_df("sales")
     assert isinstance(df, pd.DataFrame)
     assert not df.empty
-    assert "asin" in df.columns
+    assert "product_identifier" in df.columns
     assert "date" in df.columns
     assert "impressions" in df.columns
     assert "visits" in df.columns
     assert "cart_adds" in df.columns
     assert "ordered_units" in df.columns
     assert "revenue" in df.columns
-    assert "average_selling_price" in df.columns
 
 
 def test_metrics_rule_weekly_granularity():
@@ -34,14 +33,13 @@ def test_metrics_rule_weekly_granularity():
     # Basic validations
     assert isinstance(df, pd.DataFrame)
     assert not df.empty
-    assert "asin" in df.columns
+    assert "product_identifier" in df.columns
     assert "date" in df.columns
     assert "impressions" in df.columns
     assert "visits" in df.columns
     assert "cart_adds" in df.columns
     assert "ordered_units" in df.columns
     assert "revenue" in df.columns
-    assert "average_selling_price" in df.columns
 
     # Weekly-specific validations
     df["date_dt"] = pd.to_datetime(df["date"])
@@ -68,7 +66,7 @@ def test_metrics_rule_weekly_granularity():
     assert len(df) == expected_rows, f"Expected {expected_rows} rows (products × weeks), got {len(df)}"
 
     # Verify data integrity: all combinations of product and week exist
-    product_week_combinations = df.groupby(["asin", "date"]).size()
+    product_week_combinations = df.groupby(["product_identifier", "date"]).size()
     assert len(product_week_combinations) == expected_rows, "All product-week combinations should exist"
 
 
@@ -106,7 +104,6 @@ def test_funnel_metrics_schema():
     assert "cart_adds" in df.columns
     assert "ordered_units" in df.columns
     assert "revenue" in df.columns
-    assert "average_selling_price" in df.columns
 
     # Check data types
     assert df["impressions"].dtype == int
@@ -114,7 +111,6 @@ def test_funnel_metrics_schema():
     assert df["cart_adds"].dtype == int
     assert df["ordered_units"].dtype == int
     assert df["revenue"].dtype == float
-    assert df["average_selling_price"].dtype == float
 
 
 def test_funnel_logic_consistency():
@@ -154,23 +150,6 @@ def test_funnel_zero_activity():
     assert all(no_activity["cart_adds"] == 0)
     assert all(no_activity["ordered_units"] == 0)
     assert all(no_activity["revenue"] == 0.0)
-    assert all(no_activity["average_selling_price"] == 0.0)
-
-
-def test_asp_calculation():
-    """Test average selling price calculation."""
-    config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    job_info = simulate_characteristics(config_path)
-    job_info = simulate_metrics(job_info, config_path)
-    df = job_info.load_df("sales")
-
-    # For daily data with no discounts, ASP should equal price when units sold
-    rows_with_sales = df[df["ordered_units"] > 0]
-    assert all(rows_with_sales["average_selling_price"] == rows_with_sales["price"])
-
-    # ASP should be 0 when no units sold
-    rows_no_sales = df[df["ordered_units"] == 0]
-    assert all(rows_no_sales["average_selling_price"] == 0.0)
 
 
 def test_weekly_funnel_aggregation():
@@ -185,20 +164,10 @@ def test_weekly_funnel_aggregation():
     assert "visits" in df.columns
     assert "cart_adds" in df.columns
     assert "ordered_units" in df.columns
-    assert "average_selling_price" in df.columns
 
     # All dates should be Mondays
     df["date_dt"] = pd.to_datetime(df["date"])
     assert all(df["date_dt"].dt.weekday == 0)
-
-    # ASP calculation for weekly: revenue/ordered_units
-    rows_with_sales = df[df["ordered_units"] > 0]
-    calculated_asp = (rows_with_sales["revenue"] / rows_with_sales["ordered_units"]).round(2)
-    assert all(rows_with_sales["average_selling_price"] == calculated_asp)
-
-    # No sales → ASP = 0
-    rows_no_sales = df[df["ordered_units"] == 0]
-    assert all(rows_no_sales["average_selling_price"] == 0.0)
 
 
 def test_conversion_rate_config():

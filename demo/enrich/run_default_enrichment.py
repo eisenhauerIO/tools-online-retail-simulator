@@ -25,7 +25,7 @@ def main():
     sales_df = load_job_results(job_info)["sales"]
     print(f"✓ Generated {len(sales_df)} sales records")
     print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
-    print(f"✓ Products: {sales_df['asin'].nunique()} unique ASINs")
+    print(f"✓ Products: {sales_df['product_identifier'].nunique()} unique products")
 
     # Step 2: Apply default enrichment
     print("\nStep 2: Applying default enrichment (combined_boost)...")

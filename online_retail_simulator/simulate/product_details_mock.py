@@ -105,7 +105,7 @@ def simulate_product_details_mock(
     """Generate mock product details (rule-based).
 
     Args:
-        products_df: Input products with asin, category, price
+        products_df: Input products with product_identifier, category, price
         seed: Random seed for reproducibility
         prompt_path: Ignored for mock backend (accepted for API compatibility)
         treatment_mode: If True, generate "improved" product details

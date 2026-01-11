@@ -42,7 +42,7 @@ def main():
     print("\n3. Sample product details:")
     print("-" * 60)
     for _, row in detailed_df.head(3).iterrows():
-        print(f"   ASIN: {row['asin']}")
+        print(f"   Product ID: {row['product_identifier']}")
         print(f"   Title: {row.get('title', 'N/A')}")
         print(f"   Brand: {row.get('brand', 'N/A')}")
         desc = row.get("description", "N/A")

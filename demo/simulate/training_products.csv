@@ -1,4 +1,4 @@
-asin,category,price
+product_identifier,category,price
 B001,Electronics,299.99
 B002,Books,19.99
 B003,Clothing,49.99

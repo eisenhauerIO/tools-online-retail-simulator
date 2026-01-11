@@ -111,7 +111,7 @@ def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) 
 
     Args:
         config_path: Path to enrichment config (YAML or JSON, local or S3)
-        df: DataFrame with sales data (must include asin)
+        df: DataFrame with sales data (must include product_identifier)
         job_info: Optional JobInfo for product-aware enrichment functions
         products_df: Optional products DataFrame for product-aware enrichment functions
 
@@ -137,14 +137,14 @@ def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) 
 
     impact_function = load_effect_function(module_name, function_name)  # module_name ignored
 
-    # Get product list from df - use asin as product identifier
-    if "asin" not in df.columns:
-        raise ValueError("Input DataFrame must contain 'asin' column")
+    # Get product list from df - use product_identifier as product identifier
+    if "product_identifier" not in df.columns:
+        raise ValueError("Input DataFrame must contain 'product_identifier' column")
 
-    # Convert DataFrame to list of dicts for sales, mapping asin to product_id
+    # Convert DataFrame to list of dicts for sales, mapping product_identifier to product_id
     sales = df.to_dict(orient="records")
     for sale in sales:
-        sale["product_id"] = sale["asin"]  # Map asin to product_id for enrichment
+        sale["product_id"] = sale["product_identifier"]  # Map product_identifier to product_id for enrichment
         if "price" in sale and "unit_price" not in sale:
             sale["unit_price"] = sale["price"]  # Ensure unit_price exists
 

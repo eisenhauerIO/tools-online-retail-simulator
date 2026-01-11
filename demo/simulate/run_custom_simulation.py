@@ -44,14 +44,14 @@ def generate_electronics_only(config: Dict) -> pd.DataFrame:
         price_min, price_max = price_ranges[category]
         price = round(random.uniform(price_min, price_max), 2)
 
-        # Generate electronics-style ASIN
-        asin = "E" + "".join(
+        # Generate electronics-style product identifier
+        product_id = "E" + "".join(
             random.choice(string.ascii_uppercase + string.digits) for _ in range(9)
         )
 
         products.append(
             {
-                "asin": asin,
+                "product_identifier": product_id,
                 "category": category,
                 "price": price,
             }
@@ -85,7 +85,7 @@ def main():
 
     print(f"✓ Generated {len(sales_df)} sales records")
     print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
-    print(f"✓ Products: {sales_df['asin'].nunique()} unique ASINs")
+    print(f"✓ Products: {sales_df['product_identifier'].nunique()} unique products")
     print(f"✓ Categories: {sales_df['category'].nunique()} electronics categories only")
 
     # Show category breakdown (should be electronics only)

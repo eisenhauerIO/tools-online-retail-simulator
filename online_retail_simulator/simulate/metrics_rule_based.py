@@ -18,8 +18,8 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config: D
         config: Complete configuration dictionary
     Returns:
         DataFrame of product metrics (one row per product per time period).
-        Columns: asin, category, price, date, impressions, visits, cart_adds,
-        ordered_units, revenue, average_selling_price.
+        Columns: product_identifier, category, price, date, impressions, visits, cart_adds,
+        ordered_units, revenue.
     """
     import random
     from datetime import datetime, timedelta
@@ -77,11 +77,6 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config: D
                     ordered_units = 0
 
                 revenue = round(prod["price"] * ordered_units, 2)
-
-                if ordered_units > 0:
-                    average_selling_price = prod["price"]
-                else:
-                    average_selling_price = 0.0
             else:
                 # No funnel activity
                 impressions = 0
@@ -89,7 +84,6 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config: D
                 cart_adds = 0
                 ordered_units = 0
                 revenue = 0.0
-                average_selling_price = 0.0
 
             # Build row with all metrics
             row = prod.to_dict()
@@ -99,7 +93,6 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config: D
             row["cart_adds"] = cart_adds
             row["ordered_units"] = ordered_units
             row["revenue"] = revenue
-            row["average_selling_price"] = average_selling_price
             rows.append(row)
 
         current_date += timedelta(days=1)
@@ -126,8 +119,8 @@ def _aggregate_to_weekly(daily_df: pd.DataFrame, product_characteristics: pd.Dat
 
     Returns:
         Weekly aggregated DataFrame with date = week start (Monday)
-        Columns: [asin, category, price, date, impressions, visits, cart_adds,
-                 ordered_units, revenue, average_selling_price]
+        Columns: [product_identifier, category, price, date, impressions, visits, cart_adds,
+                 ordered_units, revenue]
     """
     # Convert date strings to datetime for week calculation
     df = daily_df.copy()
@@ -140,17 +133,17 @@ def _aggregate_to_weekly(daily_df: pd.DataFrame, product_characteristics: pd.Dat
     unique_weeks = df["week_start"].unique()
 
     # Create complete product × week grid to ensure zero-sale rows are included
-    products = product_characteristics[["asin", "category", "price"]].copy()
+    products = product_characteristics[["product_identifier", "category", "price"]].copy()
     week_grid = pd.DataFrame({"week_start": unique_weeks})
     complete_grid = products.merge(week_grid, how="cross")
 
     # Aggregate actual sales by product and week
-    sales_agg = df.groupby(["asin", "category", "price", "week_start"], as_index=False).agg(
+    sales_agg = df.groupby(["product_identifier", "category", "price", "week_start"], as_index=False).agg(
         {"impressions": "sum", "visits": "sum", "cart_adds": "sum", "ordered_units": "sum", "revenue": "sum"}
     )
 
     # Merge with complete grid to fill in zero-sale weeks
-    weekly = complete_grid.merge(sales_agg, on=["asin", "category", "price", "week_start"], how="left")
+    weekly = complete_grid.merge(sales_agg, on=["product_identifier", "category", "price", "week_start"], how="left")
 
     # Fill NaN values with 0 (weeks with no sales)
     weekly["impressions"] = weekly["impressions"].fillna(0).astype(int)
@@ -159,13 +152,6 @@ def _aggregate_to_weekly(daily_df: pd.DataFrame, product_characteristics: pd.Dat
     weekly["ordered_units"] = weekly["ordered_units"].fillna(0).astype(int)
     weekly["revenue"] = weekly["revenue"].fillna(0.0)
 
-    # Calculate average_selling_price for weekly data
-    weekly["average_selling_price"] = 0.0
-    mask_has_sales = weekly["ordered_units"] > 0
-    weekly.loc[mask_has_sales, "average_selling_price"] = (
-        weekly.loc[mask_has_sales, "revenue"] / weekly.loc[mask_has_sales, "ordered_units"]
-    ).round(2)
-
     # Convert week_start back to string format YYYY-MM-DD
     weekly["date"] = weekly["week_start"].dt.strftime("%Y-%m-%d")
     weekly = weekly.drop(columns=["week_start"])
@@ -173,7 +159,7 @@ def _aggregate_to_weekly(daily_df: pd.DataFrame, product_characteristics: pd.Dat
     # Reorder columns to match schema
     weekly = weekly[
         [
-            "asin",
+            "product_identifier",
             "category",
             "price",
             "date",
@@ -182,7 +168,6 @@ def _aggregate_to_weekly(daily_df: pd.DataFrame, product_characteristics: pd.Dat
             "cart_adds",
             "ordered_units",
             "revenue",
-            "average_selling_price",
         ]
     ]
 

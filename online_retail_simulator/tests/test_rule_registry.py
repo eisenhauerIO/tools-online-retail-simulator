@@ -17,7 +17,7 @@ def test_characteristics_function_registration():
     clear_simulation_registry()
 
     def dummy_characteristics(config):
-        return pd.DataFrame({"asin": ["A123"], "category": ["Test"], "price": [10.0]})
+        return pd.DataFrame({"product_identifier": ["A123"], "category": ["Test"], "price": [10.0]})
 
     register_characteristics_function("test_chars", dummy_characteristics)
 
@@ -35,7 +35,7 @@ def test_metrics_function_registration():
     def dummy_metrics(product_characteristics, config, **kwargs):
         return pd.DataFrame(
             {
-                "asin": ["A123"],
+                "product_identifier": ["A123"],
                 "category": ["Test"],
                 "price": [10.0],
                 "date": ["2024-01-01"],

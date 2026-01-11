@@ -153,7 +153,7 @@ class TestRegistryIntegration:
         def custom_characteristics(config):
             import pandas as pd
 
-            return pd.DataFrame({"asin": ["TEST123"], "category": ["Test"], "price": [10.0]})
+            return pd.DataFrame({"product_identifier": ["TEST123"], "category": ["Test"], "price": [10.0]})
 
         register_characteristics_function("custom", custom_characteristics)
 

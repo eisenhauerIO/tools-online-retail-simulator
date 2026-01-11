@@ -11,11 +11,11 @@ from typing import Dict
 import pandas as pd
 
 
-def generate_random_asin(prefix: str = "B") -> str:
-    """Generate a random ASIN-like identifier.
+def generate_random_product_identifier(prefix: str = "B") -> str:
+    """Generate a random product identifier.
     - 10 characters total
     - Alphanumeric
-    - Defaults to starting with 'B' (common for non-book ASINs)
+    - Defaults to starting with 'B'
     """
     chars = string.ascii_uppercase + string.digits
     return prefix + "".join(random.choice(chars) for _ in range(9))

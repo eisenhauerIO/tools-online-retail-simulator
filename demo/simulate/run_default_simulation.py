@@ -25,7 +25,7 @@ def analyze_results(sales_df, products_df, granularity, job_info):
     """
     print(f"✓ Generated {len(sales_df)} sales records")
     print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
-    print(f"✓ Products: {sales_df['asin'].nunique()} unique ASINs")
+    print(f"✓ Products: {sales_df['product_identifier'].nunique()} unique products")
     print(f"✓ Categories: {sales_df['category'].nunique()} different categories")
 
     # Granularity-specific info

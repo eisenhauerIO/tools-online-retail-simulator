@@ -194,7 +194,7 @@ def product_detail_boost(sales: list, **kwargs) -> list:
 
     # 2. Select treatment products
     if products:
-        unique_product_ids = list(set(p.get("asin", p.get("product_id")) for p in products))
+        unique_product_ids = list(set(p.get("product_identifier", p.get("product_id")) for p in products))
     else:
         unique_product_ids = list(set(sale["product_id"] for sale in sales))
 
@@ -238,7 +238,7 @@ def _regenerate_product_details(
 
     for product in products:
         product_copy = copy.deepcopy(product)
-        product_id = product_copy.get("asin", product_copy.get("product_id"))
+        product_id = product_copy.get("product_identifier", product_copy.get("product_id"))
 
         if product_id in treatment_ids:
             product_copy["enriched"] = True
@@ -295,7 +295,7 @@ def _apply_sales_boost(
 
     for sale in sales:
         sale_copy = copy.deepcopy(sale)
-        product_id = sale_copy.get("product_id", sale_copy.get("asin"))
+        product_id = sale_copy.get("product_id", sale_copy.get("product_identifier"))
         sale_date = datetime.strptime(sale_copy["date"], "%Y-%m-%d")
 
         # Track if product is in treatment group

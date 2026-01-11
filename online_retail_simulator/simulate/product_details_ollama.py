@@ -39,7 +39,7 @@ def simulate_product_details_ollama(
     """Generate product details using Ollama (local LLM).
 
     Args:
-        products_df: Input products with asin, category, price
+        products_df: Input products with product_identifier, category, price
         model: Ollama model to use (default: llama3.2)
         ollama_url: Ollama API URL (default: http://localhost:11434)
         prompt_path: Optional path to custom prompt template file.

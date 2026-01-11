@@ -50,8 +50,8 @@ IMPACT:
         # Verify enriched column has proper boolean values
         assert enriched_sales["enriched"].dtype == bool
         # With 50% enrichment_fraction, we expect roughly half of unique products to be enriched
-        enriched_products = enriched_sales[enriched_sales["enriched"]]["asin"].nunique()
-        total_products = enriched_sales["asin"].nunique()
+        enriched_products = enriched_sales[enriched_sales["enriched"]]["product_identifier"].nunique()
+        total_products = enriched_sales["product_identifier"].nunique()
         assert 0.3 <= enriched_products / total_products <= 0.7  # Allow some variance
 
         # Verify enrichment effect (should have some ordered units increases)

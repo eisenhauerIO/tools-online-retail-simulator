@@ -183,9 +183,9 @@ IMPACT:
 def test_regenerate_product_details_helper():
     """Test the _regenerate_product_details helper function."""
     products = [
-        {"asin": "A001", "category": "Electronics", "price": 99.99, "title": "Old Title 1"},
-        {"asin": "A002", "category": "Electronics", "price": 49.99, "title": "Old Title 2"},
-        {"asin": "A003", "category": "Clothing", "price": 29.99, "title": "Old Title 3"},
+        {"product_identifier": "A001", "category": "Electronics", "price": 99.99, "title": "Old Title 1"},
+        {"product_identifier": "A002", "category": "Electronics", "price": 49.99, "title": "Old Title 2"},
+        {"product_identifier": "A003", "category": "Clothing", "price": 29.99, "title": "Old Title 3"},
     ]
     treatment_ids = {"A001", "A003"}
 
@@ -195,14 +195,14 @@ def test_regenerate_product_details_helper():
     assert len(updated) == 3
 
     # Check enriched flag
-    enriched_flags = {p["asin"]: p["enriched"] for p in updated}
+    enriched_flags = {p["product_identifier"]: p["enriched"] for p in updated}
     assert enriched_flags["A001"] is True
     assert enriched_flags["A002"] is False
     assert enriched_flags["A003"] is True
 
     # Check treatment products have new titles (from mock treatment mode)
     for p in updated:
-        if p["asin"] in treatment_ids:
+        if p["product_identifier"] in treatment_ids:
             assert "title" in p
             # Treatment mode uses different adjectives/brands
 

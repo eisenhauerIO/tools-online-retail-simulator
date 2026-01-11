@@ -91,7 +91,7 @@ def main():
     sales_df = load_job_results(job_info)["sales"]
     print(f"✓ Generated {len(sales_df)} sales records")
     print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
-    print(f"✓ Products: {sales_df['asin'].nunique()} unique ASINs")
+    print(f"✓ Products: {sales_df['product_identifier'].nunique()} unique products")
 
     # Step 3: Apply custom enrichment
     print("\nStep 3: Applying custom enrichment (price_discount)...")

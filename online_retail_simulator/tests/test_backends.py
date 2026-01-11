@@ -63,7 +63,7 @@ class TestRuleBackend:
         """Metrics simulation returns DataFrame."""
         products = pd.DataFrame(
             {
-                "asin": ["B001", "B002"],
+                "product_identifier": ["B001", "B002"],
                 "category": ["Electronics", "Books"],
                 "price": [99.99, 19.99],
             }
