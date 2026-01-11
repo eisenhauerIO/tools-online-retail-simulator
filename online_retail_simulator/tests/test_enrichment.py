@@ -168,6 +168,7 @@ IMPACT:
     enrichment_fraction: 0.3
     enrichment_start: "2024-01-02"
     seed: 999
+    min_units: 0
 """
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:

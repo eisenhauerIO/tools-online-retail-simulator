@@ -18,6 +18,7 @@ def quantity_boost(sales: list, **kwargs) -> list:
             - enrichment_fraction: Fraction of products to enrich (default: 0.3)
             - enrichment_start: Start date of enrichment (default: "2024-11-15")
             - seed: Random seed for product selection (default: 42)
+            - min_units: Minimum units for enriched products with zero sales (default: 1)
 
     Returns:
         List of modified sale dictionaries with treatment applied
@@ -26,6 +27,7 @@ def quantity_boost(sales: list, **kwargs) -> list:
     enrichment_fraction = kwargs.get("enrichment_fraction", 0.3)
     enrichment_start = kwargs.get("enrichment_start", "2024-11-15")
     seed = kwargs.get("seed", 42)
+    min_units = kwargs.get("min_units", 1)
 
     if seed is not None:
         random.seed(seed)
@@ -46,7 +48,8 @@ def quantity_boost(sales: list, **kwargs) -> list:
 
         if is_enriched and sale_date >= start_date:
             original_quantity = sale_copy["ordered_units"]
-            sale_copy["ordered_units"] = int(original_quantity * (1 + effect_size))
+            boosted_quantity = int(original_quantity * (1 + effect_size))
+            sale_copy["ordered_units"] = max(min_units, boosted_quantity)
             unit_price = sale_copy.get("unit_price", sale_copy.get("price"))
             sale_copy["revenue"] = round(sale_copy["ordered_units"] * unit_price, 2)
 
