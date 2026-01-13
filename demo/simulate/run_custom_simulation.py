@@ -81,27 +81,27 @@ def main():
 
     results = load_job_results(job_id)
     products_df = results["products"]
-    sales_df = results["sales"]
+    metrics_df = results["metrics"]
 
-    print(f"✓ Generated {len(sales_df)} sales records")
-    print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
-    print(f"✓ Products: {sales_df['product_identifier'].nunique()} unique products")
-    print(f"✓ Categories: {sales_df['category'].nunique()} electronics categories only")
+    print(f"✓ Generated {len(metrics_df)} metrics records")
+    print(f"✓ Date range: {metrics_df['date'].min()} to {metrics_df['date'].max()}")
+    print(f"✓ Products: {metrics_df['product_identifier'].nunique()} unique products")
+    print(f"✓ Categories: {metrics_df['category'].nunique()} electronics categories only")
 
     # Show category breakdown (should be electronics only)
     print(f"\nElectronics category breakdown:")
-    category_counts = sales_df["category"].value_counts()
+    category_counts = metrics_df["category"].value_counts()
     for category, count in category_counts.items():
-        print(f"  {category}: {count} sales")
+        print(f"  {category}: {count} records")
 
     # Show price and revenue summary
     print(f"\nSummary statistics:")
     print(
-        f"  Price range: ${sales_df['price'].min():.2f} - ${sales_df['price'].max():.2f}"
+        f"  Price range: ${metrics_df['price'].min():.2f} - ${metrics_df['price'].max():.2f}"
     )
-    print(f"  Total ordered units: {sales_df['ordered_units'].sum()}")
-    print(f"  Total revenue: ${sales_df['revenue'].sum():.2f}")
-    print(f"  Average order value: ${sales_df['revenue'].mean():.2f}")
+    print(f"  Total ordered units: {metrics_df['ordered_units'].sum()}")
+    print(f"  Total revenue: ${metrics_df['revenue'].sum():.2f}")
+    print(f"  Average order value: ${metrics_df['revenue'].mean():.2f}")
 
     print(f"\n✓ Results saved to: ./output/{job_id}/")
 

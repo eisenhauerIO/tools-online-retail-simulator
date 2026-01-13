@@ -17,7 +17,7 @@ def simulate_metrics(job_info, config_path: str):
         config_path: Path to configuration file
 
     Returns:
-        JobInfo: Same job, now also containing sales.csv
+        JobInfo: Same job, now also containing metrics.csv
     """
     config = process_config(config_path)
 
@@ -26,18 +26,18 @@ def simulate_metrics(job_info, config_path: str):
     if products_df is None:
         raise FileNotFoundError(f"products.csv not found in job {job_info.job_id}")
 
-    # Generate sales DataFrame via backend
+    # Generate metrics DataFrame via backend
     backend = BackendRegistry.detect_backend(config)
-    sales_df = backend.simulate_metrics(products_df)
+    metrics_df = backend.simulate_metrics(products_df)
 
-    # Save sales to same job
-    job_info.save_df("sales", sales_df)
+    # Save metrics to same job
+    job_info.save_df("metrics", metrics_df)
     save_job_metadata(
         job_info,
         config,
         config_path,
         num_products=len(products_df),
-        num_sales=len(sales_df),
+        num_metrics=len(metrics_df),
     )
 
     return job_info

@@ -91,13 +91,13 @@ results = load_job_results(job_info)
 products_df = results["products"]
 ```
 
-#### Phase 2: Sales Metrics
+#### Phase 2: Product Metrics
 ```python
-# Generate sales transactions, takes JobInfo
+# Generate product metrics, takes JobInfo
 job_info = simulate_metrics(job_info, config)
-# Output: JobInfo (sales.csv saved to job directory)
+# Output: JobInfo (metrics.csv saved to job directory)
 results = load_job_results(job_info)
-sales_df = results["sales"]
+metrics_df = results["metrics"]
 ```
 
 ### 3. Optional Enrichment
@@ -226,30 +226,30 @@ Both simulation and enrichment registries use this common infrastructure.
 
 #### Quantity Boost
 ```python
-def quantity_boost(sales, effect_size=0.5, enrichment_fraction=0.3,
+def quantity_boost(metrics, effect_size=0.5, enrichment_fraction=0.3,
                    enrichment_start="2024-11-15", seed=42, **kwargs):
     """Simple multiplicative increase in ordered units"""
     # Boosts ordered_units by effect_size for enriched products
-    # Returns: List of modified sale dictionaries
+    # Returns: List of modified metric dictionaries
 ```
 
 #### Probability Boost
 ```python
-def probability_boost(sales, **kwargs):
+def probability_boost(metrics, **kwargs):
     """Increase sale probability for treated products"""
-    # Same as quantity_boost (probability reflected in quantity for existing sales)
+    # Same as quantity_boost (probability reflected in quantity for existing records)
 ```
 
 #### Combined Boost (Realistic)
 ```python
-def combined_boost(sales, effect_size=0.5, ramp_days=7, enrichment_fraction=0.3,
+def combined_boost(metrics, effect_size=0.5, ramp_days=7, enrichment_fraction=0.3,
                    enrichment_start="2024-11-15", seed=42, **kwargs):
     """Gradual rollout with partial treatment"""
     # Realistic implementation with:
     # - Gradual effect ramp-up over ramp_days
     # - Partial product treatment (enrichment_fraction)
     # - Date-based activation (enrichment_start)
-    # Returns: List of modified sale dictionaries
+    # Returns: List of modified metric dictionaries
 ```
 
 ## Configuration

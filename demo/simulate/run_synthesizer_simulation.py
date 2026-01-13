@@ -40,20 +40,20 @@ def main():
             print(f"  Mean price: ${products_df['price'].mean():.2f}")
 
         # Step 2: Generate synthetic metrics
-        print(f"\nStep 2: Generating synthetic sales metrics...")
+        print(f"\nStep 2: Generating synthetic metrics...")
         job_info = simulate_metrics(job_info, "config_synthesizer_simulation.yaml")
-        sales_df = load_job_results(job_info)["sales"]
+        metrics_df = load_job_results(job_info)["metrics"]
 
-        print(f"✓ Generated {len(sales_df)} synthetic sales records")
-        print(f"✓ Columns: {list(sales_df.columns)}")
+        print(f"✓ Generated {len(metrics_df)} synthetic metrics records")
+        print(f"✓ Columns: {list(metrics_df.columns)}")
 
-        # Show sales statistics
-        if "revenue" in sales_df.columns:
-            print(f"\nSales statistics:")
-            print(f"  Total revenue: ${sales_df['revenue'].sum():.2f}")
-            print(f"  Average order value: ${sales_df['revenue'].mean():.2f}")
-            if "quantity" in sales_df.columns:
-                print(f"  Total quantity: {sales_df['quantity'].sum()}")
+        # Show metrics statistics
+        if "revenue" in metrics_df.columns:
+            print(f"\nMetrics statistics:")
+            print(f"  Total revenue: ${metrics_df['revenue'].sum():.2f}")
+            print(f"  Average order value: ${metrics_df['revenue'].mean():.2f}")
+            if "quantity" in metrics_df.columns:
+                print(f"  Total quantity: {metrics_df['quantity'].sum()}")
 
         print("\n" + "=" * 60)
         print("Complete synthesizer simulation finished!")

@@ -34,20 +34,21 @@ All steps must be run inside a freshly pruned [hatch](https://hatch.pypa.io/) en
      ```bash
      pre-commit run --all-files
      ```
-   - This validates code formatting (black), import sorting (isort), linting (flake8), and other hooks.
+   - This validates code formatting (black), linting and import sorting (ruff), and runs the test suite (pytest-check).
    - If any hook fails (non-zero exit code), STOP. Ask the user for input before continuing.
+   - Note: Since pre-commit now runs pytest, Step 3 may be skipped if you prefer to run all validations through pre-commit.
 
 5. **Run All Demo Scripts in Hatch**
-   - Run:
+   - Run (from project root):
      ```bash
-     cd demo && hatch run python run_all_demos.py
+     hatch run python demo/run_all_demos.py
      ```
    - If any demo script fails (non-zero exit code), STOP. Ask the user for input before continuing.
 
 6. **Verify Documentation Integrity**
-   - Build the Sphinx documentation:
+   - Build the Sphinx documentation (from project root):
      ```bash
-     cd docs && hatch run docs
+     hatch run docs
      ```
    - If the build fails or produces warnings, STOP. Ask the user for input before continuing.
    - Manually verify (spot check):

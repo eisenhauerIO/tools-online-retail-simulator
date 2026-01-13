@@ -125,7 +125,7 @@ Here's all the configuration options... [300 lines of duplication]
 ```python
 from online_retail_simulator import simulate, load_job_results
 job_info = simulate("config.yaml")
-sales_df = load_job_results(job_info)["sales"]
+metrics_df = load_job_results(job_info)["metrics"]
 ```
 
 For more examples, see the [User Guide](https://eisenhauerio.github.io/tools-catalog-generator/user-guide.html).

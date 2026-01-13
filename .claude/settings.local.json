@@ -17,7 +17,8 @@
       "Bash(pre-commit run:*)",
       "Bash(git commit:*)",
       "Bash(hatch -e light run:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(python3 -m pytest:*)"
     ]
   }
 }

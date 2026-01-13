@@ -177,8 +177,8 @@ class TestRegistryIntegration:
 
         clear_enrichment_registry()
 
-        def custom_enrichment(sales, **kwargs):
-            return sales
+        def custom_enrichment(metrics, **kwargs):
+            return metrics
 
         register_enrichment_function("custom", custom_enrichment)
 

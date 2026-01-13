@@ -22,10 +22,10 @@ def main():
     print(f"✓ Simulation completed. Job ID: {job_info}")
 
     # Load simulation results
-    sales_df = load_job_results(job_info)["sales"]
-    print(f"✓ Generated {len(sales_df)} sales records")
-    print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
-    print(f"✓ Products: {sales_df['product_identifier'].nunique()} unique products")
+    metrics_df = load_job_results(job_info)["metrics"]
+    print(f"✓ Generated {len(metrics_df)} metrics records")
+    print(f"✓ Date range: {metrics_df['date'].min()} to {metrics_df['date'].max()}")
+    print(f"✓ Products: {metrics_df['product_identifier'].nunique()} unique products")
 
     # Step 2: Apply default enrichment
     print("\nStep 2: Applying default enrichment (product_detail_boost)...")
@@ -35,12 +35,12 @@ def main():
 
     # Load enriched results
     enriched_df = load_job_results(enriched_job_info)["enriched"]
-    print(f"✓ Applied enrichment to {len(enriched_df)} sales records")
+    print(f"✓ Applied enrichment to {len(enriched_df)} metrics records")
 
     # Step 3: Compare results
     print("\nStep 3: Comparing results...")
     enrichment_start = "2024-11-15"
-    original_post = sales_df[sales_df["date"] >= enrichment_start]
+    original_post = metrics_df[metrics_df["date"] >= enrichment_start]
     enriched_post = enriched_df[enriched_df["date"] >= enrichment_start]
 
     print(f"\nPost-enrichment period ({enrichment_start} onwards):")

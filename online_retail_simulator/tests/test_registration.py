@@ -18,12 +18,12 @@ from online_retail_simulator import (
 def test_register_function_direct():
     """Test direct function registration."""
 
-    def test_effect(sales, **kwargs):
+    def test_effect(metrics, **kwargs):
         """Simple test effect."""
         multiplier = kwargs.get("multiplier", 1.5)
-        for sale in sales:
-            sale["quantity"] = int(sale["quantity"] * multiplier)
-        return sales
+        for record in metrics:
+            record["quantity"] = int(record["quantity"] * multiplier)
+        return metrics
 
     # Register function
     register_enrichment_function("test_effect", test_effect)
@@ -35,7 +35,7 @@ def test_register_function_direct():
 def test_register_function_invalid_signature():
     """Test registration with invalid function signature."""
 
-    def bad_function(data, **kwargs):  # Missing 'sales' parameter
+    def bad_function(data, **kwargs):  # Missing 'metrics' parameter
         return data
 
     # Should raise error for invalid signature
@@ -61,13 +61,13 @@ def test_register_module():
 def test_use_registered_function():
     """Test using a registered function in enrichment."""
 
-    def double_quantity(sales, **kwargs):
-        """Double the ordered units of all sales."""
-        for sale in sales:
-            sale["ordered_units"] = sale["ordered_units"] * 2
-            unit_price = sale.get("unit_price", sale.get("price"))
-            sale["revenue"] = round(sale["ordered_units"] * unit_price, 2)
-        return sales
+    def double_quantity(metrics, **kwargs):
+        """Double the ordered units of all records."""
+        for record in metrics:
+            record["ordered_units"] = record["ordered_units"] * 2
+            unit_price = record.get("unit_price", record.get("price"))
+            record["revenue"] = round(record["ordered_units"] * unit_price, 2)
+        return metrics
 
     # Register function
     register_enrichment_function("double_quantity", double_quantity)
@@ -89,17 +89,17 @@ IMPACT:
         job_info = simulate(test_config_path)
 
         # Load original sales before enrichment
-        original_sales = job_info.load_df("sales")
+        original_metrics = job_info.load_df("metrics")
 
         # Apply enrichment using registered function
         enriched_job_info = enrich(config_path, job_info)
 
         # Load enriched results
-        enriched_sales = enriched_job_info.load_df("enriched")
+        enriched_metrics = enriched_job_info.load_df("enriched")
 
         # Verify doubling effect
-        original_total = original_sales["ordered_units"].sum()
-        enriched_total = enriched_sales["ordered_units"].sum()
+        original_total = original_metrics["ordered_units"].sum()
+        enriched_total = enriched_metrics["ordered_units"].sum()
 
         assert enriched_total == original_total * 2
 
@@ -114,18 +114,18 @@ def test_registry_precedence():
     # Clear registry first to ensure clean state
     clear_enrichment_registry()
 
-    def custom_quantity_boost(sales, **kwargs):
+    def custom_quantity_boost(metrics, **kwargs):
         """Custom version that triples all quantities."""
         import copy
 
-        treated_sales = []
-        for sale in sales:
-            sale_copy = copy.deepcopy(sale)
-            sale_copy["quantity"] = sale_copy["quantity"] * 3
-            unit_price = sale_copy.get("unit_price", sale_copy.get("price"))
-            sale_copy["revenue"] = round(sale_copy["quantity"] * unit_price, 2)
-            treated_sales.append(sale_copy)
-        return treated_sales
+        treated_metrics = []
+        for record in metrics:
+            record_copy = copy.deepcopy(record)
+            record_copy["quantity"] = record_copy["quantity"] * 3
+            unit_price = record_copy.get("unit_price", record_copy.get("price"))
+            record_copy["revenue"] = round(record_copy["quantity"] * unit_price, 2)
+            treated_metrics.append(record_copy)
+        return treated_metrics
 
     # Register function with same name as built-in
     register_enrichment_function("quantity_boost", custom_quantity_boost)
@@ -151,17 +151,17 @@ IMPACT:
         job_info = simulate(test_config_path)
 
         # Load original sales before enrichment
-        original_sales = job_info.load_df("sales")
+        original_metrics = job_info.load_df("metrics")
 
         # Apply enrichment - should use registered version (triple)
         enriched_job_info = enrich(config_path, job_info)
 
         # Load enriched results
-        enriched_sales = enriched_job_info.load_df("enriched")
+        enriched_metrics = enriched_job_info.load_df("enriched")
 
         # Verify tripling effect (not the built-in boost)
-        original_total = original_sales["quantity"].sum()
-        enriched_total = enriched_sales["quantity"].sum()
+        original_total = original_metrics["quantity"].sum()
+        enriched_total = enriched_metrics["quantity"].sum()
 
         assert enriched_total == original_total * 3
 
@@ -179,11 +179,11 @@ def test_list_functions():
     assert len(defaults) == 3  # quantity_boost, probability_boost, product_detail_boost
 
     # Register some custom functions
-    def func1(sales, **kwargs):
-        return sales
+    def func1(metrics, **kwargs):
+        return metrics
 
-    def func2(sales, **kwargs):
-        return sales
+    def func2(metrics, **kwargs):
+        return metrics
 
     register_enrichment_function("func1", func1)
     register_enrichment_function("func2", func2)
@@ -199,10 +199,10 @@ def test_list_functions():
 def test_register_function_overwrites():
     """Test that registering same name overwrites previous function."""
 
-    def first_func(sales, **kwargs):
+    def first_func(metrics, **kwargs):
         return [{"test": "first"}]
 
-    def second_func(sales, **kwargs):
+    def second_func(metrics, **kwargs):
         return [{"test": "second"}]
 
     # Register first function

@@ -1,5 +1,5 @@
 """
-Interface for applying enrichment treatments to sales data.
+Interface for applying enrichment treatments to metrics data.
 Dispatches to impact-based implementation based on config.
 """
 
@@ -68,41 +68,41 @@ def assign_enrichment(products: List[Dict], fraction: float, seed: int = None) -
     return enriched_products
 
 
-def apply_enrichment_to_sales(
-    sales: List[Dict],
+def apply_enrichment_to_metrics(
+    metrics: List[Dict],
     enriched_products: List[Dict],
     enrichment_start: str,
     effect_function: Callable,
     **kwargs,
 ) -> List[Dict]:
     """
-    Apply enrichment treatment effect to sales data.
+    Apply enrichment treatment effect to metrics data.
 
     Args:
-        sales: List of sale transaction dictionaries
+        metrics: List of metric record dictionaries
         enriched_products: List of products with 'enriched' field
         enrichment_start: Start date of enrichment (YYYY-MM-DD)
         effect_function: Treatment effect function to apply
         **kwargs: Additional parameters to pass to effect function
 
     Returns:
-        List of modified sales with treatment effect applied
+        List of modified metrics with treatment effect applied
     """
     # Create lookup for enriched products
     enriched_ids = {p["product_id"] for p in enriched_products if p.get("enriched", False)}
 
-    # Apply effect to sales of enriched products
-    treated_sales = []
-    for sale in sales:
-        sale_copy = copy.deepcopy(sale)
+    # Apply effect to metrics of enriched products
+    treated_metrics = []
+    for record in metrics:
+        record_copy = copy.deepcopy(record)
 
-        if sale_copy["product_id"] in enriched_ids:
+        if record_copy["product_id"] in enriched_ids:
             # Apply treatment effect function with all params as kwargs
-            sale_copy = effect_function(sale_copy, enrichment_start=enrichment_start, **kwargs)
+            record_copy = effect_function(record_copy, enrichment_start=enrichment_start, **kwargs)
 
-        treated_sales.append(sale_copy)
+        treated_metrics.append(record_copy)
 
-    return treated_sales
+    return treated_metrics
 
 
 def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) -> tuple:
@@ -111,7 +111,7 @@ def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) 
 
     Args:
         config_path: Path to enrichment config (YAML or JSON, local or S3)
-        df: DataFrame with sales data (must include product_identifier)
+        df: DataFrame with metrics data (must include product_identifier)
         job_info: Optional JobInfo for product-aware enrichment functions
         products_df: Optional products DataFrame for product-aware enrichment functions
 
@@ -143,33 +143,33 @@ def enrich(config_path: str, df: pd.DataFrame, job_info=None, products_df=None) 
     if "product_identifier" not in df.columns:
         raise ValueError("Input DataFrame must contain 'product_identifier' column")
 
-    # Convert DataFrame to list of dicts for sales, mapping product_identifier to product_id
-    sales = df.to_dict(orient="records")
-    for sale in sales:
-        sale["product_id"] = sale["product_identifier"]  # Map product_identifier to product_id for enrichment
-        if "price" in sale and "unit_price" not in sale:
-            sale["unit_price"] = sale["price"]  # Ensure unit_price exists
+    # Convert DataFrame to list of dicts for metrics, mapping product_identifier to product_id
+    metrics = df.to_dict(orient="records")
+    for record in metrics:
+        record["product_id"] = record["product_identifier"]  # Map product_identifier to product_id for enrichment
+        if "price" in record and "unit_price" not in record:
+            record["unit_price"] = record["price"]  # Ensure unit_price exists
 
     # Convert products to list of dicts if provided
     products = products_df.to_dict(orient="records") if products_df is not None else None
 
     # Apply impact function with all parameters - let the function handle everything
     # Pass job_info and products for product-aware enrichment functions
-    result = impact_function(sales, job_info=job_info, products=products, **all_params)
+    result = impact_function(metrics, job_info=job_info, products=products, **all_params)
 
     # Handle both return types: tuple (with potential outcomes) or list (without)
     if isinstance(result, tuple):
-        treated_sales, potential_outcomes_df = result
+        treated_metrics, potential_outcomes_df = result
     else:
-        treated_sales = result
+        treated_metrics = result
         potential_outcomes_df = None
 
     # Convert back to DataFrame and clean up
-    for sale in treated_sales:
-        sale.pop("product_id", None)  # Remove temporary product_id mapping
-        (sale.pop("unit_price", None) if "price" in sale else None)  # Remove duplicate price field
+    for record in treated_metrics:
+        record.pop("product_id", None)  # Remove temporary product_id mapping
+        (record.pop("unit_price", None) if "price" in record else None)  # Remove duplicate price field
 
-    enriched_df = pd.DataFrame(treated_sales)
+    enriched_df = pd.DataFrame(treated_metrics)
 
     # Preserve original column order
     original_cols = [col for col in df.columns if col in enriched_df.columns]

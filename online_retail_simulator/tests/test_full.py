@@ -20,8 +20,8 @@ def test_simulate_full_rule():
     # Load results to verify they exist
     results = load_job_results(job_info)
     assert "products" in results
-    assert "sales" in results
+    assert "metrics" in results
     assert isinstance(results["products"], pd.DataFrame)
-    assert isinstance(results["sales"], pd.DataFrame)
+    assert isinstance(results["metrics"], pd.DataFrame)
     assert not results["products"].empty
-    assert not results["sales"].empty
+    assert not results["metrics"].empty

@@ -15,7 +15,7 @@ def test_metrics_synthesizer():
     job_info = simulate_characteristics(config_path)
     job_info = simulate_metrics(job_info, config_path)
 
-    df = job_info.load_df("sales")
+    df = job_info.load_df("metrics")
     assert isinstance(df, pd.DataFrame)
     assert not df.empty
     assert "product_id" in df.columns

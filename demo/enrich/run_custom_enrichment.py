@@ -15,12 +15,12 @@ from typing import Dict, List
 from online_retail_simulator import enrich, load_job_results, register_enrichment_function, simulate
 
 
-def price_discount(sales: List[Dict], **kwargs) -> List[Dict]:
+def price_discount(metrics: List[Dict], **kwargs) -> List[Dict]:
     """
     Apply price discount to enriched products.
 
     Args:
-        sales: List of sale transaction dictionaries
+        metrics: List of metric record dictionaries
         **kwargs: Parameters including:
             - discount_percent: Percentage discount (default: 0.2 for 20% off)
             - enrichment_fraction: Fraction of products to enrich (default: 0.3)
@@ -28,7 +28,7 @@ def price_discount(sales: List[Dict], **kwargs) -> List[Dict]:
             - seed: Random seed for product selection (default: 42)
 
     Returns:
-        List of modified sale dictionaries with price discount applied
+        List of modified metric dictionaries with price discount applied
     """
     discount_percent = kwargs.get("discount_percent", 0.2)
     enrichment_fraction = kwargs.get("enrichment_fraction", 0.3)
@@ -40,35 +40,35 @@ def price_discount(sales: List[Dict], **kwargs) -> List[Dict]:
         random.seed(seed)
 
     # Get unique products and select fraction for enrichment
-    unique_products = list(set(sale["product_id"] for sale in sales))
+    unique_products = list(set(record["product_id"] for record in metrics))
     n_enriched = int(len(unique_products) * enrichment_fraction)
     enriched_product_ids = set(random.sample(unique_products, n_enriched))
 
     # Apply discount to enriched products after start date
-    treated_sales = []
+    treated_metrics = []
     start_date = datetime.strptime(enrichment_start, "%Y-%m-%d")
 
-    for sale in sales:
-        sale_copy = copy.deepcopy(sale)
-        sale_date = datetime.strptime(sale_copy["date"], "%Y-%m-%d")
+    for record in metrics:
+        record_copy = copy.deepcopy(record)
+        record_date = datetime.strptime(record_copy["date"], "%Y-%m-%d")
 
         # Apply discount if product is enriched and date is after start
-        if sale_copy["product_id"] in enriched_product_ids and sale_date >= start_date:
-            unit_price = sale_copy.get("unit_price", sale_copy.get("price"))
+        if record_copy["product_id"] in enriched_product_ids and record_date >= start_date:
+            unit_price = record_copy.get("unit_price", record_copy.get("price"))
             discounted_price = unit_price * (1 - discount_percent)
 
             # Update price fields
-            if "unit_price" in sale_copy:
-                sale_copy["unit_price"] = round(discounted_price, 2)
-            if "price" in sale_copy:
-                sale_copy["price"] = round(discounted_price, 2)
+            if "unit_price" in record_copy:
+                record_copy["unit_price"] = round(discounted_price, 2)
+            if "price" in record_copy:
+                record_copy["price"] = round(discounted_price, 2)
 
             # Recalculate revenue
-            sale_copy["revenue"] = round(sale_copy["ordered_units"] * discounted_price, 2)
+            record_copy["revenue"] = round(record_copy["ordered_units"] * discounted_price, 2)
 
-        treated_sales.append(sale_copy)
+        treated_metrics.append(record_copy)
 
-    return treated_sales
+    return treated_metrics
 
 
 def main():
@@ -88,10 +88,10 @@ def main():
     print(f"✓ Simulation completed. Job ID: {job_info}")
 
     # Load simulation results
-    sales_df = load_job_results(job_info)["sales"]
-    print(f"✓ Generated {len(sales_df)} sales records")
-    print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
-    print(f"✓ Products: {sales_df['product_identifier'].nunique()} unique products")
+    metrics_df = load_job_results(job_info)["metrics"]
+    print(f"✓ Generated {len(metrics_df)} metrics records")
+    print(f"✓ Date range: {metrics_df['date'].min()} to {metrics_df['date'].max()}")
+    print(f"✓ Products: {metrics_df['product_identifier'].nunique()} unique products")
 
     # Step 3: Apply custom enrichment
     print("\nStep 3: Applying custom enrichment (price_discount)...")
@@ -101,12 +101,12 @@ def main():
 
     # Load enriched results
     enriched_df = load_job_results(enriched_job_info)["enriched"]
-    print(f"✓ Applied enrichment to {len(enriched_df)} sales records")
+    print(f"✓ Applied enrichment to {len(enriched_df)} metrics records")
 
     # Step 4: Compare results
     print("\nStep 4: Comparing results...")
     enrichment_start = "2024-11-15"
-    original_post = sales_df[sales_df["date"] >= enrichment_start]
+    original_post = metrics_df[metrics_df["date"] >= enrichment_start]
     enriched_post = enriched_df[enriched_df["date"] >= enrichment_start]
 
     print(f"\nPost-enrichment period ({enrichment_start} onwards):")

@@ -14,53 +14,53 @@ import yaml
 from online_retail_simulator import load_job_results, simulate
 
 
-def analyze_results(sales_df, products_df, granularity, job_info):
+def analyze_results(metrics_df, products_df, granularity, job_info):
     """Display analysis for the given granularity.
 
     Args:
-        sales_df: Sales DataFrame with metrics
+        metrics_df: Metrics DataFrame
         products_df: Products DataFrame
         granularity: "daily" or "weekly"
         job_info: Job information object
     """
-    print(f"✓ Generated {len(sales_df)} sales records")
-    print(f"✓ Date range: {sales_df['date'].min()} to {sales_df['date'].max()}")
-    print(f"✓ Products: {sales_df['product_identifier'].nunique()} unique products")
-    print(f"✓ Categories: {sales_df['category'].nunique()} different categories")
+    print(f"✓ Generated {len(metrics_df)} metrics records")
+    print(f"✓ Date range: {metrics_df['date'].min()} to {metrics_df['date'].max()}")
+    print(f"✓ Products: {metrics_df['product_identifier'].nunique()} unique products")
+    print(f"✓ Categories: {metrics_df['category'].nunique()} different categories")
 
     # Granularity-specific info
     if granularity == "weekly":
-        dates_dt = pd.to_datetime(sales_df["date"])
+        dates_dt = pd.to_datetime(metrics_df["date"])
         all_mondays = all(dates_dt.dt.weekday == 0)
         print(f"✓ All dates are Mondays (ISO week start): {all_mondays}")
-        print(f"✓ Number of weeks: {sales_df['date'].nunique()}")
+        print(f"✓ Number of weeks: {metrics_df['date'].nunique()}")
     else:
-        print(f"✓ Number of days: {sales_df['date'].nunique()}")
+        print(f"✓ Number of days: {metrics_df['date'].nunique()}")
 
     # Show category breakdown
     print(f"\nCategory breakdown:")
-    category_counts = sales_df["category"].value_counts()
+    category_counts = metrics_df["category"].value_counts()
     for category, count in category_counts.items():
-        print(f"  {category}: {count} sales")
+        print(f"  {category}: {count} records")
 
     # Show funnel metrics and revenue summary
     print(f"\nFunnel metrics:")
-    print(f"  Total impressions: {sales_df['impressions'].sum():,}")
-    print(f"  Total visits: {sales_df['visits'].sum():,}")
-    print(f"  Total cart adds: {sales_df['cart_adds'].sum():,}")
-    print(f"  Total ordered units: {sales_df['ordered_units'].sum():,}")
+    print(f"  Total impressions: {metrics_df['impressions'].sum():,}")
+    print(f"  Total visits: {metrics_df['visits'].sum():,}")
+    print(f"  Total cart adds: {metrics_df['cart_adds'].sum():,}")
+    print(f"  Total ordered units: {metrics_df['ordered_units'].sum():,}")
 
     # Calculate conversion rates
-    if sales_df['impressions'].sum() > 0:
-        conversion_rate = sales_df['ordered_units'].sum() / sales_df['impressions'].sum()
+    if metrics_df['impressions'].sum() > 0:
+        conversion_rate = metrics_df['ordered_units'].sum() / metrics_df['impressions'].sum()
         print(f"  Overall conversion rate: {conversion_rate:.2%}")
 
     print(f"\nRevenue summary:")
     print(
-        f"  Price range: ${sales_df['price'].min():.2f} - ${sales_df['price'].max():.2f}"
+        f"  Price range: ${metrics_df['price'].min():.2f} - ${metrics_df['price'].max():.2f}"
     )
-    print(f"  Total revenue: ${sales_df['revenue'].sum():,.2f}")
-    print(f"  Average order value: ${sales_df['revenue'].mean():.2f}")
+    print(f"  Total revenue: ${metrics_df['revenue'].sum():,.2f}")
+    print(f"  Average order value: ${metrics_df['revenue'].mean():.2f}")
 
     print(f"\n✓ Results saved to: {job_info.storage_path}/{job_info.job_id}/")
 
@@ -96,10 +96,10 @@ def main():
         # Load results for analysis
         results = load_job_results(job_info)
         products_df = results["products"]
-        sales_df = results["sales"]
+        metrics_df = results["metrics"]
 
         # Display analysis
-        analyze_results(sales_df, products_df, granularity, job_info)
+        analyze_results(metrics_df, products_df, granularity, job_info)
 
     print("\n" + "=" * 60)
     print("Default simulation complete!")

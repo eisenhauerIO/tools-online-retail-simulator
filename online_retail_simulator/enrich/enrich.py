@@ -1,5 +1,5 @@
 """
-Enrich workflow: applies enrichment treatments to sales data.
+Enrich workflow: applies enrichment treatments to metrics data.
 """
 
 from ..config_processor import process_config
@@ -9,13 +9,13 @@ from .enrichment import enrich as apply_enrichment
 
 def enrich(config_path: str, job_info: JobInfo) -> JobInfo:
     """
-    Apply enrichment to sales data using a config file.
+    Apply enrichment to metrics data using a config file.
 
     Saves enriched results to the same job directory.
 
     Args:
         config_path: Path to enrichment config (YAML or JSON)
-        job_info: JobInfo object to load sales data from
+        job_info: JobInfo object to load metrics data from
 
     Returns:
         JobInfo: Same job, now also containing enriched.csv and optionally potential_outcomes.csv
@@ -23,17 +23,17 @@ def enrich(config_path: str, job_info: JobInfo) -> JobInfo:
     # Load config
     config = process_config(config_path)
 
-    # Load sales from job
-    sales_df = job_info.load_df("sales")
-    if sales_df is None:
-        raise FileNotFoundError(f"sales.csv not found in job {job_info.job_id}")
+    # Load metrics from job
+    metrics_df = job_info.load_df("metrics")
+    if metrics_df is None:
+        raise FileNotFoundError(f"metrics.csv not found in job {job_info.job_id}")
 
     # Load products from job (optional, for product-aware enrichment functions)
     products_df = job_info.load_df("products")
 
     # Apply enrichment (pass job_info and products for product-aware functions)
     enriched_df, potential_outcomes_df = apply_enrichment(
-        config_path, sales_df, job_info=job_info, products_df=products_df
+        config_path, metrics_df, job_info=job_info, products_df=products_df
     )
 
     # Save enriched to same job

@@ -35,8 +35,8 @@ def test_custom_enrichment_function_registration():
     # Clear registry for clean test
     clear_enrichment_registry()
 
-    def dummy_enrichment(sales, **kwargs):
-        return sales
+    def dummy_enrichment(metrics, **kwargs):
+        return metrics
 
     # Test registration
     register_enrichment_function("test_enrichment", dummy_enrichment)
@@ -56,7 +56,7 @@ def test_invalid_enrichment_function_signature():
     # Clear registry for clean test
     clear_enrichment_registry()
 
-    def invalid_enrichment():  # Missing required 'sales' parameter
+    def invalid_enrichment():  # Missing required 'metrics' parameter
         return []
 
     # Test that invalid function raises error
@@ -78,8 +78,8 @@ def test_clear_enrichment_registry():
     # Clear registry for clean test
     clear_enrichment_registry()
 
-    def dummy_enrichment(sales, **kwargs):
-        return sales
+    def dummy_enrichment(metrics, **kwargs):
+        return metrics
 
     register_enrichment_function("test", dummy_enrichment)
 

@@ -34,21 +34,21 @@ IMPACT:
         job_info = simulate(test_config_path)
 
         # Load original sales before enrichment
-        original_sales = job_info.load_df("sales")
+        original_metrics = job_info.load_df("metrics")
 
         # Apply enrichment
         enriched_job_info = enrich(config_path, job_info)
 
         # Load enriched data
-        enriched_sales = enriched_job_info.load_df("enriched")
+        enriched_metrics = enriched_job_info.load_df("enriched")
 
         # Verify structure
-        assert isinstance(enriched_sales, pd.DataFrame)
-        assert len(enriched_sales) == len(original_sales)
+        assert isinstance(enriched_metrics, pd.DataFrame)
+        assert len(enriched_metrics) == len(original_metrics)
 
         # Verify enrichment effect (should have some ordered units increases)
-        post_enrichment = enriched_sales[enriched_sales["date"] >= "2024-01-02"]
-        original_post = original_sales[original_sales["date"] >= "2024-01-02"]
+        post_enrichment = enriched_metrics[enriched_metrics["date"] >= "2024-01-02"]
+        original_post = original_metrics[original_metrics["date"] >= "2024-01-02"]
 
         # Total ordered units should increase due to enrichment
         assert post_enrichment["ordered_units"].sum() >= original_post["ordered_units"].sum()
@@ -170,7 +170,7 @@ IMPACT:
         assert "product_details_original" in results
         assert "product_details_enriched" in results
         assert "products" in results
-        assert "sales" in results
+        assert "metrics" in results
         assert "enriched" in results
 
     finally:

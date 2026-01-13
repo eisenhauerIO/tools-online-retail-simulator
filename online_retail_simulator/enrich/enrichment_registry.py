@@ -26,7 +26,7 @@ def _load_enrichment_defaults(registry: FunctionRegistry) -> None:
 # Registry instance
 _enrichment_registry = FunctionRegistry(
     name="enrichment",
-    required_params={"sales"},
+    required_params={"metrics"},
     default_loader=_load_enrichment_defaults,
 )
 
