@@ -5,6 +5,8 @@ import json
 import pandas as pd
 import requests
 
+from ..quality import calculate_quality_score
+
 OLLAMA_URL = "http://localhost:11434"
 DEFAULT_MODEL = "llama3.2"
 DEFAULT_BATCH_SIZE = 5
@@ -71,6 +73,8 @@ def simulate_product_details_ollama(
 
         response_text = response.json().get("response", "")
         batch_results = json.loads(response_text)
+        for result in batch_results:
+            result["quality_score"] = calculate_quality_score(result)
         results.extend(batch_results)
 
     return pd.DataFrame(results)

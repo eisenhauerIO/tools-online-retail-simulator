@@ -55,8 +55,15 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config: D
     current_date = start_date
     while current_date <= end_date:
         for _, prod in product_characteristics.iterrows():
+            # Quality score affects conversion probability (if available)
+            # Maps quality_score [0,1] to multiplier [0.8, 1.2]
+            # Default 0.5 = multiplier 1.0 (no effect) when quality_score not present
+            quality_score = prod.get("quality_score", 0.5)
+            quality_multiplier = 0.8 + (quality_score * 0.4)
+            adjusted_sale_prob = min(sale_prob * quality_multiplier, 1.0)
+
             # Determine if funnel activity occurs
-            funnel_activity = random.random() < sale_prob
+            funnel_activity = random.random() < adjusted_sale_prob
 
             if funnel_activity:
                 # Generate funnel metrics top-down

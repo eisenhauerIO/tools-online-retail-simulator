@@ -4,6 +4,8 @@ import random
 
 import pandas as pd
 
+from ..quality import calculate_quality_score
+
 # TODO: We need to merge this with the simulation of characteristics, so we have lists in scync.
 
 # Mock data templates by category
@@ -134,14 +136,14 @@ def simulate_product_details_mock(
         else:
             description = f"Quality {category.lower()} product for everyday use. {features[0]}. {features[1]}."
 
-        results.append(
-            {
-                **product,
-                "title": title,
-                "description": description,
-                "brand": brand,
-                "features": features,
-            }
-        )
+        result = {
+            **product,
+            "title": title,
+            "description": description,
+            "brand": brand,
+            "features": features,
+        }
+        result["quality_score"] = calculate_quality_score(result)
+        results.append(result)
 
     return pd.DataFrame(results)

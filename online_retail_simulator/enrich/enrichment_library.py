@@ -141,6 +141,7 @@ def product_detail_boost(metrics: list, **kwargs) -> tuple:
     seed = kwargs.get("seed", 42)
     prompt_path = kwargs.get("prompt_path")
     backend = kwargs.get("backend", "mock")
+    quality_boost = kwargs.get("quality_boost", 0.0)
 
     if seed is not None:
         random.seed(seed)
@@ -160,7 +161,9 @@ def product_detail_boost(metrics: list, **kwargs) -> tuple:
 
     # 3. Regenerate product details for treatment products
     if products and job_info:
-        updated_products = _regenerate_product_details(products, treatment_ids, prompt_path, backend, seed)
+        updated_products = _regenerate_product_details(
+            products, treatment_ids, prompt_path, backend, seed, quality_boost
+        )
         job_info.save_df("product_details_enriched", pd.DataFrame(updated_products))
 
     # 4. Apply metrics boost effect and calculate potential outcomes
@@ -227,12 +230,22 @@ def _regenerate_product_details(
     prompt_path: str,
     backend: str,
     seed: int,
+    quality_boost: float,
 ) -> list:
     """
     Regenerate product details for treatment products.
 
     Preserves: brand, category, price
     Regenerates: title, description, features
+    Updates: quality_score (recalculated + optional boost)
+
+    Args:
+        products: List of product dictionaries
+        treatment_ids: Set of product IDs to treat
+        prompt_path: Path to custom prompt template
+        backend: Backend to use ("mock" or "ollama")
+        seed: Random seed
+        quality_boost: Additional quality score boost for treated products (0.0-1.0)
     """
     control_products = []
     treatment_products = []
@@ -263,6 +276,12 @@ def _regenerate_product_details(
             )
 
         regenerated_df["enriched"] = True
+
+        # Apply quality boost for treated products (0.0 = no boost)
+        regenerated_df["quality_score"] = regenerated_df["quality_score"].apply(
+            lambda x: min(x + quality_boost, 1.0)
+        )
+
         treatment_products = regenerated_df.to_dict("records")
 
     return control_products + treatment_products
