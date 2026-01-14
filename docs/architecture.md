@@ -82,26 +82,29 @@ def load_config(config_path):
 
 ### 2. Quality Score
 
-Products include a `quality_score` (0.0 - 1.0) that reflects data completeness and quality.
-The score is automatically calculated at each stage of the pipeline:
+Products include a `quality_score` (0.0 - 1.0) that reflects data quality based on
+title, description, features, and brand. The score is calculated after product details
+are generated (not after characteristics, since there's no content to evaluate).
 
 | Stage | Typical Score | Reason |
 |-------|---------------|--------|
-| After characteristics | ~0.30 | Only required fields (identifier, category, price) |
-| After product details | ~0.75-0.85 | Title, description, brand, features added |
-| After enrichment (treated) | ~0.90+ | Enhanced content (if quality_boost applied) |
+| After characteristics | N/A | No quality_score (only identifier, category, price) |
+| After product details | ~0.70-0.85 | Title, description, brand, features added |
+| After enrichment (treated) | ~0.85+ | Enhanced content (if quality_boost applied) |
 
 **Score Components:**
-- Completeness (30%): Required fields present
-- Title quality (20%): Title length (up to 50 chars)
-- Description quality (25%): Description length (up to 100 chars)
-- Features quality (15%): Features list (up to 4 items)
-- Brand (10%): Brand field populated
+- Title quality (30%): Title length (up to 50 chars)
+- Description quality (35%): Description length (up to 100 chars)
+- Features quality (20%): Features list (up to 4 items)
+- Brand (15%): Brand field populated
 
 **Impact on Metrics:**
-Quality score affects conversion probability in metrics simulation:
+Quality score affects conversion probability in metrics simulation. If quality_score
+is not present (e.g., right after characteristics), a neutral default of 0.5 is used:
 ```python
 # Maps quality_score [0,1] to multiplier [0.8, 1.2]
+# Default 0.5 = multiplier 1.0 (no effect)
+quality_score = product.get("quality_score", 0.5)
 quality_multiplier = 0.8 + (quality_score * 0.4)
 adjusted_sale_prob = sale_prob * quality_multiplier
 ```
