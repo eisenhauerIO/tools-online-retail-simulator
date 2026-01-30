@@ -16,13 +16,13 @@ class TestBackendRegistry:
 
     def test_detect_rule_backend(self):
         """Detects RULE backend from config."""
-        config = {"RULE": {"CHARACTERISTICS": {}, "METRICS": {}}}
+        config = {"RULE": {"PRODUCTS": {}, "METRICS": {}}}
         backend = BackendRegistry.detect_backend(config)
         assert isinstance(backend, RuleBackend)
 
     def test_detect_synthesizer_backend(self):
         """Detects SYNTHESIZER backend from config."""
-        config = {"SYNTHESIZER": {"CHARACTERISTICS": {}, "METRICS": {}}}
+        config = {"SYNTHESIZER": {"PRODUCTS": {}, "METRICS": {}}}
         backend = BackendRegistry.detect_backend(config)
         assert isinstance(backend, SynthesizerBackend)
 
@@ -45,17 +45,17 @@ class TestRuleBackend:
         """Returns correct config key."""
         assert RuleBackend.get_key() == "RULE"
 
-    def test_simulate_characteristics_returns_dataframe(self):
-        """Characteristics simulation returns DataFrame."""
+    def test_simulate_products_returns_dataframe(self):
+        """Products simulation returns DataFrame."""
         config = {
-            "CHARACTERISTICS": {
-                "FUNCTION": "simulate_characteristics_rule_based",
+            "PRODUCTS": {
+                "FUNCTION": "simulate_products_rule_based",
                 "PARAMS": {"num_products": 5, "seed": 42},
             },
             "METRICS": {},
         }
         backend = RuleBackend(config)
-        result = backend.simulate_characteristics()
+        result = backend.simulate_products()
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 5
 
@@ -69,7 +69,7 @@ class TestRuleBackend:
             }
         )
         config = {
-            "CHARACTERISTICS": {},
+            "PRODUCTS": {},
             "METRICS": {
                 "FUNCTION": "simulate_metrics_rule_based",
                 "PARAMS": {

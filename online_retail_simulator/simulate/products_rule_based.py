@@ -1,5 +1,5 @@
 """
-Rule-based product characteristics simulation.
+Rule-based product simulation.
 """
 
 import random
@@ -19,7 +19,6 @@ def generate_random_product_identifier(prefix: str = "B") -> str:
     return prefix + "".join(random.choice(chars) for _ in range(9))
 
 
-# ...existing code...
 _CATEGORIES = [
     "Electronics",
     "Clothing",
@@ -43,15 +42,15 @@ _PRICE_RANGES = {
 }
 
 
-def simulate_characteristics_rule_based(config: Dict) -> pd.DataFrame:
+def simulate_products_rule_based(config: Dict) -> pd.DataFrame:
     """
-    Generate synthetic product characteristics (rule-based).
+    Generate synthetic products (rule-based).
     Args:
         config: Complete configuration dictionary
     Returns:
-        DataFrame of product characteristics
+        DataFrame of products
     """
-    params = config["RULE"]["CHARACTERISTICS"]["PARAMS"]
+    params = config["RULE"]["PRODUCTS"]["PARAMS"]
     num_products, seed = params["num_products"], params["seed"]
 
     if seed is not None:

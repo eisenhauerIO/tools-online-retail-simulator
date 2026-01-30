@@ -3,12 +3,12 @@ import os
 import pandas as pd
 
 from online_retail_simulator import JobInfo
-from online_retail_simulator.simulate import simulate_characteristics
+from online_retail_simulator.simulate import simulate_products
 
 
-def test_characteristics_rule():
+def test_products_rule():
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    job_info = simulate_characteristics(config_path)
+    job_info = simulate_products(config_path)
 
     assert isinstance(job_info, JobInfo)
 

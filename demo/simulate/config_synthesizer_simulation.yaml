@@ -2,7 +2,7 @@ STORAGE:
   PATH: output/synthesizer_demo
 
 SYNTHESIZER:
-  CHARACTERISTICS:
+  PRODUCTS:
     FUNCTION: gaussian_copula
     PARAMS:
       training_data_path: training_products.csv

@@ -2,8 +2,8 @@ STORAGE:
   PATH: demo/simulate/output/sim_demo
 
 RULE:
-  CHARACTERISTICS:
-    FUNCTION: simulate_characteristics_rule_based
+  PRODUCTS:
+    FUNCTION: simulate_products_rule_based
     PARAMS:
       num_products: 50
   METRICS:

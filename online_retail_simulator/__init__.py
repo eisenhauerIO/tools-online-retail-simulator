@@ -18,20 +18,20 @@ from .manage import (
 from .simulate import (
     get_simulation_function,
     list_simulation_functions,
-    register_characteristics_function,
     register_metrics_function,
+    register_products_function,
     register_simulation_module,
     simulate,
-    simulate_characteristics,
     simulate_metrics,
     simulate_product_details,
+    simulate_products,
 )
 
 __version__ = "0.1.0"
 __all__ = [
     # Simulation
     "simulate",
-    "simulate_characteristics",
+    "simulate_products",
     "simulate_product_details",
     "simulate_metrics",
     # Enrichment
@@ -41,7 +41,7 @@ __all__ = [
     "list_enrichment_functions",
     "clear_enrichment_registry",
     # Custom simulation registration
-    "register_characteristics_function",
+    "register_products_function",
     "register_metrics_function",
     "register_simulation_module",
     "list_simulation_functions",

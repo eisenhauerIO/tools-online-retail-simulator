@@ -7,14 +7,14 @@ from typing import Dict
 import pandas as pd
 
 
-def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config: Dict) -> pd.DataFrame:
+def simulate_metrics_rule_based(products: pd.DataFrame, config: Dict) -> pd.DataFrame:
     """
     Generate synthetic product metrics with customer journey funnel (rule-based).
 
     Simulates a realistic conversion funnel: impressions → visits → cart adds → orders.
 
     Args:
-        product_characteristics: DataFrame of product characteristics
+        products: DataFrame of products
         config: Complete configuration dictionary
 
     Returns:
@@ -55,7 +55,7 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config: D
     rows = []
     current_date = start_date
     while current_date <= end_date:
-        for _, prod in product_characteristics.iterrows():
+        for _, prod in products.iterrows():
             # Quality score affects conversion probability (if available)
             # Maps quality_score [0,1] to multiplier [0.8, 1.2]
             # Default 0.5 = multiplier 1.0 (no effect) when quality_score not present
@@ -109,12 +109,12 @@ def simulate_metrics_rule_based(product_characteristics: pd.DataFrame, config: D
 
     # Aggregate to weekly if requested
     if granularity == "weekly":
-        return _aggregate_to_weekly(daily_df, product_characteristics)
+        return _aggregate_to_weekly(daily_df, products)
 
     return daily_df
 
 
-def _aggregate_to_weekly(daily_df: pd.DataFrame, product_characteristics: pd.DataFrame) -> pd.DataFrame:
+def _aggregate_to_weekly(daily_df: pd.DataFrame, products: pd.DataFrame) -> pd.DataFrame:
     """
     Aggregate daily metrics to weekly granularity using ISO weeks (Monday-Sunday).
 
@@ -123,7 +123,7 @@ def _aggregate_to_weekly(daily_df: pd.DataFrame, product_characteristics: pd.Dat
 
     Args:
         daily_df: Daily metrics DataFrame with funnel columns
-        product_characteristics: Original product characteristics DataFrame
+        products: Original products DataFrame
 
     Returns:
         Weekly aggregated DataFrame with date = week start (Monday)
@@ -141,9 +141,9 @@ def _aggregate_to_weekly(daily_df: pd.DataFrame, product_characteristics: pd.Dat
     unique_weeks = df["week_start"].unique()
 
     # Create complete product × week grid to ensure zero-sale rows are included
-    products = product_characteristics[["product_identifier", "category", "price"]].copy()
+    products_grid = products[["product_identifier", "category", "price"]].copy()
     week_grid = pd.DataFrame({"week_start": unique_weeks})
-    complete_grid = products.merge(week_grid, how="cross")
+    complete_grid = products_grid.merge(week_grid, how="cross")
 
     # Aggregate actual sales by product and week
     sales_agg = df.groupby(["product_identifier", "category", "price", "week_start"], as_index=False).agg(

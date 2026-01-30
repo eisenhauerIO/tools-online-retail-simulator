@@ -1,5 +1,5 @@
 """
-Interface for simulating product characteristics.
+Interface for simulating products.
 Dispatches to appropriate backend based on config.
 """
 
@@ -8,9 +8,9 @@ from ..core.backends import BackendRegistry
 from ..manage import create_job, save_job_metadata
 
 
-def simulate_characteristics(config_path: str):
+def simulate_products(config_path: str):
     """
-    Simulate product characteristics using the backend specified in config.
+    Simulate products using the backend specified in config.
 
     Args:
         config_path: Path to configuration file
@@ -22,7 +22,7 @@ def simulate_characteristics(config_path: str):
 
     # Generate products DataFrame via backend
     backend = BackendRegistry.detect_backend(config)
-    products_df = backend.simulate_characteristics()
+    products_df = backend.simulate_products()
 
     # Create job and save products
     job_info = create_job(config, config_path)

@@ -2,7 +2,7 @@
 Backend plugin architecture for simulation.
 
 Provides abstract base class and registry for simulation backends.
-Backends encapsulate the logic for generating characteristics and metrics.
+Backends encapsulate the logic for generating products and metrics.
 """
 
 from abc import ABC, abstractmethod
@@ -18,17 +18,17 @@ class SimulationBackend(ABC):
         self.config = backend_config
 
     @abstractmethod
-    def simulate_characteristics(self) -> pd.DataFrame:
-        """Generate product characteristics."""
+    def simulate_products(self) -> pd.DataFrame:
+        """Generate products."""
         ...
 
     @abstractmethod
-    def simulate_metrics(self, product_characteristics: pd.DataFrame) -> pd.DataFrame:
+    def simulate_metrics(self, products: pd.DataFrame) -> pd.DataFrame:
         """
         Generate metrics.
 
-        TODO: Some backends ignore product_characteristics. Revisit when
-        synthesizer backend evolves to use characteristics as conditioning input.
+        TODO: Some backends ignore products. Revisit when
+        synthesizer backend evolves to use products as conditioning input.
         """
         ...
 
@@ -68,21 +68,21 @@ class RuleBackend(SimulationBackend):
     def get_key(cls) -> str:
         return "RULE"
 
-    def simulate_characteristics(self) -> pd.DataFrame:
+    def simulate_products(self) -> pd.DataFrame:
         from ..simulate.rule_registry import get_simulation_function
 
-        characteristics_config = self.config["CHARACTERISTICS"]
-        function_name = characteristics_config.get("FUNCTION")
-        func = get_simulation_function("characteristics", function_name)
+        products_config = self.config["PRODUCTS"]
+        function_name = products_config.get("FUNCTION")
+        func = get_simulation_function("products", function_name)
         return func({"RULE": self.config})
 
-    def simulate_metrics(self, product_characteristics: pd.DataFrame) -> pd.DataFrame:
+    def simulate_metrics(self, products: pd.DataFrame) -> pd.DataFrame:
         from ..simulate.rule_registry import get_simulation_function
 
         metrics_config = self.config["METRICS"]
         function_name = metrics_config.get("FUNCTION")
         func = get_simulation_function("metrics", function_name)
-        return func(product_characteristics, {"RULE": self.config})
+        return func(products, {"RULE": self.config})
 
 
 @BackendRegistry.register
@@ -93,18 +93,18 @@ class SynthesizerBackend(SimulationBackend):
     def get_key(cls) -> str:
         return "SYNTHESIZER"
 
-    def simulate_characteristics(self) -> pd.DataFrame:
-        from ..simulate.characteristics_synthesizer_based import (
-            simulate_characteristics_synthesizer_based,
+    def simulate_products(self) -> pd.DataFrame:
+        from ..simulate.products_synthesizer_based import (
+            simulate_products_synthesizer_based,
         )
 
-        return simulate_characteristics_synthesizer_based({"SYNTHESIZER": self.config})
+        return simulate_products_synthesizer_based({"SYNTHESIZER": self.config})
 
-    def simulate_metrics(self, product_characteristics: pd.DataFrame) -> pd.DataFrame:
-        # TODO: Currently ignores product_characteristics. Revisit when synthesizer
-        # evolves to condition metrics generation on characteristics.
+    def simulate_metrics(self, products: pd.DataFrame) -> pd.DataFrame:
+        # TODO: Currently ignores products. Revisit when synthesizer
+        # evolves to condition metrics generation on products.
         from ..simulate.metrics_synthesizer_based import (
             simulate_metrics_synthesizer_based,
         )
 
-        return simulate_metrics_synthesizer_based(product_characteristics, {"SYNTHESIZER": self.config})
+        return simulate_metrics_synthesizer_based(products, {"SYNTHESIZER": self.config})

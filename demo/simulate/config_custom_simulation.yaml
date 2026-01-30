@@ -2,7 +2,7 @@ STORAGE:
   PATH: output/custom_demo
 
 RULE:
-  CHARACTERISTICS:
+  PRODUCTS:
     FUNCTION: electronics_only
     PARAMS:
       num_products: 30

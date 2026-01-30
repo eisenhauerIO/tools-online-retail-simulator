@@ -145,24 +145,24 @@ class TestRegistryIntegration:
             clear_simulation_registry,
             get_simulation_function,
             list_simulation_functions,
-            register_characteristics_function,
+            register_products_function,
         )
 
         clear_simulation_registry()
 
-        def custom_characteristics(config):
+        def custom_products(config):
             import pandas as pd
 
             return pd.DataFrame({"product_identifier": ["TEST123"], "category": ["Test"], "price": [10.0]})
 
-        register_characteristics_function("custom", custom_characteristics)
+        register_products_function("custom", custom_products)
 
         funcs = list_simulation_functions()
-        assert "custom" in funcs["characteristics"]
+        assert "custom" in funcs["products"]
 
         # Verify we can retrieve it
-        func = get_simulation_function("characteristics", "custom")
-        assert func is custom_characteristics
+        func = get_simulation_function("products", "custom")
+        assert func is custom_products
 
         # Clean up
         clear_simulation_registry()

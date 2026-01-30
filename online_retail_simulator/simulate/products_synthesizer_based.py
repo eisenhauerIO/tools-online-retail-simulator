@@ -1,33 +1,21 @@
 """
-Synthesizer-based simulation backend.
+Synthesizer-based product simulation.
 Reads a DataFrame from the path specified in config['SYNTHESIZER']['dataframe_path'].
 No error handling, hard failures only.
 """
 
-import random
-import string
 from typing import Dict
 
 import pandas as pd
 
 
-def generate_random_product_identifier(prefix: str = "B") -> str:
-    """Generate a random product identifier.
-    - 10 characters total
-    - Alphanumeric
-    - Defaults to starting with 'B'
+def simulate_products_synthesizer_based(config: Dict) -> pd.DataFrame:
     """
-    chars = string.ascii_uppercase + string.digits
-    return prefix + "".join(random.choice(chars) for _ in range(9))
-
-
-def simulate_characteristics_synthesizer_based(config: Dict) -> pd.DataFrame:
-    """
-    Generate synthetic product characteristics using Gaussian Copula synthesizer.
+    Generate synthetic products using Gaussian Copula synthesizer.
     Args:
         config: Complete configuration dictionary
     Returns:
-        DataFrame of synthetic characteristics
+        DataFrame of synthetic products
     """
     try:
         from sdv.metadata import SingleTableMetadata
@@ -38,7 +26,7 @@ def simulate_characteristics_synthesizer_based(config: Dict) -> pd.DataFrame:
             "Install with: pip install online-retail-simulator[synthesizer]"
         )
 
-    params = config["SYNTHESIZER"]["CHARACTERISTICS"]["PARAMS"]
+    params = config["SYNTHESIZER"]["PRODUCTS"]["PARAMS"]
     training_data_path, num_rows, seed = (
         params["training_data_path"],
         params["num_rows"],

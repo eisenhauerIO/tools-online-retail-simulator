@@ -1,6 +1,6 @@
 """
 Synthesizer-based simulation backend for metrics.
-Takes product_characteristics DataFrame and config path.
+Takes products DataFrame and config path.
 No error handling, hard failures only.
 """
 
@@ -10,11 +10,11 @@ import numpy as np
 import pandas as pd
 
 
-def simulate_metrics_synthesizer_based(product_characteristics: pd.DataFrame, config: Dict) -> pd.DataFrame:
+def simulate_metrics_synthesizer_based(products: pd.DataFrame, config: Dict) -> pd.DataFrame:
     """
     Generate synthetic product metrics using Gaussian Copula synthesizer.
     Args:
-        product_characteristics: DataFrame of product characteristics (unused in current implementation)
+        products: DataFrame of products (unused in current implementation)
         config: Complete configuration dictionary
     Returns:
         DataFrame of synthetic metrics

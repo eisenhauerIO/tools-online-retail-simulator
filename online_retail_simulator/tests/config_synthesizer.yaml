@@ -2,7 +2,7 @@ OUTPUT:
   PATH: output/test
 
 SYNTHESIZER:
-  CHARACTERISTICS:
+  PRODUCTS:
     FUNCTION: gaussian_copula
     PARAMS:
       training_data_path: online_retail_simulator/tests/df_start.csv

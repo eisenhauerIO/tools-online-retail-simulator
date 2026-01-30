@@ -2,12 +2,12 @@ import os
 
 import pandas as pd
 
-from online_retail_simulator.simulate import simulate_characteristics, simulate_metrics
+from online_retail_simulator.simulate import simulate_metrics, simulate_products
 
 
 def test_metrics_rule():
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    job_info = simulate_characteristics(config_path)
+    job_info = simulate_products(config_path)
     job_info = simulate_metrics(job_info, config_path)
 
     df = job_info.load_df("metrics")
@@ -25,7 +25,7 @@ def test_metrics_rule():
 def test_metrics_rule_weekly_granularity():
     """Test weekly aggregation produces correct output."""
     config_path = os.path.join(os.path.dirname(__file__), "config_rule_weekly.yaml")
-    job_info = simulate_characteristics(config_path)
+    job_info = simulate_products(config_path)
     products = job_info.load_df("products")
     job_info = simulate_metrics(job_info, config_path)
     df = job_info.load_df("metrics")
@@ -76,7 +76,7 @@ def test_metrics_rule_weekly_date_adjustment():
     # Should expand to 2024-01-01 (Monday) to 2024-02-04 (Sunday) = 5 weeks
 
     config_path = os.path.join(os.path.dirname(__file__), "config_rule_weekly.yaml")
-    job_info = simulate_characteristics(config_path)
+    job_info = simulate_products(config_path)
     job_info = simulate_metrics(job_info, config_path)
     df = job_info.load_df("metrics")
 
@@ -94,7 +94,7 @@ def test_metrics_rule_weekly_date_adjustment():
 def test_funnel_metrics_schema():
     """Test that new funnel metrics are present with correct types."""
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    job_info = simulate_characteristics(config_path)
+    job_info = simulate_products(config_path)
     job_info = simulate_metrics(job_info, config_path)
     df = job_info.load_df("metrics")
 
@@ -116,7 +116,7 @@ def test_funnel_metrics_schema():
 def test_funnel_logic_consistency():
     """Test that funnel stages follow logical hierarchy."""
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    job_info = simulate_characteristics(config_path)
+    job_info = simulate_products(config_path)
     job_info = simulate_metrics(job_info, config_path)
     df = job_info.load_df("metrics")
 
@@ -138,7 +138,7 @@ def test_funnel_logic_consistency():
 def test_funnel_zero_activity():
     """Test products with zero funnel activity have all zeros."""
     config_path = os.path.join(os.path.dirname(__file__), "config_rule.yaml")
-    job_info = simulate_characteristics(config_path)
+    job_info = simulate_products(config_path)
     job_info = simulate_metrics(job_info, config_path)
     df = job_info.load_df("metrics")
 
@@ -155,7 +155,7 @@ def test_funnel_zero_activity():
 def test_weekly_funnel_aggregation():
     """Test weekly aggregation of funnel metrics."""
     config_path = os.path.join(os.path.dirname(__file__), "config_rule_weekly.yaml")
-    job_info = simulate_characteristics(config_path)
+    job_info = simulate_products(config_path)
     job_info = simulate_metrics(job_info, config_path)
     df = job_info.load_df("metrics")
 
@@ -179,8 +179,8 @@ def test_conversion_rate_config():
     # Create custom config with extreme rates for testing
     config = {
         "RULE": {
-            "CHARACTERISTICS": {
-                "FUNCTION": "simulate_characteristics_rule_based",
+            "PRODUCTS": {
+                "FUNCTION": "simulate_products_rule_based",
                 "PARAMS": {"num_products": 5, "seed": 42},
             },
             "METRICS": {
@@ -205,7 +205,7 @@ def test_conversion_rate_config():
         config_path = f.name
 
     try:
-        job_info = simulate_characteristics(config_path)
+        job_info = simulate_products(config_path)
         job_info = simulate_metrics(job_info, config_path)
         df = job_info.load_df("metrics")
 

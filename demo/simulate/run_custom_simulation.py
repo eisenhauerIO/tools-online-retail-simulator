@@ -2,7 +2,7 @@
 Example demonstrating custom simulation with electronics-only generation.
 
 This script shows:
-1. Definition of a custom characteristics function
+1. Definition of a custom products function
 2. Registration and usage of the custom function
 3. Specialized product generation (electronics-only vs all categories)
 """
@@ -12,12 +12,12 @@ import string
 from typing import Dict, Optional
 
 import pandas as pd
-from online_retail_simulator import simulate, register_characteristics_function
+from online_retail_simulator import simulate, register_products_function
 
 
 def generate_electronics_only(config: Dict) -> pd.DataFrame:
     """
-    Custom characteristics function that generates only electronics products.
+    Custom products function that generates only electronics products.
 
     This demonstrates how to create a custom rule that follows the same
     pattern as the default rule-based simulation but with specialized logic.
@@ -68,7 +68,7 @@ def main():
 
     # Step 1: Register custom function
     print("Step 1: Registering custom simulation function...")
-    register_characteristics_function("electronics_only", generate_electronics_only)
+    register_products_function("electronics_only", generate_electronics_only)
     print("✓ Registered 'electronics_only' function")
 
     # Step 2: Generate simulation data using custom rule

@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import pytest
 
-from online_retail_simulator.simulate import simulate_characteristics, simulate_metrics
+from online_retail_simulator.simulate import simulate_metrics, simulate_products
 
 from .import_helpers import has_synthesizer
 
@@ -12,7 +12,7 @@ pytestmark = pytest.mark.skipif(not has_synthesizer(), reason="SDV dependencies 
 
 def test_metrics_synthesizer():
     config_path = os.path.join(os.path.dirname(__file__), "config_synthesizer.yaml")
-    job_info = simulate_characteristics(config_path)
+    job_info = simulate_products(config_path)
     job_info = simulate_metrics(job_info, config_path)
 
     df = job_info.load_df("metrics")
