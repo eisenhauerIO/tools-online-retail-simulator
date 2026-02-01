@@ -7,10 +7,10 @@ This script shows:
 3. Specialized product generation (electronics-only vs all categories)
 """
 
-import random
 import string
 from typing import Dict, Optional
 
+import numpy as np
 import pandas as pd
 from online_retail_simulator import simulate, register_products_function
 
@@ -26,8 +26,7 @@ def generate_electronics_only(config: Dict) -> pd.DataFrame:
     seed = config.get("SEED", 42)
     num_products = rule_config.get("NUM_PRODUCTS", 50)
 
-    if seed is not None:
-        random.seed(seed)
+    rng = np.random.default_rng(seed)
 
     # Electronics-specific categories and price ranges
     price_ranges = {
@@ -38,16 +37,17 @@ def generate_electronics_only(config: Dict) -> pd.DataFrame:
         "Smart Watches": (100, 600),
     }
 
+    categories = list(price_ranges.keys())
+    chars = list(string.ascii_uppercase + string.digits)
+
     products = []
     for i in range(num_products):
-        category = random.choice(list(price_ranges.keys()))
+        category = rng.choice(categories)
         price_min, price_max = price_ranges[category]
-        price = round(random.uniform(price_min, price_max), 2)
+        price = round(rng.uniform(price_min, price_max), 2)
 
         # Generate electronics-style product identifier
-        product_id = "E" + "".join(
-            random.choice(string.ascii_uppercase + string.digits) for _ in range(9)
-        )
+        product_id = "E" + "".join(rng.choice(chars) for _ in range(9))
 
         products.append(
             {

@@ -1,7 +1,6 @@
 """Mock product details generation (rule-based)."""
 
-import random
-
+import numpy as np
 import pandas as pd
 
 from ..quality import calculate_quality_score
@@ -118,7 +117,7 @@ def simulate_product_details_mock(
     # prompt_path is ignored for mock backend but accepted for API compatibility
     _ = prompt_path
 
-    rng = random.Random(seed)
+    rng = np.random.default_rng(seed)
     results = []
 
     for product in products_df.to_dict("records"):
@@ -128,7 +127,8 @@ def simulate_product_details_mock(
         # Preserve existing brand if present, otherwise generate new one
         brand = product.get("brand") or rng.choice(data["brands"])
         adj = rng.choice(data["adjectives"])
-        features = rng.sample(data["features"], min(4, len(data["features"])))
+        num_features = min(4, len(data["features"]))
+        features = list(rng.choice(data["features"], size=num_features, replace=False))
 
         title = f"{brand} {adj} {category} Item"
         if treatment_mode:

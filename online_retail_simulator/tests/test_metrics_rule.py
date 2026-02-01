@@ -172,50 +172,17 @@ def test_weekly_funnel_aggregation():
 
 def test_conversion_rate_config():
     """Test that custom conversion rates are respected."""
-    import tempfile
+    # Use fixture file with 100% conversion rates
+    config_path = os.path.join(os.path.dirname(__file__), "fixtures", "config_rule_full.yaml")
 
-    import yaml
+    job_info = simulate_products(config_path)
+    job_info = simulate_metrics(job_info, config_path)
+    df = job_info.load_df("metrics")
 
-    # Create custom config with extreme rates for testing
-    config = {
-        "RULE": {
-            "PRODUCTS": {
-                "FUNCTION": "simulate_products_rule_based",
-                "PARAMS": {"num_products": 5, "seed": 42},
-            },
-            "METRICS": {
-                "FUNCTION": "simulate_metrics_rule_based",
-                "PARAMS": {
-                    "date_start": "2024-01-01",
-                    "date_end": "2024-01-02",
-                    "sale_prob": 1.0,  # Always trigger funnel
-                    "seed": 42,
-                    "granularity": "daily",
-                    "impression_to_visit_rate": 1.0,  # 100% conversion
-                    "visit_to_cart_rate": 1.0,
-                    "cart_to_order_rate": 1.0,
-                },
-            },
-        }
-    }
+    # With 100% rates and guaranteed funnel activity:
+    # All rows should have activity
+    assert all(df["impressions"] > 0)
+    assert all(df["visits"] > 0)
 
-    # Write to temp file
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        yaml.dump(config, f)
-        config_path = f.name
-
-    try:
-        job_info = simulate_products(config_path)
-        job_info = simulate_metrics(job_info, config_path)
-        df = job_info.load_df("metrics")
-
-        # With 100% rates and guaranteed funnel activity:
-        # All rows should have activity
-        assert all(df["impressions"] > 0)
-        assert all(df["visits"] > 0)
-
-        # Most should convert through funnel (allowing for randomness)
-        assert (df["cart_adds"] > 0).sum() / len(df) > 0.5
-
-    finally:
-        os.unlink(config_path)
+    # Most should convert through funnel (allowing for randomness)
+    assert (df["cart_adds"] > 0).sum() / len(df) > 0.5

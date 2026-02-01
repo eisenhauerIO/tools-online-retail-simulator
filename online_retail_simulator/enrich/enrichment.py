@@ -4,9 +4,9 @@ Dispatches to impact-based implementation based on config.
 """
 
 import copy
-import random
 from typing import Any, Callable, Dict, List, Tuple
 
+import numpy as np
 import pandas as pd
 from artifact_store import ArtifactStore
 
@@ -51,15 +51,14 @@ def assign_enrichment(products: List[Dict], fraction: float, seed: int = None) -
     Returns:
         List of products with added 'enriched' boolean field
     """
-    if seed is not None:
-        random.seed(seed)
+    rng = np.random.default_rng(seed)
 
     # Create copy to avoid modifying original
     enriched_products = copy.deepcopy(products)
 
     # Randomly select products for enrichment
     n_enriched = int(len(products) * fraction)
-    enriched_indices = random.sample(range(len(products)), n_enriched)
+    enriched_indices = set(rng.choice(len(products), size=n_enriched, replace=False))
 
     # Add enrichment field
     for i, product in enumerate(enriched_products):

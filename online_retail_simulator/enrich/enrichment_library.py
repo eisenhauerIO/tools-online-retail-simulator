@@ -1,9 +1,9 @@
 """Library of predefined treatment effect functions for catalog enrichment."""
 
 import copy
-import random
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 
 
@@ -31,12 +31,11 @@ def quantity_boost(metrics: list, **kwargs) -> tuple:
     seed = kwargs.get("seed", 42)
     min_units = kwargs.get("min_units", 1)
 
-    if seed is not None:
-        random.seed(seed)
+    rng = np.random.default_rng(seed)
 
     unique_products = list(set(record["product_id"] for record in metrics))
     n_enriched = int(len(unique_products) * enrichment_fraction)
-    enriched_product_ids = set(random.sample(unique_products, n_enriched))
+    enriched_product_ids = set(rng.choice(unique_products, size=n_enriched, replace=False))
 
     treated_metrics = []
     potential_outcomes = {}  # {(product_id, date): {'Y0_revenue': x, 'Y1_revenue': y}}
@@ -143,8 +142,7 @@ def product_detail_boost(metrics: list, **kwargs) -> tuple:
     backend = kwargs.get("backend", "mock")
     quality_boost = kwargs.get("quality_boost", 0.0)
 
-    if seed is not None:
-        random.seed(seed)
+    rng = np.random.default_rng(seed)
 
     # 1. Save original product details
     if job_info and products:
@@ -157,7 +155,7 @@ def product_detail_boost(metrics: list, **kwargs) -> tuple:
         unique_product_ids = list(set(record["product_id"] for record in metrics))
 
     n_treatment = int(len(unique_product_ids) * enrichment_fraction)
-    treatment_ids = set(random.sample(unique_product_ids, n_treatment))
+    treatment_ids = set(rng.choice(unique_product_ids, size=n_treatment, replace=False))
 
     # 3. Regenerate product details for treatment products
     if products and job_info:
@@ -278,9 +276,7 @@ def _regenerate_product_details(
         regenerated_df["enriched"] = True
 
         # Apply quality boost for treated products (0.0 = no boost)
-        regenerated_df["quality_score"] = regenerated_df["quality_score"].apply(
-            lambda x: min(x + quality_boost, 1.0)
-        )
+        regenerated_df["quality_score"] = regenerated_df["quality_score"].apply(lambda x: min(x + quality_boost, 1.0))
 
         treatment_products = regenerated_df.to_dict("records")
 

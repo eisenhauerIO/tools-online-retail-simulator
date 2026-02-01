@@ -22,8 +22,9 @@ def simulate_metrics_rule_based(products: pd.DataFrame, config: Dict) -> pd.Data
         Columns: product_identifier, category, price, date, impressions, visits,
         cart_adds, ordered_units, revenue.
     """
-    import random
     from datetime import datetime, timedelta
+
+    import numpy as np
 
     params = config["RULE"]["METRICS"]["PARAMS"]
     date_start = params["date_start"]
@@ -37,8 +38,7 @@ def simulate_metrics_rule_based(products: pd.DataFrame, config: Dict) -> pd.Data
     visit_to_cart_rate = params["visit_to_cart_rate"]
     cart_to_order_rate = params["cart_to_order_rate"]
 
-    if seed is not None:
-        random.seed(seed)
+    rng = np.random.default_rng(seed)
 
     start_date = datetime.strptime(date_start, "%Y-%m-%d")
     end_date = datetime.strptime(date_end, "%Y-%m-%d")
@@ -64,23 +64,27 @@ def simulate_metrics_rule_based(products: pd.DataFrame, config: Dict) -> pd.Data
             adjusted_sale_prob = min(sale_prob * quality_multiplier, 1.0)
 
             # Determine if funnel activity occurs
-            funnel_activity = random.random() < adjusted_sale_prob
+            funnel_activity = rng.random() < adjusted_sale_prob
 
             if funnel_activity:
                 # Generate funnel metrics top-down
-                impressions = random.choices([10, 25, 50, 100, 200], weights=[40, 30, 15, 10, 5])[0]
+                impression_weights = np.array([40, 30, 15, 10, 5])
+                impressions = rng.choice([10, 25, 50, 100, 200], p=impression_weights / impression_weights.sum())
 
                 visits_base = impressions * impression_to_visit_rate
-                visits = max(1, int(visits_base * random.uniform(0.8, 1.2)))
+                visits = max(1, int(visits_base * rng.uniform(0.8, 1.2)))
 
                 cart_base = visits * visit_to_cart_rate
-                cart_adds = max(0, int(cart_base * random.uniform(0.7, 1.3)))
+                cart_adds = max(0, int(cart_base * rng.uniform(0.7, 1.3)))
 
                 order_base = cart_adds * cart_to_order_rate
                 order_potential = max(0, int(order_base))
 
-                if order_potential > 0:
-                    ordered_units = random.choices([1, 2, 3, 4, 5], weights=[50, 25, 15, 7, 3])[0]
+                if order_potential > 0 and cart_adds > 0:
+                    unit_weights = np.array([50, 25, 15, 7, 3])
+                    ordered_units = rng.choice([1, 2, 3, 4, 5], p=unit_weights / unit_weights.sum())
+                    # Cap ordered_units to cart_adds (funnel constraint)
+                    ordered_units = min(ordered_units, cart_adds)
                 else:
                     ordered_units = 0
 

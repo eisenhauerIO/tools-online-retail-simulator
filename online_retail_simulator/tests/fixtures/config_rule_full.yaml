@@ -1,0 +1,17 @@
+RULE:
+  PRODUCTS:
+    FUNCTION: simulate_products_rule_based
+    PARAMS:
+      num_products: 5
+      seed: 42
+  METRICS:
+    FUNCTION: simulate_metrics_rule_based
+    PARAMS:
+      date_start: "2024-01-01"
+      date_end: "2024-01-02"
+      sale_prob: 1.0
+      seed: 42
+      granularity: "daily"
+      impression_to_visit_rate: 1.0
+      visit_to_cart_rate: 1.0
+      cart_to_order_rate: 1.0

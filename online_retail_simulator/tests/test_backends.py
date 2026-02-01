@@ -45,21 +45,14 @@ class TestRuleBackend:
         """Returns correct config key."""
         assert RuleBackend.get_key() == "RULE"
 
-    def test_simulate_products_returns_dataframe(self):
+    def test_simulate_products_returns_dataframe(self, config_products_basic):
         """Products simulation returns DataFrame."""
-        config = {
-            "PRODUCTS": {
-                "FUNCTION": "simulate_products_rule_based",
-                "PARAMS": {"num_products": 5, "seed": 42},
-            },
-            "METRICS": {},
-        }
-        backend = RuleBackend(config)
+        backend = RuleBackend(config_products_basic)
         result = backend.simulate_products()
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 5
 
-    def test_simulate_metrics_returns_dataframe(self):
+    def test_simulate_metrics_returns_dataframe(self, config_metrics_with_rates):
         """Metrics simulation returns DataFrame."""
         products = pd.DataFrame(
             {
@@ -68,23 +61,7 @@ class TestRuleBackend:
                 "price": [99.99, 19.99],
             }
         )
-        config = {
-            "PRODUCTS": {},
-            "METRICS": {
-                "FUNCTION": "simulate_metrics_rule_based",
-                "PARAMS": {
-                    "date_start": "2024-01-01",
-                    "date_end": "2024-01-02",
-                    "sale_prob": 0.5,
-                    "seed": 42,
-                    "granularity": "daily",
-                    "impression_to_visit_rate": 0.1,
-                    "visit_to_cart_rate": 0.3,
-                    "cart_to_order_rate": 0.5,
-                },
-            },
-        }
-        backend = RuleBackend(config)
+        backend = RuleBackend(config_metrics_with_rates)
         result = backend.simulate_metrics(products)
         assert isinstance(result, pd.DataFrame)
         assert "impressions" in result.columns

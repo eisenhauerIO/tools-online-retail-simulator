@@ -8,9 +8,10 @@ This script shows:
 """
 
 import copy
-import random
 from datetime import datetime
 from typing import Dict, List
+
+import numpy as np
 
 from online_retail_simulator import enrich, load_job_results, register_enrichment_function, simulate
 
@@ -35,14 +36,12 @@ def price_discount(metrics: List[Dict], **kwargs) -> List[Dict]:
     enrichment_start = kwargs.get("enrichment_start", "2024-11-15")
     seed = kwargs.get("seed", 42)
 
-    # Set seed for reproducibility
-    if seed is not None:
-        random.seed(seed)
+    rng = np.random.default_rng(seed)
 
     # Get unique products and select fraction for enrichment
     unique_products = list(set(record["product_id"] for record in metrics))
     n_enriched = int(len(unique_products) * enrichment_fraction)
-    enriched_product_ids = set(random.sample(unique_products, n_enriched))
+    enriched_product_ids = set(rng.choice(unique_products, size=n_enriched, replace=False))
 
     # Apply discount to enriched products after start date
     treated_metrics = []
