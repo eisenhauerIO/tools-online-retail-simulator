@@ -20,20 +20,20 @@ Simulation Module
    :show-inheritance:
    :no-index:
 
-Characteristics Generation
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Products Generation
+~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: online_retail_simulator.simulate.characteristics
+.. automodule:: online_retail_simulator.simulate.products
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: online_retail_simulator.simulate.characteristics_rule_based
+.. automodule:: online_retail_simulator.simulate.products_rule_based
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: online_retail_simulator.simulate.characteristics_synthesizer_based
+.. automodule:: online_retail_simulator.simulate.products_synthesizer_based
    :members:
    :undoc-members:
    :show-inheritance:
