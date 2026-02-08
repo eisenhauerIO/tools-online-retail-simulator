@@ -3,17 +3,20 @@ Interface for simulating products.
 Dispatches to appropriate backend based on config.
 """
 
+from typing import Optional
+
 from ..config_processor import process_config
 from ..core.backends import BackendRegistry
 from ..manage import create_job, save_job_metadata
 
 
-def simulate_products(config_path: str):
+def simulate_products(config_path: str, job_id: Optional[str] = None):
     """
     Simulate products using the backend specified in config.
 
     Args:
         config_path: Path to configuration file
+        job_id: Optional job ID, auto-generated if not provided
 
     Returns:
         JobInfo: Job containing products.csv
@@ -25,7 +28,7 @@ def simulate_products(config_path: str):
     products_df = backend.simulate_products()
 
     # Create job and save products
-    job_info = create_job(config, config_path)
+    job_info = create_job(config, config_path, job_id=job_id)
     job_info.save_df("products", products_df)
     save_job_metadata(job_info, config, config_path, num_products=len(products_df))
 
