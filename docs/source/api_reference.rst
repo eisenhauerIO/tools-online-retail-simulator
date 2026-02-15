@@ -1,5 +1,5 @@
-API
-===
+API Reference
+=============
 
 This section provides detailed documentation for all public APIs in the Online Retail Simulator.
 

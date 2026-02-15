@@ -1,4 +1,4 @@
-# Configuration
+# Configuration Reference
 
 The Online Retail Simulator uses YAML configuration files to control all aspects of data generation and enrichment. This guide documents the **actual configuration schema** as implemented in the code.
 
