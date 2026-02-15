@@ -7,8 +7,8 @@ sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 project = "Online Retail Simulator"
-copyright = "2024, Online Retail Simulator Team"
-author = "Online Retail Simulator Team"
+copyright = "2024, eisenhauer.io"
+author = "eisenhauer.io"
 release = "1.0.0"
 
 # -- General configuration ---------------------------------------------------
