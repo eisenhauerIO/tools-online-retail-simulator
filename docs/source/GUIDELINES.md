@@ -7,7 +7,6 @@ Each page serves a distinct purpose. Topic-specific details belong in demo noteb
 | Page | Purpose |
 |------|---------|
 | `README.md` | Package positioning and quick start. Also the docs landing page via `index.md`. |
-| `installation.md` | How to install, optional extras, development setup. |
 | `design.md` | Architecture, extensibility, data flow. |
 | `usage.md` | General workflow, backend-agnostic. Links to demos for specifics. |
 | `configuration.md` | Parameter reference tables. |

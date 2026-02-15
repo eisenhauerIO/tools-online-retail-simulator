@@ -6,18 +6,9 @@
 
 Online Retail Simulator generates fully synthetic retail data for testing causal inference pipelines. The architecture is **configuration-driven** and **plugin-based**. Generation backends, enrichment functions, and product detail generators are all pluggable. New implementations slot in through a registry system without modifying core orchestration code.
 
-The system is organized into distinct, loosely-coupled modules:
-- **Core**: Shared infrastructure including `FunctionRegistry` for extensible function registration
-- **Simulation**: Core data generation logic
-- **Enrichment**: Treatment effect application
-- **Configuration**: Parameter processing and validation
-- **Storage**: Data persistence and retrieval
+The system is organized into distinct, loosely-coupled modules. **Core** provides shared infrastructure including `FunctionRegistry` for extensible function registration. **Simulation** handles the core data generation logic. **Enrichment** applies treatment effects to generated data. **Configuration** manages parameter processing and validation. **Storage** handles data persistence and retrieval.
 
-Two complementary generation modes serve different use cases:
-- **Rule-based**: Deterministic, interpretable patterns
-- **Synthesizer-based**: ML-learned patterns from real data
-
-Seed-based deterministic generation ensures consistent results across runs, reliable A/B testing scenarios, and debuggable data generation.
+Two complementary generation modes serve different use cases. **Rule-based** mode produces deterministic, interpretable patterns suitable for controlled experiments. **Synthesizer-based** mode learns patterns from real data using ML techniques for more realistic distributions. Seed-based deterministic generation ensures consistent results across runs, reliable A/B testing scenarios, and debuggable data generation.
 
 ---
 

@@ -375,11 +375,11 @@ products_df = results["products"]
 The config processor validates all configurations and provides clear error messages:
 
 **Common Errors**:
-- ❌ Including both `RULE` and `SYNTHESIZER` (choose one)
-- ❌ Missing required parameters
-- ❌ Typos in parameter names
-- ❌ Invalid parameter types
-- ❌ `training_data_path: null` for synthesizer mode
+- Including both `RULE` and `SYNTHESIZER` (choose one)
+- Missing required parameters
+- Typos in parameter names
+- Invalid parameter types
+- `training_data_path: null` for synthesizer mode
 
 **Example Validation Error**:
 ```
