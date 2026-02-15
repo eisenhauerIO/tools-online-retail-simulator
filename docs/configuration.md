@@ -488,4 +488,4 @@ RULE:
 
 - **Examples**: See the [Demo notebook](notebooks/demo.ipynb) for practical examples
 - **API**: See [API Reference](api_reference.rst) for function documentation
-- **Architecture**: See [Architecture](architecture.md) for system internals
+- **Design**: See [Design](design.md) for system internals

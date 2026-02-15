@@ -4,11 +4,21 @@
 ```
 
 ```{toctree}
-:maxdepth: 1
-:caption: Contents
+:hidden:
+:maxdepth: 2
+:caption: Guides
+
+installation
+design
+usage
+configuration
+api_reference
+```
+
+```{toctree}
+:hidden:
+:maxdepth: 2
+:caption: Demos
 
 notebooks/demo
-configuration
-architecture
-api_reference
 ```
