@@ -1,4 +1,4 @@
-# Software Design
+# Design
 
 *Last updated: February 2026*
 
