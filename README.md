@@ -14,13 +14,11 @@ Building and validating causal inference pipelines requires realistic data—but
 
 Unlike generic data generators, the simulator supports ***controlled treatment effects***, enabling teams to validate estimators, stress-test identifying assumptions, and compare causal models against known ground truth—before running causal analysis on production data.
 
-## Installation
+## Quick Start
 
 ```bash
 pip install git+https://github.com/eisenhauerIO/tools-online-retail-simulator.git
 ```
-
-## Quick Start
 
 ```python
 from online_retail_simulator import simulate, load_job_results
