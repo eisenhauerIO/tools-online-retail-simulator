@@ -21,4 +21,5 @@ api_reference
 :caption: Demos
 
 notebooks/demo
+notebooks/tutorial
 ```
