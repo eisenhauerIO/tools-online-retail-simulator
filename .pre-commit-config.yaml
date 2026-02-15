@@ -1,32 +1,40 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-added-large-files
-      - id: check-merge-conflict
+      - id: nbstripout
 
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
     hooks:
-      - id: black
-        language_version: python3
-        files: ^online_retail_simulator/.*\.py$
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.4
     hooks:
       - id: ruff
         args: [--fix]
-        files: ^online_retail_simulator/.*\.py$
+        types_or: [python, jupyter]
+      - id: ruff-format
+        types_or: [python, jupyter]
 
   - repo: local
     hooks:
-      - id: pytest-check
-        name: pytest-check
-        entry: hatch run pytest online_retail_simulator/tests/ -v
+      - id: pytest
+        name: pytest
+        entry: hatch run test
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: execute-notebooks
+        name: execute notebooks
+        entry: bash -c 'for nb in docs/source/notebooks/*.ipynb; do hatch run docs:python -m jupyter nbconvert --to notebook --execute --stdout "$nb" > /dev/null 2>&1; done'
         language: system
         pass_filenames: false
         always_run: true

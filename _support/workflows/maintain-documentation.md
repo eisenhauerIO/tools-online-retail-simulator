@@ -67,7 +67,7 @@ If content is cross-referenced elsewhere:
 ### 5. Verify Changes
 
 Before committing documentation updates:
-- Build Sphinx docs locally (from docs/): `cd docs && hatch run make html`
+- Build Sphinx docs locally: `hatch run docs:build`
 - Check for broken links (manually review)
 - Verify all code examples work
 - Review against this workflow
@@ -100,7 +100,7 @@ To prevent documentation drift, **DO NOT**:
 
 ```markdown
 <!-- Good: In README.md -->
-For complete configuration options, see the [Configuration Reference](https://eisenhauerio.github.io/tools-catalog-generator/configuration.html).
+For complete configuration options, see the [Configuration Reference](https://eisenhauerio.github.io/tools-online-retail-simulator/configuration.html).
 
 <!-- Bad: In README.md -->
 Here's all the configuration options... [300 lines of duplication]
@@ -112,7 +112,7 @@ Here's all the configuration options... [300 lines of duplication]
 <!-- Good: In README.md -->
 - **Data Scientists**: Generate realistic e-commerce data for ML model training
 
-[See complete user stories →](https://eisenhauerio.github.io/tools-catalog-generator/user-guide.html#who-should-use-this)
+[See complete user stories →](https://eisenhauerio.github.io/tools-online-retail-simulator/usage.html#who-should-use-this)
 
 <!-- Bad: In README.md -->
 [Full detailed user story with code examples duplicated from user-guide.md]
@@ -128,7 +128,7 @@ job_info = simulate("config.yaml")
 metrics_df = load_job_results(job_info)["metrics"]
 ```
 
-For more examples, see the [User Guide](https://eisenhauerio.github.io/tools-catalog-generator/user-guide.html).
+For more examples, see the [User Guide](https://eisenhauerio.github.io/tools-online-retail-simulator/usage.html).
 
 <!-- Bad: In README.md -->
 [10 different code examples all duplicated from user-guide.md]
@@ -163,7 +163,7 @@ Before committing documentation changes, verify:
 - [ ] No broken links in GitHub Pages
 
 ### Build Validation
-- [ ] `cd docs && hatch run make html` succeeds with no warnings
+- [ ] `hatch run docs:build` succeeds with no warnings
 - [ ] Generated HTML renders correctly
 - [ ] Navigation works in built docs
 

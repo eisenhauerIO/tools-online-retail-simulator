@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 - pip
 
 ## Install from PyPI
@@ -28,8 +28,8 @@ pip install online-retail-simulator[cloud]
 ## Install from Source
 
 ```bash
-git clone https://github.com/eisenhauerIO/tools-catalog-generator.git
-cd tools-catalog-generator
+git clone https://github.com/eisenhauerIO/tools-online-retail-simulator.git
+cd tools-online-retail-simulator
 pip install -e ".[dev]"
 ```
 
@@ -58,12 +58,12 @@ hatch run pre-commit install
 Run tests and linting:
 
 ```bash
-hatch run pytest online_retail_simulator/tests -v
-hatch run ruff check .
+hatch run test
+hatch run lint
 ```
 
 Build the documentation:
 
 ```bash
-hatch run docs-build
+hatch run docs:build
 ```

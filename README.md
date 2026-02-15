@@ -1,7 +1,8 @@
-[![CI](https://github.com/eisenhauerIO/tools-catalog-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/eisenhauerIO/tools-catalog-generator/actions/workflows/ci.yml)
-[![Build Documentation](https://github.com/eisenhauerIO/tools-catalog-generator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/eisenhauerIO/tools-catalog-generator/actions/workflows/docs.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/eisenhauerIO/tools-catalog-generator/blob/main/LICENSE)
+[![Tests](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/ci.yml)
+[![Build Documentation](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/docs.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/eisenhauerIO/tools-online-retail-simulator/blob/main/LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Slack](https://img.shields.io/badge/Slack-Join%20Us-4A154B?logo=slack)](https://join.slack.com/t/eisenhauerioworkspace/shared_invite/zt-3lxtc370j-XLdokfTkno54wfhHVxvEfA)
 
 # Online Retail Simulator
 
@@ -35,10 +36,10 @@ metrics_df = results["metrics"]
 
 | Guide | Description |
 |-------|-------------|
-| [Installation](docs/installation.md) | Install and set up for development |
-| [Design](docs/design.md) | System design and architecture |
-| [Usage](docs/usage.md) | Getting started with basic workflow |
-| [Configuration](docs/configuration.md) | All configuration options |
+| [Installation](docs/source/installation.md) | Install and set up for development |
+| [Design](docs/source/design.md) | System design and architecture |
+| [Usage](docs/source/usage.md) | Getting started with basic workflow |
+| [Configuration](docs/source/configuration.md) | All configuration options |
 
 ## License
 
