@@ -1,6 +1,6 @@
 # Online Retail Simulator
 
-[![Tests](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/ci.yml)
+[![CI](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/ci.yml)
 [![Docs](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/eisenhauerIO/tools-online-retail-simulator/actions/workflows/docs.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/eisenhauerIO/tools-online-retail-simulator/blob/main/LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
