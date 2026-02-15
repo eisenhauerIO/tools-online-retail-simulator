@@ -1,4 +1,4 @@
-# Online Retail Simulator Design
+# Software Design
 
 *Last updated: February 2026*
 
