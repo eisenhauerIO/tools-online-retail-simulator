@@ -34,7 +34,6 @@ metrics_df = results["metrics"]
 
 | Guide | Description |
 |-------|-------------|
-| [Installation](docs/source/installation.md) | Install and set up for development |
 | [Usage](docs/source/usage.md) | Getting started with basic workflow |
 | [Configuration](docs/source/configuration.md) | All configuration options |
 | [Design](docs/source/design.md) | System design and architecture |
