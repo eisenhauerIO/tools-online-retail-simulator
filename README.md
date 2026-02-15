@@ -17,7 +17,7 @@ Unlike generic data generators, the simulator supports ***controlled treatment e
 ## Installation
 
 ```bash
-pip install online-retail-simulator
+pip install git+https://github.com/eisenhauerIO/tools-online-retail-simulator.git
 ```
 
 ## Quick Start
@@ -37,10 +37,6 @@ metrics_df = results["metrics"]
 | Guide | Description |
 |-------|-------------|
 | [Installation](docs/source/installation.md) | Install and set up for development |
-| [Design](docs/source/design.md) | System design and architecture |
 | [Usage](docs/source/usage.md) | Getting started with basic workflow |
 | [Configuration](docs/source/configuration.md) | All configuration options |
-
-## License
-
-MIT
+| [Design](docs/source/design.md) | System design and architecture |
