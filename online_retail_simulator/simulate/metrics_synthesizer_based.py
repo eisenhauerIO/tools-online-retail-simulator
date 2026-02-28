@@ -46,7 +46,7 @@ def simulate_metrics_synthesizer_based(products: pd.DataFrame, config: Dict) -> 
     # Step 2: Train the synthesizer
     synthesizer.fit(training_data)
 
-    # Step 3: Generate synthetic data with seed
+    # Step 3: Generate synthetic data with seed (legacy API required by SDV internals)
     np.random.seed(seed)
     synthetic_metrics = synthesizer.sample(num_rows=num_rows)
 

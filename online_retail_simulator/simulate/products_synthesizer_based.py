@@ -6,6 +6,7 @@ No error handling, hard failures only.
 
 from typing import Dict
 
+import numpy as np
 import pandas as pd
 
 
@@ -44,9 +45,7 @@ def simulate_products_synthesizer_based(config: Dict) -> pd.DataFrame:
     # Step 2: Train the synthesizer
     synthesizer.fit(training_data)
 
-    # Step 3: Generate synthetic data with seed
-    import numpy as np
-
+    # Step 3: Generate synthetic data with seed (legacy API required by SDV internals)
     np.random.seed(seed)
     synthetic_data = synthesizer.sample(num_rows=num_rows)
 
