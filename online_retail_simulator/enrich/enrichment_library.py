@@ -33,7 +33,7 @@ def quantity_boost(metrics: list, **kwargs) -> tuple:
 
     rng = np.random.default_rng(seed)
 
-    unique_products = list(set(record["product_id"] for record in metrics))
+    unique_products = sorted(set(record["product_id"] for record in metrics))
     n_enriched = int(len(unique_products) * enrichment_fraction)
     enriched_product_ids = set(rng.choice(unique_products, size=n_enriched, replace=False))
 
@@ -150,9 +150,9 @@ def product_detail_boost(metrics: list, **kwargs) -> tuple:
 
     # 2. Select treatment products
     if products:
-        unique_product_ids = list(set(p.get("product_identifier", p.get("product_id")) for p in products))
+        unique_product_ids = sorted(set(p.get("product_identifier", p.get("product_id")) for p in products))
     else:
-        unique_product_ids = list(set(record["product_id"] for record in metrics))
+        unique_product_ids = sorted(set(record["product_id"] for record in metrics))
 
     n_treatment = int(len(unique_product_ids) * enrichment_fraction)
     treatment_ids = set(rng.choice(unique_product_ids, size=n_treatment, replace=False))
