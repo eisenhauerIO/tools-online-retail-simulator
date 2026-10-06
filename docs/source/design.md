@@ -18,7 +18,7 @@ The **plugin architecture** exists for a practical reason. Different teams may n
 
 Two patterns make this work.
 
-**Backend plugin system**. Each generation backend implements [SimulationBackend](../online_retail_simulator/core/backends.py) and registers itself with the [BackendRegistry](../online_retail_simulator/core/backends.py). The orchestrator detects the appropriate backend from the config key (`RULE`, `SYNTHESIZER`, or any custom key) and delegates to it. To add a new backend, subclass `SimulationBackend`, implement `simulate_products()` and `simulate_metrics()`, and register with `@BackendRegistry.register`.
+**Backend plugin system**. Each generation backend implements [SimulationBackend](https://github.com/eisenhauerIO/tools-online-retail-simulator/blob/main/online_retail_simulator/core/backends.py) and registers itself with the [BackendRegistry](https://github.com/eisenhauerIO/tools-online-retail-simulator/blob/main/online_retail_simulator/core/backends.py). The orchestrator detects the appropriate backend from the config key (`RULE`, `SYNTHESIZER`, or any custom key) and delegates to it. To add a new backend, subclass `SimulationBackend`, implement `simulate_products()` and `simulate_metrics()`, and register with `@BackendRegistry.register`.
 
 ```python
 from online_retail_simulator.core.backends import (
@@ -42,7 +42,7 @@ class CTGANBackend(SimulationBackend):
         ...
 ```
 
-**Function registry**. The [FunctionRegistry](../online_retail_simulator/core/registry.py) provides a unified registration system for simulation functions, enrichment functions, and product detail generators. Both simulation and enrichment registries use this common infrastructure.
+**Function registry**. The [FunctionRegistry](https://github.com/eisenhauerIO/tools-online-retail-simulator/blob/main/online_retail_simulator/core/registry.py) provides a unified registration system for simulation functions, enrichment functions, and product detail generators. Both simulation and enrichment registries use this common infrastructure.
 
 ```python
 # core/registry.py
