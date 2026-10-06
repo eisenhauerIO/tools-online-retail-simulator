@@ -62,7 +62,7 @@ STORAGE:
 
 RULE:
   CHARACTERISTICS:
-    FUNCTION: simulate_characteristics_rule_based
+    FUNCTION: simulate_products_rule_based
     PARAMS:
       num_products: 50
       seed: null  # Optional: set for reproducibility
@@ -82,7 +82,7 @@ RULE:
 
 ### RULE.CHARACTERISTICS Parameters
 
-Function: `simulate_characteristics_rule_based`
+Function: `simulate_products_rule_based`
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -93,7 +93,7 @@ Function: `simulate_characteristics_rule_based`
 ```yaml
 RULE:
   CHARACTERISTICS:
-    FUNCTION: simulate_characteristics_rule_based
+    FUNCTION: simulate_products_rule_based
     PARAMS:
       num_products: 200
       seed: 42
@@ -303,7 +303,7 @@ IMPACT:
 
 ## Product Details Configuration
 
-Product details generation adds titles, descriptions, brands, and features to products created by `simulate_characteristics()`.
+Product details generation adds titles, descriptions, brands, and features to products created by `simulate_products()`.
 
 ### Structure
 
@@ -344,7 +344,7 @@ STORAGE:
 
 RULE:
   CHARACTERISTICS:
-    FUNCTION: simulate_characteristics_rule_based
+    FUNCTION: simulate_products_rule_based
     PARAMS:
       num_products: 50
       seed: 42
@@ -356,10 +356,10 @@ PRODUCT_DETAILS:
 ### Usage
 
 ```python
-from online_retail_simulator import simulate_characteristics, simulate_product_details, load_job_results
+from online_retail_simulator import simulate_products, simulate_product_details, load_job_results
 
 # Generate base products
-job_info = simulate_characteristics("config.yaml")
+job_info = simulate_products("config.yaml")
 
 # Add product details
 job_info = simulate_product_details(job_info, "config.yaml")
@@ -395,7 +395,7 @@ ValueError: Unexpected parameters for RULE.METRICS.simulate_metrics_rule_based:
 ```yaml
 RULE:
   CHARACTERISTICS:
-    FUNCTION: simulate_characteristics_rule_based
+    FUNCTION: simulate_products_rule_based
     PARAMS:
       num_products: 20
   METRICS:
@@ -414,7 +414,7 @@ STORAGE:
 
 RULE:
   CHARACTERISTICS:
-    FUNCTION: simulate_characteristics_rule_based
+    FUNCTION: simulate_products_rule_based
     PARAMS:
       num_products: 1000
       seed: 42
@@ -440,7 +440,7 @@ STORAGE:
 
 RULE:
   CHARACTERISTICS:
-    FUNCTION: simulate_characteristics_rule_based
+    FUNCTION: simulate_products_rule_based
     PARAMS:
       num_products: 100
       seed: 42

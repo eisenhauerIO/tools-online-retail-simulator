@@ -12,7 +12,7 @@ STORAGE:
 
 RULE:
   CHARACTERISTICS:
-    FUNCTION: simulate_characteristics_rule_based
+    FUNCTION: simulate_products_rule_based
     PARAMS:
       num_products: 50
       seed: 42

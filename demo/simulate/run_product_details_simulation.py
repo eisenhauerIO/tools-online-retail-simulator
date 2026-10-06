@@ -9,7 +9,7 @@ This script shows:
 
 import os
 
-from online_retail_simulator import load_job_results, simulate_characteristics, simulate_product_details
+from online_retail_simulator import load_job_results, simulate_products, simulate_product_details
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config_product_details_simulation.yaml")
 
@@ -28,7 +28,7 @@ def main():
 
     # Step 1: Generate base products
     print("1. Generating base product characteristics...")
-    job_info = simulate_characteristics(CONFIG_PATH)
+    job_info = simulate_products(CONFIG_PATH)
     products_df = load_job_results(job_info)["products"]
     print(f"   ✓ Generated {len(products_df)} products")
 

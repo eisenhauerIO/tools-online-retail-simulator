@@ -46,7 +46,7 @@ Make your changes in the primary location first.
 - Verify all parameter names match defaults file exactly
 - Verify default values match defaults file exactly
 - Check that CHARACTERISTICS/METRICS structure is correct
-- Verify function names (e.g., `simulate_characteristics_rule_based`)
+- Verify function names (e.g., `simulate_products_rule_based`)
 - Test configuration examples with actual config processor
 
 **Common verification points**:

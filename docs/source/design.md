@@ -18,7 +18,7 @@ The **plugin architecture** exists for a practical reason. Different teams may n
 
 Two patterns make this work.
 
-**Backend plugin system**. Each generation backend implements [SimulationBackend](../online_retail_simulator/core/backends.py) and registers itself with the [BackendRegistry](../online_retail_simulator/core/backends.py). The orchestrator detects the appropriate backend from the config key (`RULE`, `SYNTHESIZER`, or any custom key) and delegates to it. To add a new backend, subclass `SimulationBackend`, implement `simulate_characteristics()` and `simulate_metrics()`, and register with `@BackendRegistry.register`.
+**Backend plugin system**. Each generation backend implements [SimulationBackend](../online_retail_simulator/core/backends.py) and registers itself with the [BackendRegistry](../online_retail_simulator/core/backends.py). The orchestrator detects the appropriate backend from the config key (`RULE`, `SYNTHESIZER`, or any custom key) and delegates to it. To add a new backend, subclass `SimulationBackend`, implement `simulate_products()` and `simulate_metrics()`, and register with `@BackendRegistry.register`.
 
 ```python
 from online_retail_simulator.core.backends import (
@@ -33,7 +33,7 @@ class CTGANBackend(SimulationBackend):
     def get_key(cls) -> str:
         return "CTGAN"
 
-    def simulate_characteristics(self) -> pd.DataFrame:
+    def simulate_products(self) -> pd.DataFrame:
         # Your CTGAN implementation
         ...
 
