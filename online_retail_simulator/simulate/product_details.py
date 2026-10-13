@@ -23,6 +23,9 @@ def simulate_product_details(job_info: JobInfo, config_path: str) -> JobInfo:
         PRODUCT_DETAILS:
           FUNCTION: simulate_product_details_mock  # or simulate_product_details_ollama
 
+    The mock backend reuses the products seed, so a seeded config yields the same
+    brands, features, and quality scores on every run.
+
     Args:
         job_info: Job containing products.csv
         config_path: Path to configuration file
@@ -39,9 +42,20 @@ def simulate_product_details(job_info: JobInfo, config_path: str) -> JobInfo:
 
     backend_fn = PRODUCT_DETAILS_REGISTRY[function_name]
     products_df = job_info.load_df("products")
-    detailed_df = backend_fn(products_df)
+    if backend_fn is simulate_product_details_mock:
+        detailed_df = backend_fn(products_df, seed=_products_seed(config))
+    else:
+        detailed_df = backend_fn(products_df)
 
     job_info.save_df("products", detailed_df)
     save_job_metadata(job_info, config, config_path, has_product_details=True)
 
     return job_info
+
+
+def _products_seed(config: dict):
+    """Return the seed of the configured products phase, or None if unseeded."""
+    for backend in ("RULE", "SYNTHESIZER"):
+        if backend in config:
+            return config[backend].get("PRODUCTS", {}).get("PARAMS", {}).get("seed")
+    return None

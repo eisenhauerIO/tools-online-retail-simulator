@@ -83,3 +83,36 @@ class TestProductDetailsOllama:
         assert "brand" in result.columns
         assert "features" in result.columns
         assert len(result) == len(sample_products)
+
+
+def test_simulate_product_details_reproducible_with_seed(tmp_path):
+    """A seeded config produces identical product details across runs."""
+    from online_retail_simulator import load_job_results, simulate
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        f"""
+STORAGE:
+  PATH: {tmp_path}/output
+RULE:
+  PRODUCTS:
+    FUNCTION: simulate_products_rule_based
+    PARAMS:
+      num_products: 20
+      seed: 7
+  METRICS:
+    FUNCTION: simulate_metrics_rule_based
+    PARAMS:
+      date_start: "2024-11-01"
+      date_end: "2024-11-03"
+      seed: 7
+PRODUCT_DETAILS:
+  FUNCTION: simulate_product_details_mock
+"""
+    )
+
+    first = load_job_results(simulate(str(config_path)))
+    second = load_job_results(simulate(str(config_path)))
+
+    pd.testing.assert_frame_equal(first["products"], second["products"])
+    pd.testing.assert_frame_equal(first["metrics"], second["metrics"])
