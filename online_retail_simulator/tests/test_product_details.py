@@ -116,3 +116,78 @@ PRODUCT_DETAILS:
 
     pd.testing.assert_frame_equal(first["products"], second["products"])
     pd.testing.assert_frame_equal(first["metrics"], second["metrics"])
+
+
+class TestOllamaResponseParsing:
+    """Tests for Ollama response handling (no server needed)."""
+
+    PRODUCT = {"product_identifier": "A001", "title": "T", "description": "D", "brand": "B", "features": ["f"]}
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            [PRODUCT],
+            {"products": [PRODUCT]},
+            PRODUCT,
+        ],
+    )
+    def test_parse_batch_accepts_common_shapes(self, payload):
+        """A bare list, a wrapped list, and a single object all parse to a list."""
+        import json
+
+        from online_retail_simulator.simulate.product_details_ollama import _parse_batch
+
+        assert _parse_batch(json.dumps(payload)) == [self.PRODUCT]
+
+    def test_parse_batch_rejects_unknown_shape(self):
+        """An object without a product list or product fields raises ValueError."""
+        from online_retail_simulator.simulate.product_details_ollama import _parse_batch
+
+        with pytest.raises(ValueError):
+            _parse_batch('{"status": "ok"}')
+
+    def test_retries_until_response_parses(self, monkeypatch):
+        """A non-JSON response is retried instead of crashing the batch."""
+        import json
+
+        from online_retail_simulator.simulate import product_details_ollama as module
+
+        responses = iter(["Sure! Here is your JSON:", json.dumps({"products": [self.PRODUCT]})])
+
+        class FakeResponse:
+            def __init__(self, text):
+                self.text = text
+
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                return {"response": self.text}
+
+        monkeypatch.setattr(module.requests, "post", lambda *args, **kwargs: FakeResponse(next(responses)))
+
+        assert module._generate_batch("prompt", "model", "url") == [self.PRODUCT]
+
+    def test_raises_after_max_attempts(self, monkeypatch):
+        """Persistent garbage raises after MAX_ATTEMPTS requests."""
+        from online_retail_simulator.simulate import product_details_ollama as module
+
+        calls = []
+
+        class FakeResponse:
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                return {"response": "not json"}
+
+        def fake_post(*args, **kwargs):
+            calls.append(kwargs["json"])
+            return FakeResponse()
+
+        monkeypatch.setattr(module.requests, "post", fake_post)
+
+        with pytest.raises(ValueError):
+            module._generate_batch("prompt", "model", "url")
+        assert len(calls) == module.MAX_ATTEMPTS
+        assert calls[0]["format"] == "json"
