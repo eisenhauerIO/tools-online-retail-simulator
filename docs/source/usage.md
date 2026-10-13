@@ -69,7 +69,7 @@ Enrichment applies controlled treatment effects to simulated data. This is usefu
 
 ```yaml
 IMPACT:
-  FUNCTION: "combined_boost"
+  FUNCTION: "product_detail_boost"
   PARAMS:
     effect_size: 0.5
     ramp_days: 7
@@ -103,7 +103,7 @@ Each backend generates product characteristics and sales metrics using a differe
 
 | Function | Description |
 |----------|-------------|
-| `combined_boost` | Gradual rollout with ramp-up period and partial product treatment (most realistic) |
+| `product_detail_boost` | Regenerates product details for treated products, with gradual rollout and partial product treatment (most realistic) |
 | `quantity_boost` | Immediate multiplicative increase in ordered units |
 | `probability_boost` | Alias for `quantity_boost` (probability reflected in quantity for existing records) |
 

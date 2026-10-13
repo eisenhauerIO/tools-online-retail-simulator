@@ -139,7 +139,7 @@ adjusted_sale_prob = sale_prob * quality_multiplier
 
 | Function | Description |
 |----------|-------------|
-| `combined_boost` | Gradual rollout with ramp-up period and partial product treatment |
+| `product_detail_boost` | Regenerates product details for treated products, with gradual rollout and partial product treatment |
 | `quantity_boost` | Simple multiplicative increase in ordered units |
 | `probability_boost` | Alias for `quantity_boost` |
 

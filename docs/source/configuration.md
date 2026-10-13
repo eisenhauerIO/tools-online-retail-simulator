@@ -238,13 +238,13 @@ IMPACT:
 
 ### Built-in Enrichment Functions
 
-#### combined_boost
+#### product_detail_boost
 
-Gradual rollout with partial treatment (most realistic).
+Regenerates product content for treated products and boosts their sales, with gradual rollout and partial treatment (most realistic).
 
 ```yaml
 IMPACT:
-  FUNCTION: "combined_boost"
+  FUNCTION: "product_detail_boost"
   PARAMS:
     effect_size: 0.5              # 50% boost in ordered_units
     ramp_days: 7                  # Gradual ramp-up over 7 days
@@ -260,14 +260,20 @@ IMPACT:
 | `ramp_days` | int | 7 | Days for effect to reach full strength |
 | `enrichment_fraction` | float | 0.3 | Fraction of products to enrich (0.0-1.0) |
 | `enrichment_start` | string | "2024-11-15" | Start date (YYYY-MM-DD) |
-| `seed` | int | 42 | Random seed for product selection |
+| `seed` | int | 42 | Random seed for product selection and rounding |
+| `backend` | string | "mock" | Content regeneration backend (`mock` or `ollama`) |
+| `prompt_path` | string or null | null | Custom prompt template for the `ollama` backend |
+| `quality_boost` | float | 0.0 | Added to the `quality_score` of treated products (capped at 1.0) |
 
 **Behavior**:
 - Selects random fraction of products for enrichment
+- Regenerates `title`, `description`, and `features` of treated products; `brand`, `category`, and `price` are kept
 - Effect ramps up linearly over `ramp_days`
 - After ramp period, full `effect_size` is applied
-- Increases `ordered_units` for enriched products
+- Increases `ordered_units` for enriched products, rounding stochastically so the expected increase equals `effect_size` (1 unit × 1.5 becomes 2 units half the time)
+- Raises `cart_adds` where needed so `cart_adds` ≥ `ordered_units`
 - Recalculates `revenue` = `ordered_units` × `price`
+- Saves `product_details_original`, `product_details_enriched`, and `potential_outcomes` (`Y0_revenue`, `Y1_revenue` for every product and date)
 
 #### quantity_boost
 
@@ -283,9 +289,9 @@ IMPACT:
     seed: 42
 ```
 
-**Parameters**: Same as `combined_boost` except no `ramp_days`.
+**Parameters**: `effect_size`, `enrichment_fraction`, `enrichment_start`, and `seed` as for `product_detail_boost`, plus `min_units` (default 1): the minimum ordered units a treated product-day receives after the start date, including days without sales.
 
-**Behavior**: Immediate full effect on enrichment start date.
+**Behavior**: Immediate full effect on enrichment start date. Rounding, cart adds, and revenue are handled as in `product_detail_boost`; product content is not changed.
 
 #### probability_boost
 
@@ -323,7 +329,7 @@ PRODUCT_DETAILS:
   FUNCTION: simulate_product_details_mock
 ```
 
-Generates realistic mock data based on product category. No additional parameters required.
+Generates realistic mock data based on product category. No additional parameters required. Uses the `seed` of the products phase, so a seeded configuration yields the same brands, features, and quality scores on every run.
 
 #### simulate_product_details_ollama
 
