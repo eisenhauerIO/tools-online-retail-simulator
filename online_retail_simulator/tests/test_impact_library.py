@@ -457,3 +457,14 @@ class TestBoostAccuracy:
         rng = np.random.default_rng(0)
         assert all(_boost_units(2, 0.5, rng) == 3 for _ in range(100))
         assert all(_boost_units(0, 0.5, rng) == 0 for _ in range(100))
+
+    def test_zero_sales_days_stay_zero(self):
+        """A treated product-day without sales gets no sales from the boost."""
+        sales = [{**s, "cart_adds": 0, "ordered_units": 0, "revenue": 0.0} for s in self.single_unit_sales(50)]
+
+        result, potential_outcomes = quantity_boost(
+            sales, effect_size=0.5, enrichment_fraction=1.0, enrichment_start="2024-11-15"
+        )
+
+        assert all(s["ordered_units"] == 0 and s["cart_adds"] == 0 for s in result)
+        assert (potential_outcomes["Y1_revenue"] == 0).all()

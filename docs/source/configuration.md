@@ -289,7 +289,7 @@ IMPACT:
     seed: 42
 ```
 
-**Parameters**: `effect_size`, `enrichment_fraction`, `enrichment_start`, and `seed` as for `product_detail_boost`, plus `min_units` (default 1): the minimum ordered units a treated product-day receives after the start date, including days without sales.
+**Parameters**: `effect_size`, `enrichment_fraction`, `enrichment_start`, and `seed` as for `product_detail_boost`.
 
 **Behavior**: Immediate full effect on enrichment start date. Rounding, cart adds, and revenue are handled as in `product_detail_boost`; product content is not changed.
 

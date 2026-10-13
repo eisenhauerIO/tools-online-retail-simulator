@@ -39,7 +39,6 @@ def quantity_boost(metrics: list, **kwargs) -> tuple:
             - enrichment_fraction: Fraction of products to enrich (default: 0.3)
             - enrichment_start: Start date of enrichment (default: "2024-11-15")
             - seed: Random seed for product selection (default: 42)
-            - min_units: Minimum units for enriched products with zero sales (default: 1)
 
     Returns:
         Tuple of (treated_metrics, potential_outcomes_df):
@@ -50,7 +49,6 @@ def quantity_boost(metrics: list, **kwargs) -> tuple:
     enrichment_fraction = kwargs.get("enrichment_fraction", 0.3)
     enrichment_start = kwargs.get("enrichment_start", "2024-11-15")
     seed = kwargs.get("seed", 42)
-    min_units = kwargs.get("min_units", 1)
 
     rng = np.random.default_rng(seed)
 
@@ -79,7 +77,6 @@ def quantity_boost(metrics: list, **kwargs) -> tuple:
         if record_date >= start_date:
             original_quantity = record_copy["ordered_units"]
             boosted_quantity = _boost_units(original_quantity, effect_size, rng)
-            boosted_quantity = max(min_units, boosted_quantity)
             y1_revenue = round(boosted_quantity * unit_price, 2)
         else:
             # Before treatment start, Y(1) = Y(0)

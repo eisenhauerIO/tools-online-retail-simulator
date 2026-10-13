@@ -40,13 +40,11 @@ IMPACT:
     enrichment_fraction: 0.3
     enrichment_start: "2024-11-15"
     seed: 42
-    min_units: 1
   probability_boost:
     effect_size: 0.5
     enrichment_fraction: 0.3
     enrichment_start: "2024-11-15"
     seed: 42
-    min_units: 1
   product_detail_boost:
     effect_size: 0.5
     ramp_days: 7
