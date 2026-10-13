@@ -123,8 +123,6 @@ convention = "numpy"
 "tests/**" = ["D"]
 "**/tests/**" = ["D"]
 "online_retail_simulator/**" = ["D"]
-"demo/**" = ["D", "E501", "F", "I"]
-"development/**" = ["D"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["online_retail_simulator"]

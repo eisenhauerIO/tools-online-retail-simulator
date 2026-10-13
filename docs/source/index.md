@@ -18,6 +18,5 @@ api_reference
 :maxdepth: 2
 :caption: Demos
 
-notebooks/demo
 notebooks/tutorial
 ```

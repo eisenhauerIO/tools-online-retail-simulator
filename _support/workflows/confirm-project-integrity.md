@@ -38,14 +38,7 @@ All steps must be run inside a freshly pruned [hatch](https://hatch.pypa.io/) en
    - If any hook fails (non-zero exit code), STOP. Ask the user for input before continuing.
    - Note: Since pre-commit now runs pytest, Step 3 may be skipped if you prefer to run all validations through pre-commit.
 
-5. **Run All Demo Scripts in Hatch**
-   - Run (from project root):
-     ```bash
-     hatch run python demo/run_all_demos.py
-     ```
-   - If any demo script fails (non-zero exit code), STOP. Ask the user for input before continuing.
-
-6. **Verify Documentation Integrity**
+5. **Verify Documentation Integrity**
    - Build the Sphinx documentation (from project root):
      ```bash
      hatch run docs
