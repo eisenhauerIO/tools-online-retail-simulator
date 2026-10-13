@@ -11,6 +11,10 @@ OLLAMA_URL = "http://localhost:11434"
 DEFAULT_MODEL = "llama3.2"
 DEFAULT_BATCH_SIZE = 5
 MAX_ATTEMPTS = 3
+# A 5-product batch is ~600 tokens; on CPU llama3.2 generates ~4 tokens/s, so a batch takes 2-3 minutes.
+# The token cap stops a runaway generation; a truncated reply fails to parse and is retried.
+MAX_TOKENS = 1536
+REQUEST_TIMEOUT = 600
 
 PROMPT_TEMPLATE = """You are a JSON generator. Generate product details for these e-commerce products.
 Your response must be ONLY valid JSON - no explanations, no code, no markdown.
@@ -61,8 +65,9 @@ def _generate_batch(prompt: str, model: str, ollama_url: str) -> list:
                 "prompt": prompt,
                 "stream": False,
                 "format": "json",
+                "options": {"num_predict": MAX_TOKENS},
             },
-            timeout=120,
+            timeout=REQUEST_TIMEOUT,
         )
         response.raise_for_status()
 
