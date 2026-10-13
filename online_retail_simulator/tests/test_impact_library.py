@@ -409,3 +409,51 @@ class TestImpactLibraryEdgeCases:
 
         # Should be either equal (not enriched) or greater (enriched)
         assert total_qty_result >= total_qty_original
+
+
+class TestBoostAccuracy:
+    """Test that the realized boost matches effect_size and respects the funnel."""
+
+    @staticmethod
+    def single_unit_sales(n=2000):
+        """Low-volume days where truncation would erase a 50% boost entirely."""
+        return [
+            {
+                "product_id": f"PROD{i:04d}",
+                "date": "2024-11-20",
+                "cart_adds": 1,
+                "ordered_units": 1,
+                "price": 10.0,
+                "unit_price": 10.0,
+                "revenue": 10.0,
+            }
+            for i in range(n)
+        ]
+
+    def test_realized_lift_matches_effect_size(self):
+        """Single-unit days get the full effect on average, not zero."""
+        sales = self.single_unit_sales()
+
+        result, _ = quantity_boost(sales, effect_size=0.5, enrichment_fraction=1.0, enrichment_start="2024-11-15")
+
+        lift = sum(s["ordered_units"] for s in result) / len(sales) - 1
+        assert abs(lift - 0.5) < 0.05
+
+    def test_cart_adds_never_below_ordered_units(self):
+        """Boosted orders raise cart adds so the funnel stays consistent."""
+        sales = self.single_unit_sales()
+
+        result, _ = quantity_boost(sales, effect_size=0.5, enrichment_fraction=1.0, enrichment_start="2024-11-15")
+
+        assert all(s["cart_adds"] >= s["ordered_units"] for s in result)
+        assert any(s["cart_adds"] > 1 for s in result)
+
+    def test_boost_units_exact_when_no_fraction(self):
+        """Whole-number boosts are deterministic regardless of the random draw."""
+        import numpy as np
+
+        from online_retail_simulator.enrich.enrichment_library import _boost_units
+
+        rng = np.random.default_rng(0)
+        assert all(_boost_units(2, 0.5, rng) == 3 for _ in range(100))
+        assert all(_boost_units(0, 0.5, rng) == 0 for _ in range(100))

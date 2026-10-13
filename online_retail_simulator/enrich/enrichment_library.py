@@ -7,6 +7,27 @@ import numpy as np
 import pandas as pd
 
 
+def _boost_units(units: int, effect: float, rng: np.random.Generator) -> int:
+    """
+    Scale ordered units by ``1 + effect`` and round to a whole number without bias.
+
+    The fractional part becomes the probability of rounding up, so the expected
+    boosted quantity equals ``units * (1 + effect)``. Truncating instead would erase
+    the effect on low-volume days (``int(1 * 1.5) == 1``).
+    """
+    boosted = units * (1 + effect)
+    whole = int(boosted)
+    return whole + int(rng.random() < boosted - whole)
+
+
+def _apply_boost(record: dict, boosted_quantity: int, revenue: float) -> None:
+    """Write boosted units and revenue to a record, keeping cart adds >= ordered units."""
+    record["ordered_units"] = boosted_quantity
+    record["revenue"] = revenue
+    if "cart_adds" in record:
+        record["cart_adds"] = max(record["cart_adds"], boosted_quantity)
+
+
 def quantity_boost(metrics: list, **kwargs) -> tuple:
     """
     Boost ordered units by a percentage for enriched products.
@@ -57,7 +78,7 @@ def quantity_boost(metrics: list, **kwargs) -> tuple:
         unit_price = record_copy.get("unit_price", record_copy.get("price"))
         if record_date >= start_date:
             original_quantity = record_copy["ordered_units"]
-            boosted_quantity = int(original_quantity * (1 + effect_size))
+            boosted_quantity = _boost_units(original_quantity, effect_size, rng)
             boosted_quantity = max(min_units, boosted_quantity)
             y1_revenue = round(boosted_quantity * unit_price, 2)
         else:
@@ -70,8 +91,7 @@ def quantity_boost(metrics: list, **kwargs) -> tuple:
 
         # Apply factual outcome (only for treated products)
         if is_enriched and record_date >= start_date:
-            record_copy["ordered_units"] = boosted_quantity
-            record_copy["revenue"] = y1_revenue
+            _apply_boost(record_copy, boosted_quantity, y1_revenue)
 
         treated_metrics.append(record_copy)
 
@@ -189,7 +209,7 @@ def product_detail_boost(metrics: list, **kwargs) -> tuple:
             adjusted_effect = effect_size * ramp_factor
 
             original_quantity = record_copy["ordered_units"]
-            boosted_quantity = int(original_quantity * (1 + adjusted_effect))
+            boosted_quantity = _boost_units(original_quantity, adjusted_effect, rng)
             y1_revenue = round(boosted_quantity * unit_price, 2)
         else:
             # Before treatment start, Y(1) = Y(0)
@@ -201,8 +221,7 @@ def product_detail_boost(metrics: list, **kwargs) -> tuple:
 
         # Apply factual outcome (only for treated products)
         if is_enriched and record_date >= start_date:
-            record_copy["ordered_units"] = boosted_quantity
-            record_copy["revenue"] = y1_revenue
+            _apply_boost(record_copy, boosted_quantity, y1_revenue)
 
         treated_metrics.append(record_copy)
 

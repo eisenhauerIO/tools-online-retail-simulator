@@ -22,6 +22,13 @@ def sample_products():
 class TestProductDetailsMock:
     """Tests for mock backend."""
 
+    def test_returns_plain_python_strings(self, sample_products):
+        """Brand and features are str, so they display without np.str_ wrappers."""
+        result = simulate_product_details_mock(sample_products, seed=42)
+        for _, row in result.iterrows():
+            assert type(row["brand"]) is str
+            assert all(type(feature) is str for feature in row["features"])
+
     def test_adds_required_columns(self, sample_products):
         """Mock should add title, description, brand, features."""
         result = simulate_product_details_mock(sample_products)
